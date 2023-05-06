@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "yarn run -s build:tscalc && tsc",
-    "build:tscalc": "ts-jison -t typescript -n TsCalc -o generated/ts-calculator.ts src/ts-calculator.jison",
+    "build": "yarn run -s build:scanner && tsc",
+    "build:scanner": "ts-jison -t typescript -n C -o generated/scanner.ts src/scanner.jison",
     "fmt": "yarn run -s fmt:prettier && yarn run -s fmt:eslint",
     "fmt:eslint": "eslint --fix --ext .ts src",
     "fmt:prettier": "prettier --write src",
-    "main": "yarn run -s build:tscalc && ts-node src/index.ts"
+    "main": "yarn run -s build:scanner && jest && ts-node src/index.ts"
   },
   "repository": "git@github.com:hatsusato/json-cc.git",
   "author": "hatsusato <2765630+hatsusato@users.noreply.github.com>",

@@ -1,6 +1,6 @@
-import TsCalc = require("../generated/ts-calculator");
+import Scanner = require("../generated/scanner");
 
-const parser = new TsCalc.TsCalcParser();
+const parser = new Scanner.CParser();
 export function calculate(input: string): number {
   return parser.parse(input);
 }
