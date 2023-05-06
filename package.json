@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
-    "fmt": "yarn run -s prettier --write src && yarn run -s eslint --fix --ext .ts src"
+    "build:tscalc": "ts-jison -t typescript -n TsCalc -o src/ts-calculator.ts src/ts-calculator.jison",
+    "fmt": "yarn run -s fmt:prettier && yarn run -s fmt:eslint",
+    "fmt:eslint": "eslint --fix --ext .ts src",
+    "fmt:prettier": "prettier --write src",
+    "main": "yarn run -s build:tscalc && ts-node src/index.ts"
   },
   "repository": "git@github.com:hatsusato/json-cc.git",
   "author": "hatsusato <2765630+hatsusato@users.noreply.github.com>",
   "license": "MIT",
   "devDependencies": {
+    "@ts-jison/parser-generator": "^0.4.1-alpha.2",
     "@types/node": "^20.1.0",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.59.2",
