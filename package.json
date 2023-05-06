@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build:tscalc": "ts-jison -t typescript -n TsCalc -o src/ts-calculator.ts src/ts-calculator.jison",
+    "build": "yarn run -s build:tscalc && tsc",
+    "build:tscalc": "ts-jison -t typescript -n TsCalc -o generated/ts-calculator.ts src/ts-calculator.jison",
     "fmt": "yarn run -s fmt:prettier && yarn run -s fmt:eslint",
     "fmt:eslint": "eslint --fix --ext .ts src",
     "fmt:prettier": "prettier --write src",

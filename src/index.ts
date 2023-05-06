@@ -1,4 +1,4 @@
-import TsCalc = require("./ts-calculator");
+import TsCalc = require("../generated/ts-calculator");
 
 const parser = new TsCalc.TsCalcParser();
 export function calculate(input: string): number {
