@@ -1,8 +1,12 @@
-import { calculate } from "./index";
+import { parse } from "./index";
 
-test("calculate(2^32 / 1024)", () => {
-  expect(calculate("2^32 / 1024")).toBe(4194304);
+test("main", () => {
+  const src = "int main(void) { return a + 1.2; }";
+  expect(parse(src)).toStrictEqual({
+    result: true,
+  });
 });
-test("calculate(PI + (3! / 3)^20 / (1+1)^10 / 1024 - 1)", () => {
-  expect(calculate("	PI + (3! / 3)^20 / (1+1)^10 / 1024 - 1")).toBe(Math.PI);
+test("decl", () => {
+  const src = "int x = 3;";
+  expect(parse(src)).toStrictEqual({ result: true });
 });

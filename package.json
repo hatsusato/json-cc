@@ -8,7 +8,7 @@
     "fmt": "yarn run -s fmt:prettier && yarn run -s fmt:eslint",
     "fmt:eslint": "eslint --fix --ext .ts src",
     "fmt:prettier": "prettier --write src",
-    "main": "yarn run -s build:scanner && jest && ts-node src/index.ts"
+    "main": "yarn run -s build:scanner && ts-node src/index.ts"
   },
   "repository": "git@github.com:hatsusato/json-cc.git",
   "author": "hatsusato <2765630+hatsusato@users.noreply.github.com>",
