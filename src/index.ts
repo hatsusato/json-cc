@@ -10,7 +10,7 @@ function run(input: string) {
 
 // run("int main(void) { return 0; }");
 // run("int x; float y;");
-run("int x");
+run("int x;");
 
 function yyscan_is_typedef(str: string): boolean {
   return false;

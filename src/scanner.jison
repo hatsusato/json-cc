@@ -1115,7 +1115,13 @@ struct_declarator
         constant_expression: null,
     });
 }
-| declarator_opt colon constant_expression {
+| colon constant_expression {
+    $$ = new_ast({
+        declarator: null,
+        constant_expression: $2,
+    });
+}
+| declarator colon constant_expression {
     $$ = new_ast({
         declarator: $1,
         constant_expression: $3,
@@ -1180,17 +1186,6 @@ type_qualifier
 }
 ;
 
-declarator_opt
-: /* empty */ {
-    $$ = new_ast({
-        pointer: null,
-        direct_declarator: null,
-    });
-}
-| declarator {
-    $$ = $1;
-}
-;
 declarator
 : direct_declarator {
     $$ = new_ast({
@@ -1564,7 +1559,12 @@ statement_list
 ;
 
 expression_statement
-: expression_opt semicolon {
+: semicolon {
+    $$ = new_ast({
+        expression: null,
+    });
+}
+| expression semicolon {
     $$ = new_ast({
         expression: $1,
     });
