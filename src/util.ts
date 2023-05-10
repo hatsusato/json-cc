@@ -11,7 +11,7 @@ export const hasKey = <K extends string>(
   x: object | null,
   key: K
 ): x is Record<K, unknown> => isObject(x) && key in x;
-export const last = (x: unknown[]) => x[x.length - 1];
+export const last = (x: unknown[]): unknown => x[x.length - 1];
 export const valueMap = (
   value: object,
   f: (value: unknown) => unknown

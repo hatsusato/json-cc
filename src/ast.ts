@@ -1,35 +1,35 @@
-import { CParser } from "../generated/scanner";
 import assert from "assert";
+import { CParser } from "../generated/scanner";
 import {
   hasKey,
   hexlify,
   isArray,
-  isNull,
-  isNumber,
+  isObject,
   last,
   valueMap,
-  Other,
-  PartialPick,
+  type Other,
+  type PartialPick,
 } from "./util";
 
 type Id = number;
-type LocType = {
+interface LocType {
   first_line: number;
   last_line: number;
   first_column: number;
   last_column: number;
-};
-type AstElement<T> = {
+}
+interface AstElement<T> {
   type: string;
   loc: LocType | null;
   value: object | null;
   children: T[];
-};
-interface AstNode extends AstElement<AstNode> {}
+}
+
+export interface AstNode extends AstElement<AstNode> {}
 
 const parser = new CParser();
 const root = {
-  list: [] as AstElement<Id>[],
+  list: [] as Array<AstElement<Id>>,
   get(id: Id): AstElement<Id> {
     return root.list[id];
   },
@@ -40,16 +40,21 @@ const root = {
   },
   construct(id: number): AstNode {
     const node = root.get(id);
-    const value = isNull(node.value)
-      ? null
-      : valueMap(node.value, (value: unknown) =>
-          isNumber(value) ? root.construct(value) : value
-        );
+    const constructValue = (value: unknown): unknown => {
+      if (isArray(value)) {
+        return value.map(constructValue);
+      }
+      if (isObject(value)) return valueMap(value, constructValue);
+      return value;
+    };
+    const value = constructValue(node.value) as typeof node.value;
     const children = node.children.map(root.construct);
     return { ...node, value, children };
   },
 };
-export const parse = (input: string) => {
+export const parse = (
+  input: string
+): typeof root & { top: Id; get_top: () => AstNode } => {
   const top: Id = parser.parse(input);
   return {
     ...root,
@@ -60,35 +65,35 @@ export const parse = (input: string) => {
   };
 };
 
-export const new_ast = (
+export const newAst = (
   props: PartialPick<AstElement<Id>, "loc" | "value"> & Other
 ): Id => {
   const { type, loc, children, ...value } = props;
   return root.push({ type, loc: loc ?? null, value, children });
 };
-export const new_token = (type: string, loc: LocType, token: string): Id => {
-  return new_ast({ type, loc, token, children: [] });
+export const newToken = (type: string, loc: LocType, token: string): Id => {
+  return newAst({ type, loc, token, children: [] });
 };
-export const new_list = (props: { type: string; children: Id[] }): Id => {
+export const newList = (props: { type: string; children: Id[] }): Id => {
   const { type, children } = props;
-  const get_list = (id: Id) => {
+  const getList = (id: Id): unknown[] => {
     const value = root.get(id).value;
     assert(hasKey(value, "list") && isArray(value.list));
     return value.list;
   };
   const list =
-    children.length < 2 ? children : [...get_list(children[0]), last(children)];
-  return new_ast({ type, list, children });
+    children.length < 2 ? children : [...getList(children[0]), last(children)];
+  return newAst({ type, list, children });
 };
-export const add_operator = (operator: string, id: number) => {
+export const addOperator = (operator: string, id: Id): Id => {
   const node = root.get(id);
   assert(hasKey(node.value, "operator"));
   node.value.operator = operator;
   return id;
 };
-export const is_typedef = (text: string) => {
+export const isTypedef = (text: string): boolean => {
   return false;
 };
-export const yyerror = (text: string) => {
+export const yyerror = (text: string): void => {
   console.log("unknown token:", hexlify(text));
 };
