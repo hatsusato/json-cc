@@ -1,11 +1,11 @@
 %{
 import {
+  add_operator,
+  is_typedef,
   new_ast,
   new_list,
   new_token,
-  add_operator,
-  is_typedef,
-  hexlify,
+  yyerror,
 } from "../src/ast";
 %}
 
@@ -160,7 +160,7 @@ directive               [#][^\n]*
 {integer_constant}      { return "INTEGER_CONSTANT";   }
 {character_constant}    { return "CHARACTER_CONSTANT"; }
 {string_literal}        { return "STRING_LITERAL";     }
-. { console.log("unknown token:", hexlify(yytext)); }
+. { yyerror(yytext); }
 
 /lex
 
@@ -193,86 +193,86 @@ directive               [#][^\n]*
 top: translation_unit { return $1; }
 ;
 
-auto: AUTO { $$ = new_token($1, @1); };
-break: BREAK { $$ = new_token($1, @1); };
-case: CASE { $$ = new_token($1, @1); };
-char: CHAR { $$ = new_token($1, @1); };
-const: CONST { $$ = new_token($1, @1); };
-continue: CONTINUE { $$ = new_token($1, @1); };
-default: DEFAULT { $$ = new_token($1, @1); };
-do: DO { $$ = new_token($1, @1); };
-double: DOUBLE { $$ = new_token($1, @1); };
-else: ELSE { $$ = new_token($1, @1); };
-enum: ENUM { $$ = new_token($1, @1); };
-extern: EXTERN { $$ = new_token($1, @1); };
-float: FLOAT { $$ = new_token($1, @1); };
-for: FOR { $$ = new_token($1, @1); };
-goto: GOTO { $$ = new_token($1, @1); };
-if: IF { $$ = new_token($1, @1); };
-int: INT { $$ = new_token($1, @1); };
-long: LONG { $$ = new_token($1, @1); };
-register: REGISTER { $$ = new_token($1, @1); };
-return: RETURN { $$ = new_token($1, @1); };
-short: SHORT { $$ = new_token($1, @1); };
-signed: SIGNED { $$ = new_token($1, @1); };
-sizeof: SIZEOF { $$ = new_token($1, @1); };
-static: STATIC { $$ = new_token($1, @1); };
-struct: STRUCT { $$ = new_token($1, @1); };
-switch: SWITCH { $$ = new_token($1, @1); };
-typedef: TYPEDEF { $$ = new_token($1, @1); };
-union: UNION { $$ = new_token($1, @1); };
-unsigned: UNSIGNED { $$ = new_token($1, @1); };
-void: VOID { $$ = new_token($1, @1); };
-volatile: VOLATILE { $$ = new_token($1, @1); };
-while: WHILE { $$ = new_token($1, @1); };
+auto: AUTO { $$ = new_token($1, @1, $1); };
+break: BREAK { $$ = new_token($1, @1, $1); };
+case: CASE { $$ = new_token($1, @1, $1); };
+char: CHAR { $$ = new_token($1, @1, $1); };
+const: CONST { $$ = new_token($1, @1, $1); };
+continue: CONTINUE { $$ = new_token($1, @1, $1); };
+default: DEFAULT { $$ = new_token($1, @1, $1); };
+do: DO { $$ = new_token($1, @1, $1); };
+double: DOUBLE { $$ = new_token($1, @1, $1); };
+else: ELSE { $$ = new_token($1, @1, $1); };
+enum: ENUM { $$ = new_token($1, @1, $1); };
+extern: EXTERN { $$ = new_token($1, @1, $1); };
+float: FLOAT { $$ = new_token($1, @1, $1); };
+for: FOR { $$ = new_token($1, @1, $1); };
+goto: GOTO { $$ = new_token($1, @1, $1); };
+if: IF { $$ = new_token($1, @1, $1); };
+int: INT { $$ = new_token($1, @1, $1); };
+long: LONG { $$ = new_token($1, @1, $1); };
+register: REGISTER { $$ = new_token($1, @1, $1); };
+return: RETURN { $$ = new_token($1, @1, $1); };
+short: SHORT { $$ = new_token($1, @1, $1); };
+signed: SIGNED { $$ = new_token($1, @1, $1); };
+sizeof: SIZEOF { $$ = new_token($1, @1, $1); };
+static: STATIC { $$ = new_token($1, @1, $1); };
+struct: STRUCT { $$ = new_token($1, @1, $1); };
+switch: SWITCH { $$ = new_token($1, @1, $1); };
+typedef: TYPEDEF { $$ = new_token($1, @1, $1); };
+union: UNION { $$ = new_token($1, @1, $1); };
+unsigned: UNSIGNED { $$ = new_token($1, @1, $1); };
+void: VOID { $$ = new_token($1, @1, $1); };
+volatile: VOLATILE { $$ = new_token($1, @1, $1); };
+while: WHILE { $$ = new_token($1, @1, $1); };
 
-period: PERIOD { $$ = new_token($1, @1); };
-arrow: ARROW { $$ = new_token($1, @1); };
-increment: INCREMENT { $$ = new_token($1, @1); };
-decrement: DECREMENT { $$ = new_token($1, @1); };
-ampersand: AMPERSAND { $$ = new_token($1, @1); };
-asterisk: ASTERISK { $$ = new_token($1, @1); };
-plus: PLUS { $$ = new_token($1, @1); };
-minus: MINUS { $$ = new_token($1, @1); };
-tilde: TILDE { $$ = new_token($1, @1); };
-exclamation: EXCLAMATION { $$ = new_token($1, @1); };
-slash: SLASH { $$ = new_token($1, @1); };
-percent: PERCENT { $$ = new_token($1, @1); };
-left_shift: LEFT_SHIFT { $$ = new_token($1, @1); };
-right_shift: RIGHT_SHIFT { $$ = new_token($1, @1); };
-less_than: LESS_THAN { $$ = new_token($1, @1); };
-greater_than: GREATER_THAN { $$ = new_token($1, @1); };
-less_equal: LESS_EQUAL { $$ = new_token($1, @1); };
-greater_equal: GREATER_EQUAL { $$ = new_token($1, @1); };
-equal: EQUAL { $$ = new_token($1, @1); };
-not_equal: NOT_EQUAL { $$ = new_token($1, @1); };
-caret: CARET { $$ = new_token($1, @1); };
-bar: BAR { $$ = new_token($1, @1); };
-and: AND { $$ = new_token($1, @1); };
-or: OR { $$ = new_token($1, @1); };
-question: QUESTION { $$ = new_token($1, @1); };
-assign: ASSIGN { $$ = new_token($1, @1); };
-asterisk_assign: ASTERISK_ASSIGN { $$ = new_token($1, @1); };
-slash_assign: SLASH_ASSIGN { $$ = new_token($1, @1); };
-percent_assign: PERCENT_ASSIGN { $$ = new_token($1, @1); };
-plus_assign: PLUS_ASSIGN { $$ = new_token($1, @1); };
-minus_assign: MINUS_ASSIGN { $$ = new_token($1, @1); };
-left_shift_assign: LEFT_SHIFT_ASSIGN { $$ = new_token($1, @1); };
-right_shift_assign: RIGHT_SHIFT_ASSIGN { $$ = new_token($1, @1); };
-ampersand_assign: AMPERSAND_ASSIGN { $$ = new_token($1, @1); };
-caret_assign: CARET_ASSIGN { $$ = new_token($1, @1); };
-bar_assign: BAR_ASSIGN { $$ = new_token($1, @1); };
+period: PERIOD { $$ = new_token($1, @1, $1); };
+arrow: ARROW { $$ = new_token($1, @1, $1); };
+increment: INCREMENT { $$ = new_token($1, @1, $1); };
+decrement: DECREMENT { $$ = new_token($1, @1, $1); };
+ampersand: AMPERSAND { $$ = new_token($1, @1, $1); };
+asterisk: ASTERISK { $$ = new_token($1, @1, $1); };
+plus: PLUS { $$ = new_token($1, @1, $1); };
+minus: MINUS { $$ = new_token($1, @1, $1); };
+tilde: TILDE { $$ = new_token($1, @1, $1); };
+exclamation: EXCLAMATION { $$ = new_token($1, @1, $1); };
+slash: SLASH { $$ = new_token($1, @1, $1); };
+percent: PERCENT { $$ = new_token($1, @1, $1); };
+left_shift: LEFT_SHIFT { $$ = new_token($1, @1, $1); };
+right_shift: RIGHT_SHIFT { $$ = new_token($1, @1, $1); };
+less_than: LESS_THAN { $$ = new_token($1, @1, $1); };
+greater_than: GREATER_THAN { $$ = new_token($1, @1, $1); };
+less_equal: LESS_EQUAL { $$ = new_token($1, @1, $1); };
+greater_equal: GREATER_EQUAL { $$ = new_token($1, @1, $1); };
+equal: EQUAL { $$ = new_token($1, @1, $1); };
+not_equal: NOT_EQUAL { $$ = new_token($1, @1, $1); };
+caret: CARET { $$ = new_token($1, @1, $1); };
+bar: BAR { $$ = new_token($1, @1, $1); };
+and: AND { $$ = new_token($1, @1, $1); };
+or: OR { $$ = new_token($1, @1, $1); };
+question: QUESTION { $$ = new_token($1, @1, $1); };
+assign: ASSIGN { $$ = new_token($1, @1, $1); };
+asterisk_assign: ASTERISK_ASSIGN { $$ = new_token($1, @1, $1); };
+slash_assign: SLASH_ASSIGN { $$ = new_token($1, @1, $1); };
+percent_assign: PERCENT_ASSIGN { $$ = new_token($1, @1, $1); };
+plus_assign: PLUS_ASSIGN { $$ = new_token($1, @1, $1); };
+minus_assign: MINUS_ASSIGN { $$ = new_token($1, @1, $1); };
+left_shift_assign: LEFT_SHIFT_ASSIGN { $$ = new_token($1, @1, $1); };
+right_shift_assign: RIGHT_SHIFT_ASSIGN { $$ = new_token($1, @1, $1); };
+ampersand_assign: AMPERSAND_ASSIGN { $$ = new_token($1, @1, $1); };
+caret_assign: CARET_ASSIGN { $$ = new_token($1, @1, $1); };
+bar_assign: BAR_ASSIGN { $$ = new_token($1, @1, $1); };
 
-left_bracket: LEFT_BRACKET { $$ = new_token($1, @1); };
-right_bracket: RIGHT_BRACKET { $$ = new_token($1, @1); };
-left_paren: LEFT_PAREN { $$ = new_token($1, @1); };
-right_paren: RIGHT_PAREN { $$ = new_token($1, @1); };
-left_brace: LEFT_BRACE { $$ = new_token($1, @1); };
-right_brace: RIGHT_BRACE { $$ = new_token($1, @1); };
-comma: COMMA { $$ = new_token($1, @1); };
-colon: COLON { $$ = new_token($1, @1); };
-semicolon: SEMICOLON { $$ = new_token($1, @1); };
-ellipsis: ELLIPSIS { $$ = new_token($1, @1); };
+left_bracket: LEFT_BRACKET { $$ = new_token($1, @1, $1); };
+right_bracket: RIGHT_BRACKET { $$ = new_token($1, @1, $1); };
+left_paren: LEFT_PAREN { $$ = new_token($1, @1, $1); };
+right_paren: RIGHT_PAREN { $$ = new_token($1, @1, $1); };
+left_brace: LEFT_BRACE { $$ = new_token($1, @1, $1); };
+right_brace: RIGHT_BRACE { $$ = new_token($1, @1, $1); };
+comma: COMMA { $$ = new_token($1, @1, $1); };
+colon: COLON { $$ = new_token($1, @1, $1); };
+semicolon: SEMICOLON { $$ = new_token($1, @1, $1); };
+ellipsis: ELLIPSIS { $$ = new_token($1, @1, $1); };
 
 /* 6.1 Lexical elements */
 identifier_opt
