@@ -1,44 +1,12 @@
 %{
-function hexlify(str: string): string {
-  return str
-    .split("")
-    .map((ch) => "0x" + ch.charCodeAt(0).toString(16))
-    .join(", ");
-}
-type LocationType = {
-  first_line: number;
-  first_column: number;
-  last_line: number;
-  last_column: number;
-};
-type AstNodeType = {
-  type: string;
-  children: AstNodeType[];
-  [key: string]: any;
-};
-let counter: number = 0;
-function new_ast(props: AstNodeType): AstNodeType {
-  return {
-    ...props,
-    id: counter++,
-  };
-}
-function new_token(type: string, loc: LocationType, value?: any): AstNodeType {
-  return new_ast({ type, loc, children: [], value });
-}
-function new_list(props: AstNodeType): AstNodeType {
-  const list =
-    props.children.length < 2
-      ? props.children
-      : [...props.children[0].list, props.children[props.children.length - 1]];
-  return new_ast({ ...props, list });
-}
-function add_operator(operator: string, props: AstNodeType): AstNodeType {
-    return {...props, operator};
-}
-function yyscan_is_typedef(str: string): boolean {
-  return false;
-}
+import {
+  new_ast,
+  new_list,
+  new_token,
+  add_operator,
+  is_typedef,
+  hexlify,
+} from "../src/ast";
 %}
 
 %lex
@@ -182,7 +150,7 @@ directive               [#][^\n]*
 "..."   { return "ELLIPSIS";      }
 
 {identifier} {
-  if (yyscan_is_typedef(yytext)) {
+  if (is_typedef(yytext)) {
     return "TYPEDEF_IDENTIFIER";
   } else {
     return "IDENTIFIER";

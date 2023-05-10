@@ -1,6 +1,6 @@
-import Scanner = require("../generated/scanner");
+import assert from "assert";
+import * as ast from "./ast";
 
-const parser = new Scanner.CParser();
 type ParseElement<K extends string, A extends number> = {
   type: string;
   kind: K;
@@ -20,30 +20,12 @@ type ParseResult = {
   construct: (id: number) => RawAstType;
   get_top: () => RawAstType;
 };
+let counter = 0;
+(props: any) => {
+  return typeof props?.id === "number" ? props : { ...props, id: counter++ };
+};
 
-export function parse(input: string): ParseResult {
-  const ast: RawAstType = parser.parse(input);
-  const root: AstElement[] = [];
-  const f = (node: RawAstType): number => {
-    const children = node.children.map((child) => f(child));
-    const id = root.length;
-    root.push({ ...node, kind: "ast", age: 0, id, children });
-    return id;
-  };
-  const top = f(ast);
-  const result: ParseResult = {
-    root,
-    top,
-    construct(id: number) {
-      const ast = this.root[id];
-      return { ...ast, children: ast.children.map((id) => this.construct(id)) };
-    },
-    get_top() {
-      return this.construct(this.top);
-    },
-  };
-  return result;
-}
+export const parse = ast.parse;
 export const get_name = (decl: any): string | null => {
   if (decl.type === "declaration") {
     return get_name(decl.init_declarator_list);
