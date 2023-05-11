@@ -24,10 +24,19 @@ interface AstElement<T> {
   value: object | null;
   children: T[];
 }
-
 export interface AstNode extends AstElement<AstNode> {}
 
 const parser = new CParser();
+const hasAstKey = <T, K extends string>(
+  ast: AstElement<T>,
+  key: K
+): ast is AstElement<T> &
+  ("list" extends K
+    ? { value: { list: T[] } }
+    : "token" extends K
+    ? { value: { token: string } }
+    : { value: Record<K, T> }) => hasKey(ast.value, key);
+
 const root = {
   list: [] as Array<AstElement<Id>>,
   get(id: Id): AstElement<Id> {
@@ -50,6 +59,46 @@ const root = {
     const value = constructValue(node.value) as typeof node.value;
     const children = node.children.map(root.construct);
     return { ...node, value, children };
+  },
+  getName(id: number): string | null {
+    const node = root.get(id);
+    if (node.type === "identifier") {
+      assert(hasAstKey(node, "token"));
+      return node.value.token;
+    } else if (node.type === "declaration") {
+      assert(hasAstKey(node, "init_declarator_list"));
+      return root.getName(node.value.init_declarator_list);
+    } else if (
+      node.type === "init_declarator_list" ||
+      node.type === "translation_unit"
+    ) {
+      assert(hasAstKey(node, "list"));
+      const list = node.value.list.map(root.getName);
+      return list.length === 0 ? null : list[0];
+    } else if (
+      node.type === "init_declarator" ||
+      node.type === "paren_direct_declarator" ||
+      node.type === "function_definition"
+    ) {
+      assert(hasAstKey(node, "declarator"));
+      return root.getName(node.value.declarator);
+    } else if (
+      node.type === "declarator" ||
+      node.type === "bracket_direct_declarator" ||
+      node.type === "parameter_direct_declarator" ||
+      node.type === "old_direct_declarator"
+    ) {
+      assert(hasAstKey(node, "direct_declarator"));
+      return root.getName(node.value.direct_declarator);
+    } else if (node.type === "identifier_direct_declarator") {
+      assert(hasAstKey(node, "identifier"));
+      return root.getName(node.value.identifier);
+    } else if (node.type === "external_declaration") {
+      assert(hasAstKey(node, "declaration"));
+      return root.getName(node.value.declaration);
+    } else {
+      return null;
+    }
   },
 };
 export const parse = (
