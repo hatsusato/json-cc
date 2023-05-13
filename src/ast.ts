@@ -3,40 +3,38 @@ import { CParser } from "../generated/scanner";
 import {
   hasKey,
   hexlify,
-  isArray,
-  isObject,
+  isNotNull,
+  isNull,
+  isNumber,
+  isString,
   last,
   valueMap,
   type Other,
-  type PartialPick,
 } from "./util";
 
-type Id = number;
 interface LocType {
   first_line: number;
   last_line: number;
   first_column: number;
   last_column: number;
 }
+type Id = number;
+interface AstTokenValue {
+  token: string;
+}
+interface AstListValue<T> {
+  list: T[];
+}
+type AstObjectValue<T> = Record<string, T | null>;
 interface AstElement<T> {
   type: string;
   loc: LocType | null;
-  value: object | null;
+  value: AstTokenValue | AstListValue<T> | AstObjectValue<T>;
   children: T[];
 }
 export interface AstNode extends AstElement<AstNode> {}
 
 const parser = new CParser();
-const hasAstKey = <T, K extends string>(
-  ast: AstElement<T>,
-  key: K
-): ast is AstElement<T> &
-  ("list" extends K
-    ? { value: { list: T[] } }
-    : "token" extends K
-    ? { value: { token: string } }
-    : { value: Record<K, T> }) => hasKey(ast.value, key);
-
 const root = {
   list: [] as Array<AstElement<Id>>,
   get(id: Id): AstElement<Id> {
@@ -47,55 +45,67 @@ const root = {
     root.list.push(e);
     return id;
   },
-  construct(id: number): AstNode {
+  construct(id: Id | null): AstNode | null {
+    if (isNull(id)) {
+      return null;
+    }
     const node = root.get(id);
-    const constructValue = (value: unknown): unknown => {
-      if (isArray(value)) {
-        return value.map(constructValue);
-      }
-      if (isObject(value)) return valueMap(value, constructValue);
-      return value;
-    };
-    const value = constructValue(node.value) as typeof node.value;
-    const children = node.children.map(root.construct);
-    return { ...node, value, children };
+    const children = node.children.map(root.construct).filter(isNotNull);
+    if (node.value === null || hasKey(node.value, "token")) {
+      const value = node.value;
+      return { ...node, value, children };
+    } else if (hasKey(node.value, "list")) {
+      const list = node.value.list.map(root.construct).filter(isNotNull);
+      return { ...node, value: { list }, children };
+    } else {
+      const value = valueMap(node.value, root.construct);
+      return { ...node, value, children };
+    }
   },
-  getName(id: number): string | null {
+  queryToken(node: AstElement<Id>): string {
+    assert(hasKey(node.value, "token"));
+    return node.value.token;
+  },
+  queryList(node: AstElement<Id>): Id[] {
+    assert(hasKey(node.value, "list"));
+    return node.value.list;
+  },
+  queryObject(node: AstElement<Id>, key: string): Id | null {
+    assert(hasKey(node.value, key));
+    return node.value[key];
+  },
+  getName(id: Id | null): string | null {
+    if (isNull(id)) {
+      return null;
+    }
     const node = root.get(id);
     if (node.type === "identifier") {
-      assert(hasAstKey(node, "token"));
-      return node.value.token;
+      return root.queryToken(node);
     } else if (node.type === "declaration") {
-      assert(hasAstKey(node, "init_declarator_list"));
-      return root.getName(node.value.init_declarator_list);
+      return root.getName(root.queryObject(node, "init_declarator_list"));
     } else if (
       node.type === "init_declarator_list" ||
       node.type === "translation_unit"
     ) {
-      assert(hasAstKey(node, "list"));
-      const list = node.value.list.map(root.getName);
-      return list.length === 0 ? null : list[0];
+      const list = root.queryList(node);
+      return root.getName(list.length === 0 ? null : list[0]);
     } else if (
       node.type === "init_declarator" ||
       node.type === "paren_direct_declarator" ||
       node.type === "function_definition"
     ) {
-      assert(hasAstKey(node, "declarator"));
-      return root.getName(node.value.declarator);
+      return root.getName(root.queryObject(node, "declarator"));
     } else if (
       node.type === "declarator" ||
       node.type === "bracket_direct_declarator" ||
       node.type === "parameter_direct_declarator" ||
       node.type === "old_direct_declarator"
     ) {
-      assert(hasAstKey(node, "direct_declarator"));
-      return root.getName(node.value.direct_declarator);
+      return root.getName(root.queryObject(node, "direct_declarator"));
     } else if (node.type === "identifier_direct_declarator") {
-      assert(hasAstKey(node, "identifier"));
-      return root.getName(node.value.identifier);
+      return root.getName(root.queryObject(node, "identifier"));
     } else if (node.type === "external_declaration") {
-      assert(hasAstKey(node, "declaration"));
-      return root.getName(node.value.declaration);
+      return root.getName(root.queryObject(node, "declaration"));
     } else {
       return null;
     }
@@ -103,7 +113,7 @@ const root = {
 };
 export const parse = (
   input: string
-): typeof root & { top: Id; get_top: () => AstNode } => {
+): typeof root & { top: Id; get_top: () => AstNode | null } => {
   const top: Id = parser.parse(input);
   return {
     ...root,
@@ -115,24 +125,34 @@ export const parse = (
 };
 
 export const newAst = (
-  props: PartialPick<AstElement<Id>, "loc" | "value"> & Other
+  props: {
+    type: string;
+    loc?: LocType;
+    children: Id[];
+  } & Other
 ): Id => {
-  const { type, loc, children, ...value } = props;
+  const { type, loc, children, ...rest } = props;
+  assert(
+    Object.entries(rest).every(
+      ([k, v]) => isString(k) && (isNull(v) || isNumber(v))
+    )
+  );
+  const value = rest as Record<string, Id | null>;
   return root.push({ type, loc: loc ?? null, value, children });
 };
 export const newToken = (type: string, loc: LocType, token: string): Id => {
-  return newAst({ type, loc, token, children: [] });
+  return root.push({ type, loc, value: { token }, children: [] });
 };
 export const newList = (props: { type: string; children: Id[] }): Id => {
   const { type, children } = props;
-  const getList = (id: Id): unknown[] => {
+  const getList = (id: Id): Id[] => {
     const value = root.get(id).value;
-    assert(hasKey(value, "list") && isArray(value.list));
+    assert(hasKey(value, "list"));
     return value.list;
   };
   const list =
     children.length < 2 ? children : [...getList(children[0]), last(children)];
-  return newAst({ type, list, children });
+  return root.push({ type, loc: null, value: { list }, children });
 };
 export const addOperator = (operator: string, id: Id): Id => {
   const node = root.get(id);
