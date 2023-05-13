@@ -1,12 +1,5 @@
 %{
-import {
-  addOperator,
-  isTypedef,
-  newAst,
-  newList,
-  newToken,
-  yyerror,
-} from "../src/ast";
+import { addOperator, isTypedef, newAst, newList, newToken, yyerror, } from "../src/ast";
 %}
 
 %lex
@@ -673,8 +666,8 @@ conditional_expression
     $$ = newAst({
         type: "ternary",
         condition: $1,
-        true_expression: $3,
-        false_expression: $5,
+        left: $3,
+        right: $5,
         children: [$1, $2, $3, $4, $5],
     });
 }
@@ -1128,7 +1121,6 @@ pointer
     $$ = newAst({
         type: "pointer",
         pointer: null,
-        asterisk: $1,
         type_qualifier_list: $2,
         children: [$1, $2],
     });
@@ -1137,7 +1129,6 @@ pointer
     $$ = newAst({
         type: "pointer",
         pointer: $1,
-        asterisk: $2,
         type_qualifier_list: $3,
         children: [$1, $2, $3],
     });
@@ -1437,7 +1428,6 @@ labeled_statement
 | case constant_expression colon statement {
     $$ = newAst({
         type: "case_statement",
-        case: $1,
         constant_expression: $2,
         statement: $4,
         children: [$1, $2, $3, $4],
@@ -1446,7 +1436,6 @@ labeled_statement
 | default colon statement {
     $$ = newAst({
         type: "default_statement",
-        default: $1,
         statement: $3,
         children: [$1, $2, $3],
     });
@@ -1533,7 +1522,6 @@ selection_statement
 : if left_paren expression right_paren statement %prec THEN {
     $$ = newAst({
         type: "if_statement",
-        if: $1,
         expression: $3,
         then: $5,
         else: null,
@@ -1543,7 +1531,6 @@ selection_statement
 | if left_paren expression right_paren statement else statement {
     $$ = newAst({
         type: "if_statement",
-        if: $1,
         expression: $3,
         then: $5,
         else: $7,
@@ -1553,7 +1540,6 @@ selection_statement
 | switch left_paren expression right_paren statement {
     $$ = newAst({
         type: "switch_statement",
-        switch: $1,
         expression: $3,
         statement: $5,
         children: [$1, $2, $3, $4, $5],
@@ -1565,7 +1551,6 @@ iteration_statement
 : while left_paren expression right_paren statement {
     $$ = newAst({
         type: "while_statement",
-        while: $1,
         expression: $3,
         statement: $5,
         children: [$1, $2, $3, $4, $5],
@@ -1574,7 +1559,6 @@ iteration_statement
 | do statement while left_paren expression right_paren semicolon {
     $$ = newAst({
         type: "do_while_statement",
-        do: $1,
         statement: $2,
         expression: $5,
         children: [$1, $2, $3, $4, $5, $6, $7],
@@ -1583,7 +1567,6 @@ iteration_statement
 | for left_paren expression_opt semicolon expression_opt semicolon expression_opt right_paren statement {
     $$ = newAst({
         type: "for_statement",
-        for: $1,
         expression1: $3,
         expression2: $5,
         expression3: $7,
@@ -1597,7 +1580,6 @@ jump_statement
 : goto identifier semicolon {
     $$ = newAst({
         type: "goto_statement",
-        goto: $1,
         identifier: $2,
         children: [$1, $2, $3],
     });
@@ -1605,21 +1587,18 @@ jump_statement
 | continue semicolon {
     $$ = newAst({
         type: "continue_statement",
-        continue: $1,
         children: [$1, $2],
     });
 }
 | break semicolon {
     $$ = newAst({
         type: "break_statement",
-        break: $1,
         children: [$1, $2],
     });
 }
 | return expression_opt semicolon {
     $$ = newAst({
         type: "return_statement",
-        return: $1,
         expression: $2,
         children: [$1, $2, $3],
     });

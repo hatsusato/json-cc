@@ -1,9 +1,7 @@
-export type Other = Record<string, unknown>;
-export type PartialPick<T, K extends keyof T> = Omit<T, K> &
-  Partial<Pick<T, K>>;
-
 export const isNull = (x: unknown): x is null => x === null;
 export const isNotNull = <T>(x: T | null): x is T => x !== null;
+export const isUndefined = (x: unknown): x is undefined => x === undefined;
+export const isNotUndefined = <T>(x: T | undefined): x is T => x !== undefined;
 export const isNumber = (x: unknown): x is number => typeof x === "number";
 export const isString = (x: unknown): x is string => typeof x === "string";
 export const isArray = (x: unknown): x is unknown[] => Array.isArray(x);
