@@ -7,8 +7,8 @@ test("main", () => {
   expect(name).toStrictEqual("main");
 });
 test("decl", () => {
-  const src = "int x = 3;";
+  const src = "int x = 3; int y = 4;";
   const root = parse(src);
   const name = root.getName(root.top);
-  expect(name).toStrictEqual("x");
+  expect(name).toStrictEqual("x, y");
 });

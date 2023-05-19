@@ -186,86 +186,86 @@ directive               [#][^\n]*
 top: translation_unit { return $1; }
 ;
 
-auto: AUTO { $$ = newToken($1, @1, $1); };
-break: BREAK { $$ = newToken($1, @1, $1); };
-case: CASE { $$ = newToken($1, @1, $1); };
-char: CHAR { $$ = newToken($1, @1, $1); };
-const: CONST { $$ = newToken($1, @1, $1); };
-continue: CONTINUE { $$ = newToken($1, @1, $1); };
-default: DEFAULT { $$ = newToken($1, @1, $1); };
-do: DO { $$ = newToken($1, @1, $1); };
-double: DOUBLE { $$ = newToken($1, @1, $1); };
-else: ELSE { $$ = newToken($1, @1, $1); };
-enum: ENUM { $$ = newToken($1, @1, $1); };
-extern: EXTERN { $$ = newToken($1, @1, $1); };
-float: FLOAT { $$ = newToken($1, @1, $1); };
-for: FOR { $$ = newToken($1, @1, $1); };
-goto: GOTO { $$ = newToken($1, @1, $1); };
-if: IF { $$ = newToken($1, @1, $1); };
-int: INT { $$ = newToken($1, @1, $1); };
-long: LONG { $$ = newToken($1, @1, $1); };
-register: REGISTER { $$ = newToken($1, @1, $1); };
-return: RETURN { $$ = newToken($1, @1, $1); };
-short: SHORT { $$ = newToken($1, @1, $1); };
-signed: SIGNED { $$ = newToken($1, @1, $1); };
-sizeof: SIZEOF { $$ = newToken($1, @1, $1); };
-static: STATIC { $$ = newToken($1, @1, $1); };
-struct: STRUCT { $$ = newToken($1, @1, $1); };
-switch: SWITCH { $$ = newToken($1, @1, $1); };
-typedef: TYPEDEF { $$ = newToken($1, @1, $1); };
-union: UNION { $$ = newToken($1, @1, $1); };
-unsigned: UNSIGNED { $$ = newToken($1, @1, $1); };
-void: VOID { $$ = newToken($1, @1, $1); };
-volatile: VOLATILE { $$ = newToken($1, @1, $1); };
-while: WHILE { $$ = newToken($1, @1, $1); };
+auto: AUTO { $$ = newToken($1, @1); };
+break: BREAK { $$ = newToken($1, @1); };
+case: CASE { $$ = newToken($1, @1); };
+char: CHAR { $$ = newToken($1, @1); };
+const: CONST { $$ = newToken($1, @1); };
+continue: CONTINUE { $$ = newToken($1, @1); };
+default: DEFAULT { $$ = newToken($1, @1); };
+do: DO { $$ = newToken($1, @1); };
+double: DOUBLE { $$ = newToken($1, @1); };
+else: ELSE { $$ = newToken($1, @1); };
+enum: ENUM { $$ = newToken($1, @1); };
+extern: EXTERN { $$ = newToken($1, @1); };
+float: FLOAT { $$ = newToken($1, @1); };
+for: FOR { $$ = newToken($1, @1); };
+goto: GOTO { $$ = newToken($1, @1); };
+if: IF { $$ = newToken($1, @1); };
+int: INT { $$ = newToken($1, @1); };
+long: LONG { $$ = newToken($1, @1); };
+register: REGISTER { $$ = newToken($1, @1); };
+return: RETURN { $$ = newToken($1, @1); };
+short: SHORT { $$ = newToken($1, @1); };
+signed: SIGNED { $$ = newToken($1, @1); };
+sizeof: SIZEOF { $$ = newToken($1, @1); };
+static: STATIC { $$ = newToken($1, @1); };
+struct: STRUCT { $$ = newToken($1, @1); };
+switch: SWITCH { $$ = newToken($1, @1); };
+typedef: TYPEDEF { $$ = newToken($1, @1); };
+union: UNION { $$ = newToken($1, @1); };
+unsigned: UNSIGNED { $$ = newToken($1, @1); };
+void: VOID { $$ = newToken($1, @1); };
+volatile: VOLATILE { $$ = newToken($1, @1); };
+while: WHILE { $$ = newToken($1, @1); };
 
-period: PERIOD { $$ = newToken($1, @1, $1); };
-arrow: ARROW { $$ = newToken($1, @1, $1); };
-increment: INCREMENT { $$ = newToken($1, @1, $1); };
-decrement: DECREMENT { $$ = newToken($1, @1, $1); };
-ampersand: AMPERSAND { $$ = newToken($1, @1, $1); };
-asterisk: ASTERISK { $$ = newToken($1, @1, $1); };
-plus: PLUS { $$ = newToken($1, @1, $1); };
-minus: MINUS { $$ = newToken($1, @1, $1); };
-tilde: TILDE { $$ = newToken($1, @1, $1); };
-exclamation: EXCLAMATION { $$ = newToken($1, @1, $1); };
-slash: SLASH { $$ = newToken($1, @1, $1); };
-percent: PERCENT { $$ = newToken($1, @1, $1); };
-left_shift: LEFT_SHIFT { $$ = newToken($1, @1, $1); };
-right_shift: RIGHT_SHIFT { $$ = newToken($1, @1, $1); };
-less_than: LESS_THAN { $$ = newToken($1, @1, $1); };
-greater_than: GREATER_THAN { $$ = newToken($1, @1, $1); };
-less_equal: LESS_EQUAL { $$ = newToken($1, @1, $1); };
-greater_equal: GREATER_EQUAL { $$ = newToken($1, @1, $1); };
-equal: EQUAL { $$ = newToken($1, @1, $1); };
-not_equal: NOT_EQUAL { $$ = newToken($1, @1, $1); };
-caret: CARET { $$ = newToken($1, @1, $1); };
-bar: BAR { $$ = newToken($1, @1, $1); };
-and: AND { $$ = newToken($1, @1, $1); };
-or: OR { $$ = newToken($1, @1, $1); };
-question: QUESTION { $$ = newToken($1, @1, $1); };
-assign: ASSIGN { $$ = newToken($1, @1, $1); };
-asterisk_assign: ASTERISK_ASSIGN { $$ = newToken($1, @1, $1); };
-slash_assign: SLASH_ASSIGN { $$ = newToken($1, @1, $1); };
-percent_assign: PERCENT_ASSIGN { $$ = newToken($1, @1, $1); };
-plus_assign: PLUS_ASSIGN { $$ = newToken($1, @1, $1); };
-minus_assign: MINUS_ASSIGN { $$ = newToken($1, @1, $1); };
-left_shift_assign: LEFT_SHIFT_ASSIGN { $$ = newToken($1, @1, $1); };
-right_shift_assign: RIGHT_SHIFT_ASSIGN { $$ = newToken($1, @1, $1); };
-ampersand_assign: AMPERSAND_ASSIGN { $$ = newToken($1, @1, $1); };
-caret_assign: CARET_ASSIGN { $$ = newToken($1, @1, $1); };
-bar_assign: BAR_ASSIGN { $$ = newToken($1, @1, $1); };
+period: PERIOD { $$ = newToken($1, @1); };
+arrow: ARROW { $$ = newToken($1, @1); };
+increment: INCREMENT { $$ = newToken($1, @1); };
+decrement: DECREMENT { $$ = newToken($1, @1); };
+ampersand: AMPERSAND { $$ = newToken($1, @1); };
+asterisk: ASTERISK { $$ = newToken($1, @1); };
+plus: PLUS { $$ = newToken($1, @1); };
+minus: MINUS { $$ = newToken($1, @1); };
+tilde: TILDE { $$ = newToken($1, @1); };
+exclamation: EXCLAMATION { $$ = newToken($1, @1); };
+slash: SLASH { $$ = newToken($1, @1); };
+percent: PERCENT { $$ = newToken($1, @1); };
+left_shift: LEFT_SHIFT { $$ = newToken($1, @1); };
+right_shift: RIGHT_SHIFT { $$ = newToken($1, @1); };
+less_than: LESS_THAN { $$ = newToken($1, @1); };
+greater_than: GREATER_THAN { $$ = newToken($1, @1); };
+less_equal: LESS_EQUAL { $$ = newToken($1, @1); };
+greater_equal: GREATER_EQUAL { $$ = newToken($1, @1); };
+equal: EQUAL { $$ = newToken($1, @1); };
+not_equal: NOT_EQUAL { $$ = newToken($1, @1); };
+caret: CARET { $$ = newToken($1, @1); };
+bar: BAR { $$ = newToken($1, @1); };
+and: AND { $$ = newToken($1, @1); };
+or: OR { $$ = newToken($1, @1); };
+question: QUESTION { $$ = newToken($1, @1); };
+assign: ASSIGN { $$ = newToken($1, @1); };
+asterisk_assign: ASTERISK_ASSIGN { $$ = newToken($1, @1); };
+slash_assign: SLASH_ASSIGN { $$ = newToken($1, @1); };
+percent_assign: PERCENT_ASSIGN { $$ = newToken($1, @1); };
+plus_assign: PLUS_ASSIGN { $$ = newToken($1, @1); };
+minus_assign: MINUS_ASSIGN { $$ = newToken($1, @1); };
+left_shift_assign: LEFT_SHIFT_ASSIGN { $$ = newToken($1, @1); };
+right_shift_assign: RIGHT_SHIFT_ASSIGN { $$ = newToken($1, @1); };
+ampersand_assign: AMPERSAND_ASSIGN { $$ = newToken($1, @1); };
+caret_assign: CARET_ASSIGN { $$ = newToken($1, @1); };
+bar_assign: BAR_ASSIGN { $$ = newToken($1, @1); };
 
-left_bracket: LEFT_BRACKET { $$ = newToken($1, @1, $1); };
-right_bracket: RIGHT_BRACKET { $$ = newToken($1, @1, $1); };
-left_paren: LEFT_PAREN { $$ = newToken($1, @1, $1); };
-right_paren: RIGHT_PAREN { $$ = newToken($1, @1, $1); };
-left_brace: LEFT_BRACE { $$ = newToken($1, @1, $1); };
-right_brace: RIGHT_BRACE { $$ = newToken($1, @1, $1); };
-comma: COMMA { $$ = newToken($1, @1, $1); };
-colon: COLON { $$ = newToken($1, @1, $1); };
-semicolon: SEMICOLON { $$ = newToken($1, @1, $1); };
-ellipsis: ELLIPSIS { $$ = newToken($1, @1, $1); };
+left_bracket: LEFT_BRACKET { $$ = newToken($1, @1); };
+right_bracket: RIGHT_BRACKET { $$ = newToken($1, @1); };
+left_paren: LEFT_PAREN { $$ = newToken($1, @1); };
+right_paren: RIGHT_PAREN { $$ = newToken($1, @1); };
+left_brace: LEFT_BRACE { $$ = newToken($1, @1); };
+right_brace: RIGHT_BRACE { $$ = newToken($1, @1); };
+comma: COMMA { $$ = newToken($1, @1); };
+colon: COLON { $$ = newToken($1, @1); };
+semicolon: SEMICOLON { $$ = newToken($1, @1); };
+ellipsis: ELLIPSIS { $$ = newToken($1, @1); };
 
 /* 6.1 Lexical elements */
 identifier_opt
@@ -322,10 +322,9 @@ primary_expression
 | character_constant
 | string_literal
 | left_paren expression right_paren {
-    $$ = newAst({
-        type: "primary_expression",
+    $$ = newAst("primary_expression", {
         expression: $2,
-        children: [$1, $2, $3]
+        children: [$1, $2, $3],
     });
 }
 ;
@@ -333,47 +332,41 @@ primary_expression
 postfix_expression
 : primary_expression
 | postfix_expression left_bracket expression right_bracket {
-    $$ = newAst({
-        type: "array_access",
+    $$ = newAst("array_access", {
         postfix_expression: $1,
         expression: $3,
         children: [$1, $2, $3, $4],
     });
 }
 | postfix_expression left_paren argument_expression_list_opt right_paren {
-    $$ = newAst({
-        type: "function_call",
+    $$ = newAst("function_call", {
         postfix_expression: $1,
         argument_expression_list: $3,
         children: [$1, $2, $3, $4],
     });
 }
 | postfix_expression period identifier {
-    $$ = newAst({
-        type: "member_access",
+    $$ = newAst("member_access", {
         postfix_expression: $1,
         identifier: $3,
         children: [$1, $2, $3],
     });
 }
 | postfix_expression arrow identifier {
-    $$ = newAst({
-        type: "pointer_member_access",
+    $$ = newAst("pointer_member_access", {
         postfix_expression: $1,
         identifier: $3,
         children: [$1, $2, $3],
     });
 }
 | postfix_expression increment {
-    $$ = newAst({
-        type: "increment",
+    $$ = newAst("increment", {
         postfix_expression: $1,
         children: [$1, $2],
     });
 }
 | postfix_expression decrement {
-    $$ = newAst({
-        type: "decrement",
+    $$ = newAst("decrement", {
         postfix_expression: $1,
         children: [$1, $2],
     });
@@ -382,62 +375,48 @@ postfix_expression
 
 argument_expression_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "argument_expression_list",
-        children: [],
-    });
+    $$ = newList("argument_expression_list", []);
 }
 | argument_expression_list
 ;
 argument_expression_list
 : assignment_expression {
-    $$ = newList({
-        type: "argument_expression_list",
-        children: [$1],
-    });
+    $$ = newList("argument_expression_list", [$1]);
 }
 | argument_expression_list comma assignment_expression {
-    $$ = newList({
-        type: "argument_expression_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("argument_expression_list", [$1, $2, $3]);
 }
 ;
 
 unary_expression
 : postfix_expression
 | increment unary_expression {
-    $$ = newAst({
-        type: "pre_increment",
+    $$ = newAst("pre_increment", {
         unary_expression: $2,
         children: [$1, $2],
     });
 }
 | decrement unary_expression {
-    $$ = newAst({
-        type: "pre_decrement",
+    $$ = newAst("pre_decrement", {
         unary_expression: $2,
         children: [$1, $2],
     });
 }
 | unary_operator cast_expression {
-    $$ = newAst({
-        type: "unary",
+    $$ = newAst("unary", {
         unary_operator: $1,
         cast_expression: $2,
         children: [$1, $2],
     });
 }
 | sizeof unary_expression {
-    $$ = newAst({
-        type: "sizeof_expression",
+    $$ = newAst("sizeof_expression", {
         unary_expression: $2,
         children: [$1, $2],
     });
 }
 | sizeof left_paren type_name right_paren {
-    $$ = newAst({
-        type: "sizeof_type",
+    $$ = newAst("sizeof_type", {
         type_name: $3,
         children: [$1, $2, $3, $4],
     });
@@ -467,8 +446,7 @@ unary_operator
 cast_expression
 : unary_expression
 | left_paren type_name right_paren cast_expression {
-    $$ = newAst({
-        type: "cast",
+    $$ = newAst("cast", {
         type_name: $2,
         cast_expression: $4,
         children: [$1, $2, $3, $4],
@@ -479,24 +457,21 @@ cast_expression
 multiplicative_expression
 : cast_expression
 | multiplicative_expression asterisk cast_expression {
-    $$ = newAst({
-        type: "multiplication",
+    $$ = newAst("multiplication", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | multiplicative_expression slash cast_expression {
-    $$ = newAst({
-        type: "division",
+    $$ = newAst("division", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | multiplicative_expression percent cast_expression {
-    $$ = newAst({
-        type: "modulo",
+    $$ = newAst("modulo", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -507,16 +482,14 @@ multiplicative_expression
 additive_expression
 : multiplicative_expression
 | additive_expression plus multiplicative_expression {
-    $$ = newAst({
-        type: "addition",
+    $$ = newAst("addition", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | additive_expression minus multiplicative_expression {
-    $$ = newAst({
-        type: "subtraction",
+    $$ = newAst("subtraction", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -527,16 +500,14 @@ additive_expression
 shift_expression
 : additive_expression
 | shift_expression left_shift additive_expression {
-    $$ = newAst({
-        type: "left_shift",
+    $$ = newAst("left_shift", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | shift_expression right_shift additive_expression {
-    $$ = newAst({
-        type: "right_shift",
+    $$ = newAst("right_shift", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -547,32 +518,28 @@ shift_expression
 relational_expression
 : shift_expression
 | relational_expression less_than shift_expression {
-    $$ = newAst({
-        type: "less_than",
+    $$ = newAst("less_than", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | relational_expression greater_than shift_expression {
-    $$ = newAst({
-        type: "greater_than",
+    $$ = newAst("greater_than", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | relational_expression less_equal shift_expression {
-    $$ = newAst({
-        type: "less_equal",
+    $$ = newAst("less_equal", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | relational_expression greater_equal shift_expression {
-    $$ = newAst({
-        type: "greater_equal",
+    $$ = newAst("greater_equal", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -583,16 +550,14 @@ relational_expression
 equality_expression
 : relational_expression
 | equality_expression equal relational_expression {
-    $$ = newAst({
-        type: "equal",
+    $$ = newAst("equal", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
     });
 }
 | equality_expression not_equal relational_expression {
-    $$ = newAst({
-        type: "not_equal",
+    $$ = newAst("not_equal", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -603,8 +568,7 @@ equality_expression
 and_expression
 : equality_expression
 | and_expression ampersand equality_expression {
-    $$ = newAst({
-        type: "bitwise_and",
+    $$ = newAst("bitwise_and", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -615,8 +579,7 @@ and_expression
 exclusive_or_expression
 : and_expression
 | exclusive_or_expression caret and_expression {
-    $$ = newAst({
-        type: "bitwise_xor",
+    $$ = newAst("bitwise_xor", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -627,8 +590,7 @@ exclusive_or_expression
 inclusive_or_expression
 : exclusive_or_expression
 | inclusive_or_expression bar exclusive_or_expression {
-    $$ = newAst({
-        type: "bitwise_or",
+    $$ = newAst("bitwise_or", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -639,8 +601,7 @@ inclusive_or_expression
 logical_and_expression
 : inclusive_or_expression
 | logical_and_expression and inclusive_or_expression {
-    $$ = newAst({
-        type: "logical_and",
+    $$ = newAst("logical_and", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -651,8 +612,7 @@ logical_and_expression
 logical_or_expression
 : logical_and_expression
 | logical_or_expression or logical_and_expression {
-    $$ = newAst({
-        type: "logical_or",
+    $$ = newAst("logical_or", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -663,8 +623,7 @@ logical_or_expression
 conditional_expression
 : logical_or_expression
 | logical_or_expression question expression colon conditional_expression {
-    $$ = newAst({
-        type: "ternary",
+    $$ = newAst("ternary", {
         condition: $1,
         left: $3,
         right: $5,
@@ -676,8 +635,7 @@ conditional_expression
 assignment_expression
 : conditional_expression
 | unary_expression assignment_operator assignment_expression {
-    $$ = newAst({
-        type: "assignment",
+    $$ = newAst("assignment", {
         left: $1,
         assignment_operator: $2,
         right: $3,
@@ -728,8 +686,7 @@ expression_opt
 expression
 : assignment_expression
 | expression comma assignment_expression {
-    $$ = newAst({
-        type: "comma",
+    $$ = newAst("comma", {
         left: $1,
         right: $3,
         children: [$1, $2, $3],
@@ -749,8 +706,7 @@ constant_expression
 /* 6.5 Declarations */
 declaration
 : declaration_specifiers init_declarator_list_opt semicolon {
-    $$ = newAst({
-        type: "declaration",
+    $$ = newAst("declaration", {
         declaration_specifiers: $1,
         init_declarator_list: $2,
         children: [$1, $2, $3],
@@ -760,36 +716,27 @@ declaration
 
 declaration_specifiers
 : declaration_specifier {
-    $$ = newList({
-        type: "declaration_specifiers",
-        children: [$1],
-    });
+    $$ = newList("declaration_specifiers", [$1]);
 }
 | declaration_specifiers declaration_specifier {
-    $$ = newList({
-        type: "declaration_specifiers",
-        children: [$1, $2],
-    });
+    $$ = newList("declaration_specifiers", [$1, $2]);
 }
 ;
 declaration_specifier
 : storage_class_specifier {
-    $$ = newAst({
-        type: "storage_class_specifier",
+    $$ = newAst("storage_class_specifier", {
         storage_class_specifier: $1,
         children: [$1],
     });
 }
 | type_specifier {
-    $$ = newAst({
-        type: "type_specifier",
+    $$ = newAst("type_specifier", {
         type_specifier: $1,
         children: [$1],
     });
 }
 | type_qualifier {
-    $$ = newAst({
-        type: "type_qualifier",
+    $$ = newAst("type_qualifier", {
         type_qualifier: $1,
         children: [$1],
     });
@@ -798,40 +745,29 @@ declaration_specifier
 
 init_declarator_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "init_declarator_list",
-        children: [],
-    });
+    $$ = newList("init_declarator_list", []);
 }
 | init_declarator_list
 ;
 init_declarator_list
 : init_declarator {
-    $$ = newList({
-        type: "init_declarator_list",
-        children: [$1],
-    });
+    $$ = newList("init_declarator_list", [$1]);
 }
 | init_declarator_list comma init_declarator {
-    $$ = newList({
-        type: "init_declarator_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("init_declarator_list", [$1, $2, $3]);
 }
 ;
 
 init_declarator
 : declarator {
-    $$ = newAst({
-        type: "init_declarator",
+    $$ = newAst("init_declarator", {
         declarator: $1,
         initializer: null,
         children: [$1],
     });
 }
 | declarator assign initializer {
-    $$ = newAst({
-        type: "init_declarator",
+    $$ = newAst("init_declarator", {
         declarator: $1,
         initializer: $3,
         children: [$1, $2, $3],
@@ -864,8 +800,7 @@ type_specifier
 
 struct_or_union_specifier
 : struct_or_union identifier_opt left_brace struct_declaration_list right_brace {
-    $$ = newAst({
-        type: "struct_or_union_specifier",
+    $$ = newAst("struct_or_union_specifier", {
         struct_or_union: $1,
         identifier: $2,
         struct_declaration_list: $4,
@@ -873,8 +808,7 @@ struct_or_union_specifier
     });
 }
 | struct_or_union identifier {
-    $$ = newAst({
-        type: "struct_or_union_specifier",
+    $$ = newAst("struct_or_union_specifier", {
         struct_or_union: $1,
         identifier: $2,
         children: [$1, $2],
@@ -884,15 +818,13 @@ struct_or_union_specifier
 
 struct_or_union
 : struct {
-    $$ = newAst({
-        type: "struct",
+    $$ = newAst("struct", {
         struct: $1,
         children: [$1],
     });
 }
 | union {
-    $$ = newAst({
-        type: "struct",
+    $$ = newAst("struct", {
         union: $1,
         children: [$1],
     });
@@ -901,23 +833,16 @@ struct_or_union
 
 struct_declaration_list
 : struct_declaration {
-    $$ = newList({
-        type: "struct_declaration_list",
-        children: [$1],
-    })
+    $$ = newList("struct_declaration_list", [$1])
 }
 | struct_declaration_list struct_declaration {
-    $$ = newList({
-        type: "struct_declaration_list",
-        children: [$1, $2],
-    });
+    $$ = newList("struct_declaration_list", [$1, $2]);
 }
 ;
 
 struct_declaration
 : specifier_qualifier_list struct_declarator_list semicolon {
-    $$ = newAst({
-        type: "struct_declaration",
+    $$ = newAst("struct_declaration", {
         specifier_qualifier_list: $1,
         struct_declarator_list: $2,
         children: [$1, $2, $3],
@@ -927,30 +852,22 @@ struct_declaration
 
 specifier_qualifier_list
 : specifier_qualifier {
-    $$ = newList({
-        type: "specifier_qualifier_list",
-        children: [$1],
-    });
+    $$ = newList("specifier_qualifier_list", [$1]);
 }
 | specifier_qualifier_list specifier_qualifier {
-    $$ = newList({
-        type: "specifier_qualifier_list",
-        children: [$1, $2],
-    });
+    $$ = newList("specifier_qualifier_list", [$1, $2]);
 }
 ;
 
 specifier_qualifier
 : type_specifier {
-    $$ = newAst({
-        type: "type_specifier",
+    $$ = newAst("type_specifier", {
         type_specifier: $1,
         children: [$1],
     });
 }
 | type_qualifier {
-    $$ = newAst({
-        type: "type_qualifier",
+    $$ = newAst("type_qualifier", {
         type_qualifier: $1,
         children: [$1],
     });
@@ -959,39 +876,30 @@ specifier_qualifier
 
 struct_declarator_list
 : struct_declarator {
-    $$ = newList({
-        type: "struct_declarator_list",
-        children: [$1],
-    });
+    $$ = newList("struct_declarator_list", [$1]);
 }
 | struct_declarator_list comma struct_declarator {
-    $$ = newList({
-        type: "struct_declarator_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("struct_declarator_list", [$1, $2, $3]);
 }
 ;
 
 struct_declarator
 : declarator {
-    $$ = newAst({
-        type: "struct_declarator",
+    $$ = newAst("struct_declarator", {
         declarator: $1,
         constant_expression: null,
         children: [$1],
     });
 }
 | colon constant_expression {
-    $$ = newAst({
-        type: "struct_declarator",
+    $$ = newAst("struct_declarator", {
         declarator: null,
         constant_expression: $2,
         children: [$1, $2],
     });
 }
 | declarator colon constant_expression {
-    $$ = newAst({
-        type: "struct_declarator",
+    $$ = newAst("struct_declarator", {
         declarator: $1,
         constant_expression: $3,
         children: [$1, $2, $3],
@@ -1001,16 +909,14 @@ struct_declarator
 
 enum_specifier
 : enum identifier_opt left_brace enumerator_list right_brace {
-    $$ = newAst({
-        type: "enum_specifier",
+    $$ = newAst("enum_specifier", {
         identifier: $2,
         enumerator_list: $4,
         children: [$1, $2, $3, $4, $5],
     });
 }
 | enum identifier {
-    $$ = newAst({
-        type: "enum_specifier",
+    $$ = newAst("enum_specifier", {
         identifier: $2,
         children: [$1, $2],
     });
@@ -1019,31 +925,23 @@ enum_specifier
 
 enumerator_list
 : enumerator {
-    $$ = newList({
-        type: "enumerator_list",
-        children: [$1],
-    });
+    $$ = newList("enumerator_list", [$1]);
 }
 | enumerator_list comma enumerator {
-    $$ = newList({
-        type: "enumerator_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("enumerator_list", [$1, $2, $3]);
 }
 ;
 
 enumerator
 : enumeration_constant {
-    $$ = newAst({
-        type: "enumerator",
+    $$ = newAst("enumerator", {
         enumeration_constant: $1,
         constant_expression: null,
         children: [$1],
     });
 }
 | enumeration_constant assign constant_expression {
-    $$ = newAst({
-        type: "enumerator",
+    $$ = newAst("enumerator", {
         enumeration_constant: $1,
         constant_expression: $3,
         children: [$1, $2, $3],
@@ -1058,16 +956,14 @@ type_qualifier
 
 declarator
 : direct_declarator {
-    $$ = newAst({
-        type: "declarator",
+    $$ = newAst("declarator", {
         pointer: null,
         direct_declarator: $1,
         children: [$1],
     });
 }
 | pointer direct_declarator {
-    $$ = newAst({
-        type: "declarator",
+    $$ = newAst("declarator", {
         pointer: $1,
         direct_declarator: $2,
         children: [$1, $2],
@@ -1077,38 +973,33 @@ declarator
 
 direct_declarator
 : identifier {
-    $$ = newAst({
-        type: "identifier_direct_declarator",
+    $$ = newAst("identifier_direct_declarator", {
         identifier: $1,
         children: [$1],
     });
 }
 | left_paren declarator right_paren {
-    $$ = newAst({
-        type: "paren_direct_declarator",
+    $$ = newAst("paren_direct_declarator", {
         declarator: $2,
         children: [$1, $2, $3],
     });
 }
 | direct_declarator left_bracket constant_expression_opt right_bracket {
-    $$ = newAst({
-        type: "bracket_direct_declarator",
+    $$ = newAst("bracket_direct_declarator", {
         direct_declarator: $1,
         constant_expression: $3,
         children: [$1, $2, $3, $4],
     });
 }
 | direct_declarator left_paren parameter_type_list right_paren {
-    $$ = newAst({
-        type: "parameter_direct_declarator",
+    $$ = newAst("parameter_direct_declarator", {
         direct_declarator: $1,
         parameter_type_list: $3,
         children: [$1, $2, $3, $4],
     });
 }
 | direct_declarator left_paren identifier_list_opt right_paren {
-    $$ = newAst({
-        type: "old_direct_declarator",
+    $$ = newAst("old_direct_declarator", {
         direct_declarator: $1,
         identifier_list: $3,
         children: [$1, $2, $3, $4],
@@ -1118,16 +1009,14 @@ direct_declarator
 
 pointer
 : asterisk type_qualifier_list_opt {
-    $$ = newAst({
-        type: "pointer",
+    $$ = newAst("pointer", {
         pointer: null,
         type_qualifier_list: $2,
         children: [$1, $2],
     });
 }
 | pointer asterisk type_qualifier_list_opt {
-    $$ = newAst({
-        type: "pointer",
+    $$ = newAst("pointer", {
         pointer: $1,
         type_qualifier_list: $3,
         children: [$1, $2, $3],
@@ -1137,42 +1026,29 @@ pointer
 
 type_qualifier_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "type_qualifier_list",
-        children: [],
-    });
+    $$ = newList("type_qualifier_list", []);
 }
 | type_qualifier_list
 ;
 type_qualifier_list
 : type_qualifier {
-    $$ = newList({
-        type: "type_qualifier_list",
-        children: [$1],
-    });
+    $$ = newList("type_qualifier_list", [$1]);
 }
 | type_qualifier_list type_qualifier {
-    $$ = newList({
-        type: "type_qualifier_list",
-        children: [$1, $2],
-    });
+    $$ = newList("type_qualifier_list", [$1, $2]);
 }
 ;
 
 parameter_type_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "parameter_list",
-        children: [],
-    });
+    $$ = newList("parameter_list", []);
 }
 | parameter_type_list
 ;
 parameter_type_list
 : parameter_list
 | parameter_list comma ellipsis {
-    $$ = newAst({
-        type: "parameter_list_ellipsis",
+    $$ = newAst("parameter_list_ellipsis", {
         parameter_list: $1,
         children: [$1, $2, $3],
     });
@@ -1180,31 +1056,23 @@ parameter_type_list
 ;
 parameter_list
 : parameter_declaration {
-    $$ = newList({
-        type: "parameter_list",
-        children: [$1],
-    });
+    $$ = newList("parameter_list", [$1]);
 }
 | parameter_list comma parameter_declaration {
-    $$ = newList({
-        type: "parameter_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("parameter_list", [$1, $2, $3]);
 }
 ;
 
 parameter_declaration
 : declaration_specifiers declarator {
-    $$ = newAst({
-        type: "parameter_declaration",
+    $$ = newAst("parameter_declaration", {
         declaration_specifiers: $1,
         declarator: $2,
         children: [$1, $2],
     });
 }
 | declaration_specifiers abstract_declarator_opt {
-    $$ = newAst({
-        type: "parameter_abstract_declaration",
+    $$ = newAst("parameter_abstract_declaration", {
         declaration_specifiers: $1,
         abstract_declarator: $2,
         children: [$1, $2],
@@ -1214,32 +1082,22 @@ parameter_declaration
 
 identifier_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "identifier_list",
-        children: [],
-    });
+    $$ = newList("identifier_list", []);
 }
 | identifier_list
 ;
 identifier_list
 : identifier {
-    $$ = newList({
-        type: "identifier_list",
-        children: [$1],
-    });
+    $$ = newList("identifier_list", [$1]);
 }
 | identifier_list comma identifier {
-    $$ = newList({
-        type: "identifier_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("identifier_list", [$1, $2, $3]);
 }
 ;
 
 type_name
 : specifier_qualifier_list abstract_declarator_opt {
-    $$ = newAst({
-        type: "type_name",
+    $$ = newAst("type_name", {
         specifier_qualifier_list: $1,
         abstract_declarator: $2,
         children: [$1, $2],
@@ -1249,8 +1107,7 @@ type_name
 
 abstract_declarator_opt
 : /* empty */ {
-    $$ = newAst({
-        type: "abstract_declarator",
+    $$ = newAst("abstract_declarator", {
         pointer: null,
         direct_abstract_declarator: null,
         children: [],
@@ -1260,24 +1117,21 @@ abstract_declarator_opt
 ;
 abstract_declarator
 : pointer {
-    $$ = newAst({
-        type: "abstract_declarator",
+    $$ = newAst("abstract_declarator", {
         pointer: $1,
         direct_abstract_declarator: null,
         children: [$1],
     });
 }
 | direct_abstract_declarator {
-    $$ = newAst({
-        type: "abstract_declarator",
+    $$ = newAst("abstract_declarator", {
         pointer: null,
         direct_abstract_declarator: $1,
         children: [$1],
     });
 }
 | pointer direct_abstract_declarator {
-    $$ = newAst({
-        type: "abstract_declarator",
+    $$ = newAst("abstract_declarator", {
         pointer: $1,
         direct_abstract_declarator: $2,
         children: [$1, $2],
@@ -1287,39 +1141,34 @@ abstract_declarator
 
 direct_abstract_declarator
 : left_paren abstract_declarator right_paren {
-    $$ = newAst({
-        type: "paren_direct_abstract_declarator",
+    $$ = newAst("paren_direct_abstract_declarator", {
         abstract_declarator: $2,
         children: [$1, $2, $3],
     });
 }
 | left_bracket constant_expression_opt right_bracket {
-    $$ = newAst({
-        type: "bracket_direct_abstract_declarator",
+    $$ = newAst("bracket_direct_abstract_declarator", {
         direct_abstract_declarator: null,
         constant_expression: $2,
         children: [$1, $2, $3],
     });
 }
 | direct_abstract_declarator left_bracket constant_expression_opt right_bracket {
-    $$ = newAst({
-        type: "bracket_direct_abstract_declarator",
+    $$ = newAst("bracket_direct_abstract_declarator", {
         direct_abstract_declarator: $1,
         constant_expression: $3,
         children: [$1, $2, $3, $4],
     });
 }
 | left_paren parameter_type_list_opt right_paren {
-    $$ = newAst({
-        type: "parameter_direct_abstract_declarator",
+    $$ = newAst("parameter_direct_abstract_declarator", {
         direct_abstract_declarator: null,
         parameter_type_list: $2,
         children: [$1, $2, $3],
     });
 }
 | direct_abstract_declarator left_paren parameter_type_list_opt right_paren {
-    $$ = newAst({
-        type: "parameter_direct_abstract_declarator",
+    $$ = newAst("parameter_direct_abstract_declarator", {
         direct_abstract_declarator: $1,
         parameter_type_list: $3,
         children: [$1, $2, $3, $4],
@@ -1329,8 +1178,7 @@ direct_abstract_declarator
 
 typedef_name
 : typedef_identifier {
-    $$ = newAst({
-        type: "typedef_name",
+    $$ = newAst("typedef_name", {
         typedef_identifier: $1,
         children: [$1],
     });
@@ -1340,15 +1188,13 @@ typedef_name
 initializer
 : assignment_expression
 | left_brace initializer_list right_brace {
-    $$ = newAst({
-        type: "initializer",
+    $$ = newAst("initializer", {
         initializer_list: $2,
         children: [$1, $2, $3],
     });
 }
 | left_brace initializer_list comma right_brace {
-    $$ = newAst({
-        type: "initializer",
+    $$ = newAst("initializer", {
         initializer_list: $2,
         children: [$1, $2, $3, $4],
     });
@@ -1357,59 +1203,47 @@ initializer
 
 initializer_list
 : initializer {
-    $$ = newList({
-        type: "initializer_list",
-        children: [$1],
-    });
+    $$ = newList("initializer_list", [$1]);
 }
 | initializer_list comma initializer {
-    $$ = newList({
-        type: "initializer_list",
-        children: [$1, $2, $3],
-    });
+    $$ = newList("initializer_list", [$1, $2, $3]);
 }
 ;
 
 /* 6.6 Statements */
 statement
 : labeled_statement {
-    $$ = newAst({
-        type: "statement",
+    $$ = newAst("statement", {
         labeled_statement: $1,
         children: [$1],
     });
 }
 | compound_statement {
-    $$ = newAst({
-        type: "statement",
+    $$ = newAst("statement", {
         compound_statement: $1,
         children: [$1],
     });
 }
 | expression_statement {
-    $$ = newAst({
-        type: "statement",
+    $$ = newAst("statement", {
         expression_statement: $1,
         children: [$1],
     });
 }
 | selection_statement {
-    $$ = newAst({
-        type: "statement",
+    $$ = newAst("statement", {
         selection_statement: $1,
         children: [$1],
     });
 }
 | iteration_statement {
-    $$ = newAst({
-        type: "statement",
+    $$ = newAst("statement", {
         iteration_statement: $1,
         children: [$1],
     });
 }
 | jump_statement {
-    $$ = newAst({
-        type: "statement",
+    $$ = newAst("statement", {
         jump_statement: $1,
         children: [$1],
     });
@@ -1418,24 +1252,21 @@ statement
 
 labeled_statement
 : identifier colon statement {
-    $$ = newAst({
-        type: "labeled_statement",
+    $$ = newAst("labeled_statement", {
         identifier: $1,
         statement: $3,
         children: [$1, $2, $3],
     });
 }
 | case constant_expression colon statement {
-    $$ = newAst({
-        type: "case_statement",
+    $$ = newAst("case_statement", {
         constant_expression: $2,
         statement: $4,
         children: [$1, $2, $3, $4],
     });
 }
 | default colon statement {
-    $$ = newAst({
-        type: "default_statement",
+    $$ = newAst("default_statement", {
         statement: $3,
         children: [$1, $2, $3],
     });
@@ -1444,8 +1275,7 @@ labeled_statement
 
 compound_statement
 : left_brace declaration_list_opt statement_list_opt right_brace {
-    $$ = newAst({
-        type: "compound_statement",
+    $$ = newAst("compound_statement", {
         declaration_list: $2,
         statement_list: $3,
         children: [$1, $2, $3, $4],
@@ -1455,63 +1285,43 @@ compound_statement
 
 declaration_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "declaration_list",
-        children: [],
-    });
+    $$ = newList("declaration_list", []);
 }
 | declaration_list
 ;
 declaration_list
 : declaration {
-    $$ = newList({
-        type: "declaration_list",
-        children: [$1],
-    });
+    $$ = newList("declaration_list", [$1]);
 }
 | declaration_list declaration {
-    $$ = newList({
-        type: "declaration_list",
-        children: [$1, $2],
-    });
+    $$ = newList("declaration_list", [$1, $2]);
 }
 ;
 
 statement_list_opt
 : /* empty */ {
-    $$ = newList({
-        type: "statement_list",
-        children: [],
-    });
+    $$ = newList("statement_list", []);
 }
 | statement_list
 ;
 statement_list
 : statement {
-    $$ = newList({
-        type: "statement_list",
-        children: [$1],
-    });
+    $$ = newList("statement_list", [$1]);
 }
 | statement_list statement {
-    $$ = newList({
-        type: "statement_list",
-        children: [$1, $2],
-    });
+    $$ = newList("statement_list", [$1, $2]);
 }
 ;
 
 expression_statement
 : semicolon {
-    $$ = newAst({
-        type: "expression_statement",
+    $$ = newAst("expression_statement", {
         expression: null,
         children: [$1],
     });
 }
 | expression semicolon {
-    $$ = newAst({
-        type: "expression_statement",
+    $$ = newAst("expression_statement", {
         expression: $1,
         children: [$1, $2],
     });
@@ -1520,8 +1330,7 @@ expression_statement
 
 selection_statement
 : if left_paren expression right_paren statement %prec THEN {
-    $$ = newAst({
-        type: "if_statement",
+    $$ = newAst("if_statement", {
         expression: $3,
         then: $5,
         else: null,
@@ -1529,8 +1338,7 @@ selection_statement
     });
 }
 | if left_paren expression right_paren statement else statement {
-    $$ = newAst({
-        type: "if_statement",
+    $$ = newAst("if_statement", {
         expression: $3,
         then: $5,
         else: $7,
@@ -1538,8 +1346,7 @@ selection_statement
     });
 }
 | switch left_paren expression right_paren statement {
-    $$ = newAst({
-        type: "switch_statement",
+    $$ = newAst("switch_statement", {
         expression: $3,
         statement: $5,
         children: [$1, $2, $3, $4, $5],
@@ -1549,24 +1356,21 @@ selection_statement
 
 iteration_statement
 : while left_paren expression right_paren statement {
-    $$ = newAst({
-        type: "while_statement",
+    $$ = newAst("while_statement", {
         expression: $3,
         statement: $5,
         children: [$1, $2, $3, $4, $5],
     });
 }
 | do statement while left_paren expression right_paren semicolon {
-    $$ = newAst({
-        type: "do_while_statement",
+    $$ = newAst("do_while_statement", {
         statement: $2,
         expression: $5,
         children: [$1, $2, $3, $4, $5, $6, $7],
     });
 }
 | for left_paren expression_opt semicolon expression_opt semicolon expression_opt right_paren statement {
-    $$ = newAst({
-        type: "for_statement",
+    $$ = newAst("for_statement", {
         expression1: $3,
         expression2: $5,
         expression3: $7,
@@ -1578,27 +1382,23 @@ iteration_statement
 
 jump_statement
 : goto identifier semicolon {
-    $$ = newAst({
-        type: "goto_statement",
+    $$ = newAst("goto_statement", {
         identifier: $2,
         children: [$1, $2, $3],
     });
 }
 | continue semicolon {
-    $$ = newAst({
-        type: "continue_statement",
+    $$ = newAst("continue_statement", {
         children: [$1, $2],
     });
 }
 | break semicolon {
-    $$ = newAst({
-        type: "break_statement",
+    $$ = newAst("break_statement", {
         children: [$1, $2],
     });
 }
 | return expression_opt semicolon {
-    $$ = newAst({
-        type: "return_statement",
+    $$ = newAst("return_statement", {
         expression: $2,
         children: [$1, $2, $3],
     });
@@ -1608,24 +1408,17 @@ jump_statement
 /* 6.7 External definitions */
 translation_unit
 : external_declaration {
-    $$ = newList({
-        type: "translation_unit",
-        children: [$1],
-    });
+    $$ = newList("translation_unit", [$1]);
 }
 | translation_unit external_declaration {
-    $$ = newList({
-        type: "translation_unit",
-        children: [$1, $2],
-    });
+    $$ = newList("translation_unit", [$1, $2]);
 }
 ;
 
 external_declaration
 : function_definition
 | declaration {
-    $$ = newAst({
-        type: "external_declaration",
+    $$ = newAst("external_declaration", {
         declaration: $1,
         children: [$1],
     });
@@ -1634,12 +1427,8 @@ external_declaration
 
 function_definition
 : declarator declaration_list_opt compound_statement {
-    const declaration_specifiers = newList({
-        type: "declaration_specifiers",
-        children: [],
-    });
-    $$ = newAst({
-        type: "function_definition",
+    const declaration_specifiers = newList("declaration_specifiers", []);
+    $$ = newAst("function_definition", {
         declaration_specifiers,
         declarator: $1,
         declaration_list: $2,
@@ -1648,8 +1437,7 @@ function_definition
     });
 }
 | declaration_specifiers declarator declaration_list_opt compound_statement {
-    $$ = newAst({
-        type: "function_definition",
+    $$ = newAst("function_definition", {
         declaration_specifiers: $1,
         declarator: $2,
         declaration_list: $3,
