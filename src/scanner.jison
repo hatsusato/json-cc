@@ -1,5 +1,12 @@
 %{
-import { addOperator, isTypedef, newAst, newList, newToken, yyerror, } from "../src/ast";
+import {
+  addOperator,
+  isTypedef,
+  newAst,
+  newList,
+  newToken,
+  yyerror,
+} from "../src/ast";
 %}
 
 %lex

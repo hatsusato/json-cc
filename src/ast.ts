@@ -3,12 +3,11 @@ import { CParser } from "../generated/scanner";
 import {
   hexlify,
   isArray,
-  isNotUndefined,
+  isDefined,
   isNumber,
   isNumberArray,
   isUndefined,
-  last,
-  valueMap,
+  smartMap,
 } from "./util";
 
 interface LocType {
@@ -61,9 +60,9 @@ const root: AstModule = {
       isNumber(id)
         ? root.construct(id)
         : isNumberArray(id)
-        ? id.map(root.construct).filter(isNotUndefined)
+        ? id.map(root.construct).filter(isDefined)
         : null;
-    return { ...elem, value: valueMap(elem.value, f) };
+    return { ...elem, value: smartMap(elem.value, f) };
   },
   get_top(): AstNode {
     assert(isNumber(root.top));
@@ -135,8 +134,12 @@ export const newList = (type: string, children: Id[]): Id => {
     assert("list" in value && isArray(value.list));
     return value.list;
   };
+  assert(children.length < 4);
   const list =
-    children.length < 2 ? children : [...getList(children[0]), last(children)];
+    children.length < 2
+      ? children
+      : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        [...getList(children[0]), children.at(-1)!];
   return root.push({ type, token: null, value: { list, children } });
 };
 export const addOperator = (operator: string, id: Id): Id => {
