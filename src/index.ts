@@ -1,12 +1,3 @@
-import { parse } from "./ast";
-
-export function run(input: string): void {
-  const root = parse(input);
-  const result = root.get_top();
-  console.log(input.trim(), "=", result);
-  console.log(root.getName(root.top));
-}
-
 const emitHeader = (source: string): string[] => {
   const datalayout =
     "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";

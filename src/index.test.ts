@@ -1,14 +1,14 @@
-import { parse } from "./ast";
+import { getName, parseAst } from "./ast";
 
 test("main", () => {
   const src = "int main(void) { return a + 1.2; }";
-  const root = parse(src);
-  const name = root.getName(root.top);
+  const ast = parseAst(src);
+  const name = getName(ast, 0);
   expect(name).toStrictEqual("main");
 });
 test("decl", () => {
   const src = "int x = 3; int y = 4;";
-  const root = parse(src);
-  const name = root.getName(root.top);
+  const ast = parseAst(src);
+  const name = getName(ast, 0);
   expect(name).toStrictEqual("x, y");
 });

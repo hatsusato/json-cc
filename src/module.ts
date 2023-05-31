@@ -1,10 +1,10 @@
 import assert from "assert";
 import { combineObjects, makeSingleton, smartMap } from "./util";
 
-type Id = number;
-type IdValue = Id | Id[] | null;
+export type Id = number;
+export type IdValue = Id | Id[] | null;
 
-type NodeValue = Record<string, IdValue>;
+export type NodeValue = Record<string, IdValue>;
 export class ModuleNode {
   type: string;
   token: string | null;
