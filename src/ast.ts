@@ -27,8 +27,8 @@ class Ast {
     return id;
   }
 
-  finish(top: Id): Module {
-    return new Module(this.elements, top);
+  finish(top: Id, source: string): Module {
+    return new Module(this.elements, top, source);
   }
 
   pushAst(type: string, value: NodeValue): Id {
@@ -65,9 +65,9 @@ class Ast {
 }
 
 const ast = new Ast();
-export const parseAst = (input: string): Module => {
+export const parseAst = (input: string, source: string): Module => {
   const top = new CParser().parse(input);
-  return ast.finish(top);
+  return ast.finish(top, source);
 };
 
 export const getName = (module: Module, id: Id): string => {

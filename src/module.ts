@@ -32,11 +32,13 @@ type VisitorMap = (node: ModuleNode) => string[];
 export class Module {
   root: ModuleNode[] = [];
   age: number = 0;
+  source: string;
 
-  constructor(list: ModuleNode[], top: Id) {
+  constructor(list: ModuleNode[], top: Id, source: string) {
     const t = new Transformer(list, () => undefined);
     t.transform(top);
     this.root = t.next;
+    this.source = source;
   }
 
   transform(map: TransformMap): void {
@@ -48,6 +50,17 @@ export class Module {
 
   visit(map: VisitorMap): void {
     new Visitor(this.root, map).visit(0);
+  }
+
+  emitHeader(): string[] {
+    const datalayout =
+      "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
+    const triple = "x86_64-unknown-linux-gnu";
+    return [
+      `source_filename = "${this.source}"`,
+      `target datalayout = "${datalayout}"`,
+      `target triple = "${triple}"`,
+    ];
   }
 }
 
