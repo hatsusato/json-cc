@@ -6,10 +6,17 @@ export type IdValue = Id | Id[] | null;
 
 export type NodeValue = Record<string, IdValue>;
 export class ModuleNode {
+  id: Id;
   type: string;
   token: string | null;
   value: NodeValue;
-  constructor(args: { type: string; token: string | null; value: NodeValue }) {
+  constructor(args: {
+    id: Id;
+    type: string;
+    token: string | null;
+    value: NodeValue;
+  }) {
+    this.id = args.id;
     this.type = args.type;
     this.token = args.token;
     this.value = args.value;
@@ -21,6 +28,25 @@ export class ModuleNode {
 
   clone(value?: NodeValue): ModuleNode {
     return new ModuleNode({ ...this, value: value ?? {} });
+  }
+}
+export class NodeList {
+  list: ModuleNode[] = [];
+
+  push(args: { type: string; token: string | null; value: NodeValue }): Id {
+    const id = this.list.length;
+    this.list.push(new ModuleNode({ ...args, id }));
+    return id;
+  }
+
+  at(id: Id): ModuleNode {
+    assert(id < this.list.length);
+    return this.list[id];
+  }
+
+  setType(id: Id, type: string): void {
+    assert(id < this.list.length);
+    this.list[id].type = type;
   }
 }
 

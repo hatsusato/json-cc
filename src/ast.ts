@@ -2,9 +2,10 @@ import assert from "assert";
 import { CParser } from "../generated/scanner";
 import {
   Module,
-  ModuleNode,
+  NodeList,
   type Id,
   type IdValue,
+  type ModuleNode,
   type NodeValue,
 } from "./module";
 import { hexlify, isArray, isNonNull, isNull } from "./util";
@@ -17,29 +18,28 @@ interface LocType {
 }
 
 class Ast {
-  elements: ModuleNode[] = [];
+  elements: NodeList = new NodeList();
   locations: Array<LocType | null> = [];
 
-  private push(elem: ModuleNode, loc?: LocType): Id {
-    const id = this.elements.length;
-    this.elements.push(elem);
+  private push(
+    elem: { type: string; token: string | null; value: NodeValue },
+    loc?: LocType
+  ): Id {
+    const id = this.elements.push(elem);
     this.locations.push(loc ?? null);
     return id;
   }
 
   finish(top: Id, source: string): Module {
-    return new Module(this.elements, top, source);
+    return new Module(this.elements.list, top, source);
   }
 
   pushAst(type: string, value: NodeValue): Id {
-    return this.push(new ModuleNode({ type, token: null, value }));
+    return this.push({ type, token: null, value });
   }
 
   pushToken(type: string, loc: LocType, token?: string): Id {
-    return this.push(
-      new ModuleNode({ type, token: token ?? type, value: {} }),
-      loc
-    );
+    return this.push({ type, token: token ?? type, value: {} }, loc);
   }
 
   pushList(type: string, children: Id[]): Id {
@@ -52,15 +52,10 @@ class Ast {
     if (children.length < 2) {
       return children;
     }
-    const value = this.elements[children[0]].value;
+    const value = this.elements.at(children[0]).value;
     assert("list" in value && isArray(value.list));
     const last = children[children.length - 1];
     return [...value.list, last];
-  }
-
-  modifyType(id: Id, type: string): void {
-    assert(id < this.elements.length);
-    this.elements[id].type = type;
   }
 }
 
@@ -113,7 +108,7 @@ export const newList = (type: string, children: Id[]): Id => {
   return ast.pushList(type, children);
 };
 export const addOperator = (operator: string, id: Id): Id => {
-  ast.modifyType(id, operator);
+  ast.elements.setType(id, operator);
   return id;
 };
 export const isTypedef = (text: string): boolean => {
