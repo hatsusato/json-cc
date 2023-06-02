@@ -1,5 +1,11 @@
 import assert from "assert";
-import { combineObjects, makeSingleton, smartMap } from "./util";
+import {
+  combineObjects,
+  isNumber,
+  isString,
+  makeSingleton,
+  smartMap,
+} from "./util";
 
 export type Id = number;
 export type IdValue = Id | Id[] | null;
@@ -29,24 +35,9 @@ export class ModuleNode {
   clone(value?: NodeValue): ModuleNode {
     return new ModuleNode({ ...this, value: value ?? {} });
   }
-}
-export class NodeList {
-  list: ModuleNode[] = [];
 
-  push(args: { type: string; token: string | null; value: NodeValue }): Id {
-    const id = this.list.length;
-    this.list.push(new ModuleNode({ ...args, id }));
-    return id;
-  }
-
-  at(id: Id): ModuleNode {
-    assert(id < this.list.length);
-    return this.list[id];
-  }
-
-  setType(id: Id, type: string): void {
-    assert(id < this.list.length);
-    this.list[id].type = type;
+  setType(type: string): void {
+    this.type = type;
   }
 }
 
@@ -57,14 +48,36 @@ type TransformMap = (
 type VisitorMap = (node: ModuleNode) => string[];
 export class Module {
   root: ModuleNode[] = [];
+  top?: Id;
   age: number = 0;
-  source: string;
+  source?: string;
 
-  constructor(list: ModuleNode[], top: Id, source: string) {
-    const t = new Transformer(list, () => undefined);
-    t.transform(top);
+  constructor(list: ModuleNode[]) {
+    this.root = list;
+  }
+
+  getTop(): Id {
+    assert(isNumber(this.top) && this.top < this.root.length);
+    return this.top;
+  }
+
+  push(args: { type: string; token: string | null; value: NodeValue }): Id {
+    const id = this.root.length;
+    this.root.push(new ModuleNode({ ...args, id }));
+    return id;
+  }
+
+  at(id: Id): ModuleNode {
+    assert(id < this.root.length);
+    return this.root[id];
+  }
+
+  finish(top: Id, source: string): Module {
+    const t = new Transformer(this.root, () => undefined);
+    this.top = t.transform(top);
     this.root = t.next;
     this.source = source;
+    return this;
   }
 
   transform(map: TransformMap): void {
@@ -79,6 +92,7 @@ export class Module {
   }
 
   emitHeader(): string[] {
+    assert(isString(this.source));
     const datalayout =
       "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
     const triple = "x86_64-unknown-linux-gnu";

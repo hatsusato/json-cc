@@ -2,7 +2,6 @@ import assert from "assert";
 import { CParser } from "../generated/scanner";
 import {
   Module,
-  NodeList,
   type Id,
   type IdValue,
   type ModuleNode,
@@ -18,20 +17,20 @@ interface LocType {
 }
 
 class Ast {
-  elements: NodeList = new NodeList();
+  module: Module = new Module([]);
   locations: Array<LocType | null> = [];
 
   private push(
     elem: { type: string; token: string | null; value: NodeValue },
     loc?: LocType
   ): Id {
-    const id = this.elements.push(elem);
+    const id = this.module.push(elem);
     this.locations.push(loc ?? null);
     return id;
   }
 
   finish(top: Id, source: string): Module {
-    return new Module(this.elements.list, top, source);
+    return this.module.finish(top, source);
   }
 
   pushAst(type: string, value: NodeValue): Id {
@@ -52,7 +51,7 @@ class Ast {
     if (children.length < 2) {
       return children;
     }
-    const value = this.elements.at(children[0]).value;
+    const value = this.module.at(children[0]).value;
     assert("list" in value && isArray(value.list));
     const last = children[children.length - 1];
     return [...value.list, last];
@@ -108,7 +107,7 @@ export const newList = (type: string, children: Id[]): Id => {
   return ast.pushList(type, children);
 };
 export const addOperator = (operator: string, id: Id): Id => {
-  ast.elements.setType(id, operator);
+  ast.module.at(id).setType(operator);
   return id;
 };
 export const isTypedef = (text: string): boolean => {
