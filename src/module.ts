@@ -98,7 +98,7 @@ export class Module extends NodeList {
 export interface Transformer {
   apply: (
     id: Id,
-    get: (id: Id) => ModuleNode,
+    get: (id: Id) => ModuleElem,
     push: (node: ModuleNode) => Id
   ) => ModuleNode | undefined;
 }
@@ -138,22 +138,22 @@ class TransformerManager {
 }
 
 export interface Visitor {
-  apply: (node: ModuleElem) => string[] | undefined;
+  apply: (node: ModuleElem, module: Module) => string[] | undefined;
 }
 class VisitorManager {
-  readonly list: NodeList;
+  readonly module: Module;
   visitor: Visitor;
 
-  constructor(list: NodeList, visitor: Visitor) {
-    this.list = list;
+  constructor(module: Module, visitor: Visitor) {
+    this.module = module;
     this.visitor = visitor;
   }
 
   visit(id: Id): void {
-    const node = this.list.at(id);
+    const node = this.module.at(id);
     const f = this.visit.bind(this);
     const children =
-      this.visitor.apply(node) ??
+      this.visitor.apply(node, this.module) ??
       Object.keys(node.value).filter((k) => k !== "children");
     children.forEach((key) => smartMap(node.get(key), f));
   }

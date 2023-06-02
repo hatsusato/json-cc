@@ -40,7 +40,7 @@ const converts: Array<new () => Transformer> = [
   class implements Transformer {
     apply(
       id: Id,
-      get: (id: number) => ModuleNode,
+      get: (id: number) => ModuleElem,
       push: (node: ModuleNode) => number
     ): ModuleNode | undefined {
       const node = get(id);
@@ -54,11 +54,17 @@ const converts: Array<new () => Transformer> = [
     }
   },
 ];
+
+interface IrFunc {
+  name: string;
+}
 const extractDefines = class implements Visitor {
-  list: ModuleElem[] = [];
-  apply(node: ModuleElem): string[] | undefined {
+  funcs: IrFunc[] = [];
+  apply(node: ModuleElem, module: Module): string[] | undefined {
     if (node.type === "function_definition") {
-      this.list.push(node);
+      const nameId = getNumber(node.get("name"));
+      const name = getString(module.at(nameId).token);
+      this.funcs.push({ name });
       return [];
     }
   }
@@ -66,15 +72,15 @@ const extractDefines = class implements Visitor {
 
 export const compile = (module: Module): string => {
   converts.forEach((convert) => module.transform(convert));
-  const defines = module.visit(extractDefines).list;
+  const funcs = module.visit(extractDefines).funcs;
   return [
     ...module.emitHeader(),
-    ...defines.map((def) => {
-      const ident = getNumber(def.get("name"));
-      const name = getString(module.at(ident).token);
-      return [`define dso_local i32 @${name}() {`, "  ret i32 0", "}"].join(
-        "\n"
-      );
+    ...funcs.map((func) => {
+      return [
+        `define dso_local i32 @${func.name}() {`,
+        "  ret i32 0",
+        "}",
+      ].join("\n");
     }),
   ].join("\n");
 };
