@@ -72,13 +72,9 @@ export const compile = (module: Module): string => {
     ...defines.map((def) => {
       const ident = getNumber(def.get("name"));
       const name = getString(module.at(ident).token);
-      return [
-        `define dso_local i32 @${name}() {`,
-        "  %1 = alloca i32, align 4",
-        "  store i32 0, i32* %1, align 4",
-        "  ret i32 0",
-        "}",
-      ].join("\n");
+      return [`define dso_local i32 @${name}() {`, "  ret i32 0", "}"].join(
+        "\n"
+      );
     }),
   ].join("\n");
 };
