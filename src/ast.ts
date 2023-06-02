@@ -61,6 +61,7 @@ export const getName = class implements Visitor {
 };
 
 export const newAst = (type: string, value: NodeValue): Id => {
+  delete value.children;
   return ast.push({ type, token: null, value });
 };
 export const newToken = (type: string, loc: LocType, token?: string): Id => {
@@ -78,7 +79,7 @@ const getList = (children: Id[]): Id[] => {
 export const newList = (type: string, children: Id[]): Id => {
   assert(children.length < 4);
   const list = getList(children);
-  return newAst(type, { list, children });
+  return newAst(type, { list });
 };
 export const addOperator = (operator: string, id: Id): Id => {
   ast.at(id).type = operator;

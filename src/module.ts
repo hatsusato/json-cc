@@ -76,7 +76,9 @@ export class Module extends NodeList {
   transform<T extends Transformer>(Class: new () => T): T {
     const transformer = new Class();
     const manager = new TransformerManager(this, transformer);
-    this.setList(manager.run(this.getTop()));
+    const [top, list] = manager.run(this.getTop());
+    this.top = top;
+    this.setList(list);
     this.age += 1;
     return transformer;
   }
@@ -119,9 +121,10 @@ class TransformerManager {
     this.transfomer = transformer;
   }
 
-  run(id: Id): NodeList {
-    this.lookup(id);
-    return this.next;
+  run(id: Id): [Id, NodeList] {
+    const nextId = this.lookup(id);
+    assert(isDefined(nextId));
+    return [nextId, this.next];
   }
 
   private lookup(id: Id): Id | undefined {
@@ -159,8 +162,7 @@ class VisitorManager {
     const node = this.module.at(id);
     const f = this.visit.bind(this);
     const children =
-      this.visitor.apply(node, this.module) ??
-      Object.keys(node.value).filter((k) => k !== "children");
+      this.visitor.apply(node, this.module) ?? Object.keys(node.value);
     children.forEach((key) => smartMap(node.get(key), f));
   }
 }
