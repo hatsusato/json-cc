@@ -36,22 +36,24 @@ const getIdentifier = (id: Id, get: (id: number) => ModuleNode): Id => {
   }
 };
 
-const liftName = class implements Transformer {
-  apply(
-    id: Id,
-    get: (id: number) => ModuleNode,
-    push: (node: ModuleNode) => number
-  ): ModuleNode | undefined {
-    const node = get(id);
-    const { type, value } = node;
-    if (type === "function_definition") {
-      const name = getIdentifier(id, get);
-      assert(isNumber(name));
-      value.name = name;
+const converts: Array<new () => Transformer> = [
+  class implements Transformer {
+    apply(
+      id: Id,
+      get: (id: number) => ModuleNode,
+      push: (node: ModuleNode) => number
+    ): ModuleNode | undefined {
+      const node = get(id);
+      const { type, value } = node;
+      if (type === "function_definition") {
+        const name = getIdentifier(id, get);
+        assert(isNumber(name));
+        value.name = name;
+      }
+      return node;
     }
-    return node;
-  }
-};
+  },
+];
 const extractDefines = class implements Visitor {
   list: ModuleElem[] = [];
   apply(node: ModuleElem): string[] | undefined {
@@ -63,7 +65,7 @@ const extractDefines = class implements Visitor {
 };
 
 export const compile = (module: Module): string => {
-  module.transform(liftName);
+  converts.forEach((convert) => module.transform(convert));
   const defines = module.visit(extractDefines).list;
   return [
     ...module.emitHeader(),
