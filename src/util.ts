@@ -1,3 +1,5 @@
+import assert from "assert";
+
 export const isNull = (x: unknown): x is null => x === null;
 export const isNonNull = <T>(x: T | null): x is T => x !== null;
 export const isUndefined = (x: unknown): x is undefined => x === undefined;
@@ -9,6 +11,15 @@ export const isObject = (x: unknown): x is object =>
   !isNull(x) && !isArray(x) && typeof x === "object";
 export const isNumberArray = (x: unknown): x is number[] =>
   isArray(x) && x.every(isNumber);
+
+export const getNumber = <T>(x: T): number => {
+  assert(isNumber(x));
+  return x;
+};
+export const getString = <T>(x: T): string => {
+  assert(isString(x));
+  return x;
+};
 
 type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
 type MapType<T, U> = (x: T) => U | undefined;

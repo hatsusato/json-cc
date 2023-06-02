@@ -1,13 +1,15 @@
 import assert from "assert";
 import { readFileSync } from "fs";
-import { getName, parseAst } from "./ast";
+import { parseAst } from "./ast";
 import {
   type Id,
   type Module,
+  type ModuleElem,
   type ModuleNode,
   type Transformer,
+  type Visitor,
 } from "./module";
-import { isNumber } from "./util";
+import { getNumber, getString, isNumber } from "./util";
 
 const getIdentifier = (id: Id, get: (id: number) => ModuleNode): Id => {
   const getKey = {
@@ -50,17 +52,32 @@ const liftName = class implements Transformer {
     return node;
   }
 };
+const extractDefines = class implements Visitor {
+  list: ModuleElem[] = [];
+  apply(node: ModuleElem): string[] | undefined {
+    if (node.type === "function_definition") {
+      this.list.push(node);
+      return [];
+    }
+  }
+};
 
 export const compile = (module: Module): string => {
   module.transform(liftName);
-  const name = module.visit(getName).result();
+  const defines = module.visit(extractDefines).list;
   return [
     ...module.emitHeader(),
-    `define dso_local i32 @${name}() {`,
-    "  %1 = alloca i32, align 4",
-    "  store i32 0, i32* %1, align 4",
-    "  ret i32 0",
-    "}",
+    ...defines.map((def) => {
+      const ident = getNumber(def.get("name"));
+      const name = getString(module.at(ident).token);
+      return [
+        `define dso_local i32 @${name}() {`,
+        "  %1 = alloca i32, align 4",
+        "  store i32 0, i32* %1, align 4",
+        "  ret i32 0",
+        "}",
+      ].join("\n");
+    }),
   ].join("\n");
 };
 
