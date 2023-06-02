@@ -12,6 +12,10 @@ export const isObject = (x: unknown): x is object =>
 export const isNumberArray = (x: unknown): x is number[] =>
   isArray(x) && x.every(isNumber);
 
+export const getDefined = <T>(x: T | undefined | null): T => {
+  assert(isDefined(x) && isNonNull(x));
+  return x;
+};
 export const getNumber = <T>(x: T): number => {
   assert(isNumber(x));
   return x;

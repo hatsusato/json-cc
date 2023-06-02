@@ -77,20 +77,20 @@ export class Module extends NodeList {
     return this;
   }
 
-  transform<T extends Transformer>(Class: new () => T): T {
+  transform<T extends Transformer>(Class: new () => T, id?: Id): T {
     const transformer = new Class();
     const manager = new TransformerManager(this, transformer);
-    const [top, list] = manager.run(this.getTop());
+    const [top, list] = manager.run(id ?? this.getTop());
     this.top = top;
     this.setList(list);
     this.age += 1;
     return transformer;
   }
 
-  visit<T extends Visitor>(Class: new () => T): T {
+  visit<T extends Visitor>(Class: new () => T, id?: Id): T {
     const visitor = new Class();
     const manager = new VisitorManager(this, visitor);
-    manager.visit(this.getTop());
+    manager.visit(id ?? this.getTop());
     return visitor;
   }
 
