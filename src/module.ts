@@ -1,5 +1,5 @@
 import assert from "assert";
-import { isDefined, isNumber, isString, smartMap } from "./util";
+import { isArray, isDefined, isNumber, isString, smartMap } from "./util";
 
 export type Id = number;
 export type IdValue = Id | Id[] | null;
@@ -14,6 +14,15 @@ export class ModuleNode {
     this.value = args.value;
   }
 }
+
+export const getNumber = (x: IdValue): number => {
+  assert(isNumber(x));
+  return x;
+};
+export const getList = (x: IdValue): Id[] => {
+  assert(isArray(x));
+  return x;
+};
 
 export class ModuleElem extends ModuleNode {
   id: Id;
@@ -108,12 +117,7 @@ export class Module extends NodeList {
 }
 
 export interface Transformer {
-  apply: (
-    id: Id,
-    get: (id: Id) => ModuleElem,
-    push: (node: ModuleNode) => Id,
-    module: Module
-  ) => ModuleNode | undefined;
+  apply: (id: Id, module: Module) => ModuleNode | undefined;
 }
 class TransformerManager {
   readonly prev: NodeList;
@@ -136,20 +140,21 @@ class TransformerManager {
 
   private lookup(id: Id): Id | undefined {
     if (!(id in this.table)) {
-      const get = this.prev.at.bind(this.prev);
-      const push = this.prev.push.bind(this.prev);
-      const node = this.transfomer.apply(id, get, push, this.module);
+      const node = this.transfomer.apply(id, this.module);
       if (isDefined(node)) {
-        this.table[id] = this.next.push(this.transform(node));
+        const { type, token, value } = node;
+        const nextNode = { type, token, value: {} };
+        const nextId = this.next.push(nextNode);
+        this.table[id] = nextId;
+        nextNode.value = this.transform(value);
       }
     }
     return id in this.table ? this.table[id] : undefined;
   }
 
-  private transform(node: ModuleNode): ModuleNode {
+  private transform(value: NodeValue): NodeValue {
     const f = this.lookup.bind(this);
-    const value = smartMap(node.value, (id: IdValue) => smartMap(id, f));
-    return { ...node, value };
+    return smartMap(value, (id: IdValue) => smartMap(id, f));
   }
 }
 
