@@ -61,10 +61,14 @@ export class Module extends NodeList {
     return this.top;
   }
 
+  show(): string {
+    return JSON.stringify(this.expand(this.getTop()), undefined, 2);
+  }
+
   expand(id: Id): Record<string, unknown> {
-    return smartMap(this.at(id).value, (id: IdValue) =>
-      smartMap(id, this.expand.bind(this))
-    );
+    const { type, value } = this.at(id);
+    const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
+    return { type, ...smartMap(value, f) };
   }
 
   finish(top: Id, source: string): Module {
