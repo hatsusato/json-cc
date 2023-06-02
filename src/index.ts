@@ -38,11 +38,7 @@ const getIdentifier = (id: Id, get: (id: number) => ModuleNode): Id => {
 
 const converts: Array<new () => Transformer> = [
   class implements Transformer {
-    apply(
-      id: Id,
-      get: (id: number) => ModuleElem,
-      push: (node: ModuleNode) => number
-    ): ModuleNode | undefined {
+    apply(id: Id, get: (id: number) => ModuleElem): ModuleNode | undefined {
       const node = get(id);
       const { type, value } = node;
       if (type === "function_definition") {

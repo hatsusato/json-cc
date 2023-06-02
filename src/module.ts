@@ -61,8 +61,8 @@ export class Module extends NodeList {
     return this.top;
   }
 
-  show(): string {
-    return JSON.stringify(this.expand(this.getTop()), undefined, 2);
+  show(id?: Id): string {
+    return JSON.stringify(this.expand(id ?? this.getTop()), undefined, 2);
   }
 
   expand(id: Id): Record<string, unknown> {
@@ -111,17 +111,20 @@ export interface Transformer {
   apply: (
     id: Id,
     get: (id: Id) => ModuleElem,
-    push: (node: ModuleNode) => Id
+    push: (node: ModuleNode) => Id,
+    module: Module
   ) => ModuleNode | undefined;
 }
 class TransformerManager {
   readonly prev: NodeList;
+  readonly module: Module;
   next: NodeList = new NodeList();
   table: Record<Id, Id> = {};
   transfomer: Transformer;
 
-  constructor(prev: NodeList, transformer: Transformer) {
-    this.prev = prev;
+  constructor(module: Module, transformer: Transformer) {
+    this.prev = module;
+    this.module = module;
     this.transfomer = transformer;
   }
 
@@ -135,7 +138,7 @@ class TransformerManager {
     if (!(id in this.table)) {
       const get = this.prev.at.bind(this.prev);
       const push = this.prev.push.bind(this.prev);
-      const node = this.transfomer.apply(id, get, push);
+      const node = this.transfomer.apply(id, get, push, this.module);
       if (isDefined(node)) {
         this.table[id] = this.next.push(this.transform(node));
       }
