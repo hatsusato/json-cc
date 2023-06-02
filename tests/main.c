@@ -3,5 +3,5 @@ int f(void) {
 }
 
 int g(void) {
-  return 0;
+  return 4;
 }

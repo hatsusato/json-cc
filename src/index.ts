@@ -1,7 +1,7 @@
 import assert from "assert";
 import { readFileSync } from "fs";
 import { parseAst } from "./ast";
-import { type Id, type Module, type ModuleElem, type Visitor } from "./module";
+import { type Module, type ModuleElem, type Visitor } from "./module";
 import { getDefined, getString } from "./util";
 
 const getIdentifier = class implements Visitor {
@@ -32,23 +32,34 @@ const getIdentifier = class implements Visitor {
   }
 };
 
+interface IrBlock {
+  val?: string;
+}
 interface IrFunc {
   name?: string;
+  blocks: IrBlock[];
 }
 const toIr = class implements Visitor {
   funcs: IrFunc[] = [];
-  current?: Id;
   apply(node: ModuleElem, module: Module): string[] | undefined {
     const { type, id } = node;
     if (type === "function_definition") {
       const name = getDefined(module.visit(getIdentifier, id).name?.token);
-      this.current = this.funcs.length;
-      this.funcs.push({ name });
-      return ["compund_statement"];
-    } else if (type === "declarator") {
-      return ["direct_declarator"];
+      this.funcs.push({ name, blocks: [{}] });
+      return ["compound_statement"];
+    } else if (type === "integer_constant") {
+      this.getCurrentBlock().val = getString(node.token);
     }
     return undefined;
+  }
+
+  getCurrentFunc(): IrFunc {
+    return this.funcs[getDefined(this.funcs.length - 1)];
+  }
+
+  getCurrentBlock(): IrBlock {
+    const func = this.getCurrentFunc();
+    return func.blocks[func.blocks.length - 1];
   }
 };
 
@@ -57,9 +68,10 @@ export const compile = (module: Module): string => {
   return [
     ...module.emitHeader(),
     ...funcs.map((func) => {
+      const block = func.blocks[0];
       return [
         `define dso_local i32 @${getString(func.name)}() {`,
-        "  ret i32 0",
+        `  ret i32 ${block.val}`,
         "}",
       ].join("\n");
     }),
