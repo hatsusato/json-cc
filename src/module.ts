@@ -41,14 +41,14 @@ export class ModuleNode extends NodeParams {
   }
 
   update(node: NodeParams): void {
-    this.type = node.type;
+    this.setType(node.type);
     this.token = node.token;
     this.value = node.value;
   }
 }
 
 class NodeList {
-  list: ModuleNode[] = [];
+  private list: ModuleNode[] = [];
 
   inside(id: Id): boolean {
     return id < this.list.length;
@@ -67,9 +67,13 @@ class NodeList {
     return node;
   }
 
-  set(id: Id, node: NodeParams): void {
+  setNode(id: Id, node: NodeParams): void {
     assert(this.inside(id) && this.list[id].id === id);
     this.list[id].update(node);
+  }
+
+  protected setList(other: NodeList): void {
+    this.list = other.list;
   }
 }
 
@@ -79,7 +83,6 @@ type TransformMap = (
 ) => ModuleNode | undefined;
 type VisitorMap = (node: ModuleNode) => string[];
 export class Module extends NodeList {
-  // private list: NodeList = new NodeList();
   private top?: Id;
   private age: number = 0;
   private source?: string;
@@ -92,7 +95,7 @@ export class Module extends NodeList {
   finish(top: Id, source: string): Module {
     const t = new Transformer(this, () => undefined);
     this.top = t.transform(top);
-    this.list = t.next.list;
+    this.setList(t.next);
     this.source = source;
     return this;
   }
@@ -100,12 +103,12 @@ export class Module extends NodeList {
   transform(map: TransformMap): void {
     const t = new Transformer(this, map);
     t.transform(0);
-    this.list = t.next.list;
+    this.setList(t.next);
     this.age += 1;
   }
 
   visit(map: VisitorMap): void {
-    new Visitor(this.list, map).visit(0);
+    new Visitor(this, map).visit(0);
   }
 
   emitHeader(): string[] {
@@ -136,7 +139,7 @@ class Transformer {
     assert(!this.done(id));
     const [nextId, prevNode] = this.prepareNext(id);
     const nextNode = this.getNext(prevNode);
-    this.next.set(nextId, nextNode ?? this.getDefaultNext(prevNode));
+    this.next.setNode(nextId, nextNode ?? this.getDefaultNext(prevNode));
     return nextId;
   }
 
@@ -169,17 +172,17 @@ class Transformer {
 }
 
 class Visitor {
-  readonly root: ModuleNode[];
+  readonly root: NodeList;
   readonly map: VisitorMap;
 
-  constructor(root: ModuleNode[], map: VisitorMap) {
+  constructor(root: NodeList, map: VisitorMap) {
     this.root = root;
     this.map = map;
   }
 
   visit(id: Id): void {
-    assert(id < this.root.length);
-    const node = this.root[id];
+    assert(this.root.inside(id));
+    const node = this.root.at(id);
     const visit = (id: Id): void => {
       this.visit(id);
     };
