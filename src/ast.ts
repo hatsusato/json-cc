@@ -1,6 +1,12 @@
 import assert from "assert";
 import { CParser } from "../generated/scanner";
-import { Module, type Id, type ModuleNode, type NodeValue } from "./module";
+import {
+  Module,
+  type Id,
+  type ModuleNode,
+  type NodeValue,
+  type Visitor,
+} from "./module";
 import { hexlify, isArray, isNonNull, isNull } from "./util";
 
 interface LocType {
@@ -16,37 +22,42 @@ export const parseAst = (input: string, source: string): Module => {
   return ast.finish(top, source);
 };
 
-export const getName = (module: Module): string => {
-  const list: string[] = [];
-  const visitor = (node: ModuleNode): string[] => {
-    const type = node.type;
+export const getName = class implements Visitor {
+  list: string[] = [];
+  apply({ type, token }: ModuleNode): string[] {
     if (type === "identifier") {
-      assert(isNonNull(node.token));
-      list.push(node.token);
+      assert(isNonNull(token));
+      this.list.push(token);
+      return [];
     }
-    const next =
-      type === "declaration"
-        ? "init_declarator_list"
-        : type === "init_declarator_list" || type === "translation_unit"
-        ? "list"
-        : type === "init_declarator" ||
-          type === "paren_direct_declarator" ||
-          type === "function_definition"
-        ? "declarator"
-        : type === "declarator" ||
-          type === "bracket_direct_declarator" ||
-          type === "parameter_direct_declarator" ||
-          type === "old_direct_declarator"
-        ? "direct_declarator"
-        : type === "identifier_direct_declarator"
-        ? "identifier"
-        : type === "external_declaration"
-        ? "declaration"
-        : null;
-    return isNull(next) ? [] : [next];
-  };
-  module.visit(visitor);
-  return list.join(", ");
+    const key = this.getKey(type);
+    return isNull(key) ? [] : [key];
+  }
+
+  getKey(type: string): string | null {
+    return type === "declaration"
+      ? "init_declarator_list"
+      : type === "init_declarator_list" || type === "translation_unit"
+      ? "list"
+      : type === "init_declarator" ||
+        type === "paren_direct_declarator" ||
+        type === "function_definition"
+      ? "declarator"
+      : type === "declarator" ||
+        type === "bracket_direct_declarator" ||
+        type === "parameter_direct_declarator" ||
+        type === "old_direct_declarator"
+      ? "direct_declarator"
+      : type === "identifier_direct_declarator"
+      ? "identifier"
+      : type === "external_declaration"
+      ? "declaration"
+      : null;
+  }
+
+  get result(): string {
+    return this.list.join(", ");
+  }
 };
 
 export const newAst = (type: string, value: NodeValue): Id => {

@@ -3,7 +3,7 @@ import { getName, parseAst } from "./ast";
 import { type Module } from "./module";
 
 export const compile = (module: Module): string => {
-  const name = getName(module);
+  const name = module.visit(getName).result;
   return [
     ...module.emitHeader(),
     `define dso_local i32 @${name}() {`,

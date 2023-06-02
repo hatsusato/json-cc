@@ -94,8 +94,11 @@ export class Module extends NodeList {
     this.age += 1;
   }
 
-  visit(map: VisitorMap): void {
-    new Visitor(this, map).visit(this.getTop());
+  visit<T extends Visitor>(Class: new () => T): T {
+    const visitor = new Class();
+    const manager = new VisitorManager(this, visitor);
+    manager.visit(this.getTop());
+    return visitor;
   }
 
   emitHeader(): string[] {
@@ -149,21 +152,21 @@ class Transformer {
   }
 }
 
-class Visitor {
-  readonly root: NodeList;
-  readonly map: VisitorMap;
+export interface Visitor {
+  apply: (node: ModuleNode) => string[];
+}
+class VisitorManager {
+  readonly list: NodeList;
+  visitor: Visitor;
 
-  constructor(root: NodeList, map: VisitorMap) {
-    this.root = root;
-    this.map = map;
+  constructor(list: NodeList, visitor: Visitor) {
+    this.list = list;
+    this.visitor = visitor;
   }
 
   visit(id: Id): void {
-    assert(this.root.inside(id));
-    const node = this.root.at(id);
-    const visit = (id: Id): void => {
-      this.visit(id);
-    };
-    this.map(node).forEach((key) => smartMap(node.get(key), visit));
+    const node = this.list.at(id);
+    const f = this.visit.bind(this);
+    this.visitor.apply(node).forEach((key) => smartMap(node.get(key), f));
   }
 }
