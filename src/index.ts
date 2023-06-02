@@ -53,7 +53,7 @@ const liftName = class implements Transformer {
 
 export const compile = (module: Module): string => {
   module.transform(liftName);
-  const name = module.visit(getName).result;
+  const name = module.visit(getName).result();
   return [
     ...module.emitHeader(),
     `define dso_local i32 @${name}() {`,

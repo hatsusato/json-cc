@@ -55,7 +55,7 @@ export const getName = class implements Visitor {
       : null;
   }
 
-  get result(): string {
+  result(): string {
     return this.list.join(", ");
   }
 };
@@ -81,7 +81,7 @@ export const newList = (type: string, children: Id[]): Id => {
   return newAst(type, { list, children });
 };
 export const addOperator = (operator: string, id: Id): Id => {
-  ast.at(id).setType(operator);
+  ast.at(id).type = operator;
   return id;
 };
 export const isTypedef = (text: string): boolean => {

@@ -15,7 +15,7 @@ export class ModuleNode {
   }
 }
 
-class ModuleElem extends ModuleNode {
+export class ModuleElem extends ModuleNode {
   id: Id;
   constructor(args: { id: Id } & ModuleNode) {
     super(args);
@@ -24,16 +24,6 @@ class ModuleElem extends ModuleNode {
 
   get(key: string): IdValue {
     return key in this.value ? this.value[key] : null;
-  }
-
-  setType(type: string): void {
-    this.type = type;
-  }
-
-  update(node: ModuleNode): void {
-    this.setType(node.type);
-    this.token = node.token;
-    this.value = node.value;
   }
 }
 class NodeList {
@@ -54,11 +44,6 @@ class NodeList {
     const node = this.list[id];
     assert(node.id === id);
     return node;
-  }
-
-  setNode(id: Id, node: ModuleNode): void {
-    assert(this.inside(id) && this.list[id].id === id);
-    this.list[id].update(node);
   }
 
   protected setList(other: NodeList): void {
@@ -153,7 +138,7 @@ class TransformerManager {
 }
 
 export interface Visitor {
-  apply: (node: ModuleNode) => string[];
+  apply: (node: ModuleElem) => string[] | undefined;
 }
 class VisitorManager {
   readonly list: NodeList;
@@ -167,6 +152,9 @@ class VisitorManager {
   visit(id: Id): void {
     const node = this.list.at(id);
     const f = this.visit.bind(this);
-    this.visitor.apply(node).forEach((key) => smartMap(node.get(key), f));
+    const children =
+      this.visitor.apply(node) ??
+      Object.keys(node.value).filter((k) => k !== "children");
+    children.forEach((key) => smartMap(node.get(key), f));
   }
 }
