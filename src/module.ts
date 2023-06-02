@@ -1,11 +1,5 @@
 import assert from "assert";
-import {
-  combineObjects,
-  isNumber,
-  isString,
-  makeSingleton,
-  smartMap,
-} from "./util";
+import { isDefined, isNumber, isString, smartMap } from "./util";
 
 export type Id = number;
 export type IdValue = Id | Id[] | null;
@@ -74,7 +68,8 @@ class NodeList {
 
 type TransformMap = (
   node: ModuleNode,
-  get: (id: Id) => ModuleNode
+  get: (id: Id) => ModuleNode,
+  push: (node: ModuleNode) => Id
 ) => ModuleNode | undefined;
 type VisitorMap = (node: ModuleNode) => string[];
 
@@ -89,22 +84,18 @@ export class Module extends NodeList {
   }
 
   finish(top: Id, source: string): Module {
-    const t = new Transformer(this, () => undefined);
-    this.top = t.transform(top);
-    this.setList(t.next);
+    this.top = top;
     this.source = source;
     return this;
   }
 
   transform(map: TransformMap): void {
-    const t = new Transformer(this, map);
-    t.transform(0);
-    this.setList(t.next);
+    this.setList(new Transformer(this, map).transform(this.getTop()));
     this.age += 1;
   }
 
   visit(map: VisitorMap): void {
-    new Visitor(this, map).visit(0);
+    new Visitor(this, map).visit(this.getTop());
   }
 
   emitHeader(): string[] {
@@ -131,40 +122,30 @@ class Transformer {
     this.map = map;
   }
 
-  transform(id: Id): Id {
-    assert(!this.done(id));
-    const [nextId, prevNode] = this.prepareNext(id);
-    const nextNode = this.getNext(prevNode);
-    this.next.setNode(nextId, nextNode ?? this.getDefaultNext(prevNode));
-    return nextId;
+  transform(id: Id): NodeList {
+    this.apply(id);
+    return this.next;
   }
 
-  private prepareNext(prevId: Id): [Id, ModuleNode] {
+  apply(id: Id): Id | undefined {
+    if (id in this.table) {
+      return this.table[id];
+    }
+    const nextNode = this.getTransformed(id);
+    if (isDefined(nextNode)) {
+      const f = (id: IdValue): IdValue => smartMap(id, this.apply.bind(this));
+      const value = smartMap(nextNode.value, f);
+      const nextId = this.next.push({ ...nextNode, value });
+      this.table[id] = nextId;
+      return nextId;
+    }
+  }
+
+  private getTransformed(prevId: Id): ModuleNode | undefined {
     const prevNode = this.prev.at(prevId);
-    const nextId = this.next.push({ ...prevNode, value: {} });
-    this.table[prevId] = nextId;
-    return [nextId, prevNode];
-  }
-
-  private getNext(prevNode: ModuleNode): ModuleNode | undefined {
-    return this.map(prevNode, (id) => this.next.at(this.get(id)));
-  }
-
-  private getDefaultNext(prevNode: ModuleNode): ModuleNode {
-    const get = (id: Id): Id => this.get(id);
-    const nextEntries = Object.entries(prevNode.value).map(([k, v]) =>
-      makeSingleton(k, smartMap(v, get))
-    );
-    const value = combineObjects<string, IdValue>(nextEntries);
-    return { ...prevNode, value };
-  }
-
-  private done(id: Id): boolean {
-    return id in this.table;
-  }
-
-  private get(id: Id): Id {
-    return this.done(id) ? this.table[id] : this.transform(id);
+    const get = this.prev.at.bind(this.prev);
+    const push = this.prev.push.bind(this.prev);
+    return this.map(prevNode, get, push);
   }
 }
 

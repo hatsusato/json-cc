@@ -16,7 +16,7 @@ export const parseAst = (input: string, source: string): Module => {
   return ast.finish(top, source);
 };
 
-export const getName = (module: Module, id: Id): string => {
+export const getName = (module: Module): string => {
   const list: string[] = [];
   const visitor = (node: ModuleNode): string[] => {
     const type = node.type;
