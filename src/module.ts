@@ -66,13 +66,6 @@ class NodeList {
   }
 }
 
-type TransformMap = (
-  node: ModuleNode,
-  get: (id: Id) => ModuleNode,
-  push: (node: ModuleNode) => Id
-) => ModuleNode | undefined;
-type VisitorMap = (node: ModuleNode) => string[];
-
 export class Module extends NodeList {
   private top?: Id;
   private age: number = 0;
@@ -89,9 +82,12 @@ export class Module extends NodeList {
     return this;
   }
 
-  transform(map: TransformMap): void {
-    this.setList(new Transformer(this, map).transform(this.getTop()));
+  transform<T extends Transformer>(Class: new () => T): T {
+    const transformer = new Class();
+    const manager = new TransformerManager(this, transformer);
+    this.setList(manager.run(this.getTop()));
     this.age += 1;
+    return transformer;
   }
 
   visit<T extends Visitor>(Class: new () => T): T {
@@ -114,41 +110,45 @@ export class Module extends NodeList {
   }
 }
 
-class Transformer {
+export interface Transformer {
+  apply: (
+    id: Id,
+    get: (id: Id) => ModuleNode,
+    push: (node: ModuleNode) => Id
+  ) => ModuleNode | undefined;
+}
+class TransformerManager {
   readonly prev: NodeList;
   next: NodeList = new NodeList();
   table: Record<Id, Id> = {};
-  readonly map: TransformMap;
+  transfomer: Transformer;
 
-  constructor(prev: NodeList, map: TransformMap) {
+  constructor(prev: NodeList, transformer: Transformer) {
     this.prev = prev;
-    this.map = map;
+    this.transfomer = transformer;
   }
 
-  transform(id: Id): NodeList {
-    this.apply(id);
+  run(id: Id): NodeList {
+    this.lookup(id);
     return this.next;
   }
 
-  apply(id: Id): Id | undefined {
-    if (id in this.table) {
-      return this.table[id];
+  private lookup(id: Id): Id | undefined {
+    if (!(id in this.table)) {
+      const get = this.prev.at.bind(this.prev);
+      const push = this.prev.push.bind(this.prev);
+      const node = this.transfomer.apply(id, get, push);
+      if (isDefined(node)) {
+        this.table[id] = this.next.push(this.transform(node));
+      }
     }
-    const nextNode = this.getTransformed(id);
-    if (isDefined(nextNode)) {
-      const f = (id: IdValue): IdValue => smartMap(id, this.apply.bind(this));
-      const value = smartMap(nextNode.value, f);
-      const nextId = this.next.push({ ...nextNode, value });
-      this.table[id] = nextId;
-      return nextId;
-    }
+    return id in this.table ? this.table[id] : undefined;
   }
 
-  private getTransformed(prevId: Id): ModuleNode | undefined {
-    const prevNode = this.prev.at(prevId);
-    const get = this.prev.at.bind(this.prev);
-    const push = this.prev.push.bind(this.prev);
-    return this.map(prevNode, get, push);
+  private transform(node: ModuleNode): ModuleNode {
+    const f = this.lookup.bind(this);
+    const value = smartMap(node.value, (id: IdValue) => smartMap(id, f));
+    return { ...node, value };
   }
 }
 
