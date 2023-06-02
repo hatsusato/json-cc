@@ -3,11 +3,11 @@ import { CParser } from "../generated/scanner";
 import {
   Module,
   type Id,
-  type ModuleNode,
+  type ModuleElem,
   type NodeValue,
   type Visitor,
 } from "./module";
-import { hexlify, isArray, isNonNull, isNull } from "./util";
+import { hexlify, isArray, isNonNull } from "./util";
 
 interface LocType {
   first_line: number;
@@ -22,41 +22,51 @@ export const parseAst = (input: string, source: string): Module => {
   return ast.finish(top, source);
 };
 
+const getNameKey = {
+  declaration: "init_declarator_list",
+  init_declarator: "declarator",
+  declarator: "direct_declarator",
+  identifier_direct_declarator: "identifier",
+  paren_direct_declarator: "declarator",
+  bracket_direct_declarator: "direct_declarator",
+  parameter_direct_declarator: "direct_declarator",
+  old_direct_declarator: "direct_declarator",
+  external_declaration: "declaration",
+  function_definition: "declarator",
+};
 export const getName = class implements Visitor {
   list: string[] = [];
-  apply({ type, token }: ModuleNode): string[] {
+  apply({ type, token }: ModuleElem): string[] | undefined {
+    const nameList = { init_declarator_list: null, translation_unit: null };
     if (type === "identifier") {
       assert(isNonNull(token));
       this.list.push(token);
       return [];
+    } else if (type in nameList) {
+      return ["list"];
+    } else if (type in getNameKey) {
+      return [getNameKey[type as keyof typeof getNameKey]];
     }
-    const key = this.getKey(type);
-    return isNull(key) ? [] : [key];
-  }
-
-  getKey(type: string): string | null {
-    return type === "declaration"
-      ? "init_declarator_list"
-      : type === "init_declarator_list" || type === "translation_unit"
-      ? "list"
-      : type === "init_declarator" ||
-        type === "paren_direct_declarator" ||
-        type === "function_definition"
-      ? "declarator"
-      : type === "declarator" ||
-        type === "bracket_direct_declarator" ||
-        type === "parameter_direct_declarator" ||
-        type === "old_direct_declarator"
-      ? "direct_declarator"
-      : type === "identifier_direct_declarator"
-      ? "identifier"
-      : type === "external_declaration"
-      ? "declaration"
-      : null;
   }
 
   result(): string {
     return this.list.join(", ");
+  }
+};
+
+export const getIdentifier = class implements Visitor {
+  name?: ModuleElem;
+  apply(node: ModuleElem, module: Module): string[] | undefined {
+    const { type } = node;
+    if (type === "identifier") {
+      this.name = node;
+      return [];
+    } else if (type in getNameKey) {
+      const key = getNameKey[type as keyof typeof getNameKey];
+      return [key];
+    } else {
+      assert(false);
+    }
   }
 };
 
