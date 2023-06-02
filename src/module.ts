@@ -11,21 +11,21 @@ export type Id = number;
 export type IdValue = Id | Id[] | null;
 
 export type NodeValue = Record<string, IdValue>;
-export class ModuleNode {
-  id: Id;
+class NodeParams {
   type: string;
   token: string | null;
   value: NodeValue;
-  constructor(args: {
-    id: Id;
-    type: string;
-    token: string | null;
-    value: NodeValue;
-  }) {
-    this.id = args.id;
+  constructor(args: { type: string; token: string | null; value: NodeValue }) {
     this.type = args.type;
     this.token = args.token;
     this.value = args.value;
+  }
+}
+export class ModuleNode extends NodeParams {
+  id: Id;
+  constructor(args: { id: Id } & NodeParams) {
+    super(args);
+    this.id = args.id;
   }
 
   get(key: string): IdValue {
@@ -39,6 +39,38 @@ export class ModuleNode {
   setType(type: string): void {
     this.type = type;
   }
+
+  update(node: NodeParams): void {
+    this.type = node.type;
+    this.token = node.token;
+    this.value = node.value;
+  }
+}
+
+class NodeList {
+  list: ModuleNode[] = [];
+
+  inside(id: Id): boolean {
+    return id < this.list.length;
+  }
+
+  push(node: NodeParams): Id {
+    const id = this.list.length;
+    this.list.push(new ModuleNode({ ...node, id }));
+    return id;
+  }
+
+  at(id: Id): ModuleNode {
+    assert(this.inside(id));
+    const node = this.list[id];
+    assert(node.id === id);
+    return node;
+  }
+
+  set(id: Id, node: NodeParams): void {
+    assert(this.inside(id) && this.list[id].id === id);
+    this.list[id].update(node);
+  }
 }
 
 type TransformMap = (
@@ -46,45 +78,34 @@ type TransformMap = (
   get: (id: Id) => ModuleNode
 ) => ModuleNode | undefined;
 type VisitorMap = (node: ModuleNode) => string[];
-export class Module {
-  private root: ModuleNode[] = [];
+export class Module extends NodeList {
+  // private list: NodeList = new NodeList();
   private top?: Id;
   private age: number = 0;
   private source?: string;
 
   getTop(): Id {
-    assert(isNumber(this.top) && this.top < this.root.length);
+    assert(isNumber(this.top) && this.inside(this.top));
     return this.top;
   }
 
-  push(args: { type: string; token: string | null; value: NodeValue }): Id {
-    const id = this.root.length;
-    this.root.push(new ModuleNode({ ...args, id }));
-    return id;
-  }
-
-  at(id: Id): ModuleNode {
-    assert(id < this.root.length);
-    return this.root[id];
-  }
-
   finish(top: Id, source: string): Module {
-    const t = new Transformer(this.root, () => undefined);
+    const t = new Transformer(this, () => undefined);
     this.top = t.transform(top);
-    this.root = t.next;
+    this.list = t.next.list;
     this.source = source;
     return this;
   }
 
   transform(map: TransformMap): void {
-    const t = new Transformer(this.root, map);
+    const t = new Transformer(this, map);
     t.transform(0);
-    this.root = t.next;
+    this.list = t.next.list;
     this.age += 1;
   }
 
   visit(map: VisitorMap): void {
-    new Visitor(this.root, map).visit(0);
+    new Visitor(this.list, map).visit(0);
   }
 
   emitHeader(): string[] {
@@ -101,12 +122,12 @@ export class Module {
 }
 
 class Transformer {
-  readonly prev: ModuleNode[];
-  next: ModuleNode[] = [];
+  readonly prev: NodeList;
+  next: NodeList = new NodeList();
   table: Record<Id, Id> = {};
   readonly map: TransformMap;
 
-  constructor(prev: ModuleNode[], map: TransformMap) {
+  constructor(prev: NodeList, map: TransformMap) {
     this.prev = prev;
     this.map = map;
   }
@@ -115,21 +136,19 @@ class Transformer {
     assert(!this.done(id));
     const [nextId, prevNode] = this.prepareNext(id);
     const nextNode = this.getNext(prevNode);
-    this.next[nextId] = nextNode ?? this.getDefaultNext(prevNode);
+    this.next.set(nextId, nextNode ?? this.getDefaultNext(prevNode));
     return nextId;
   }
 
   private prepareNext(prevId: Id): [Id, ModuleNode] {
-    assert(prevId < this.prev.length);
-    const prevNode = this.prev[prevId];
-    const nextId = this.next.length;
-    this.next.push(prevNode.clone());
+    const prevNode = this.prev.at(prevId);
+    const nextId = this.next.push(prevNode.clone());
     this.table[prevId] = nextId;
     return [nextId, prevNode];
   }
 
   private getNext(prevNode: ModuleNode): ModuleNode | undefined {
-    return this.map(prevNode, (id) => this.next[this.get(id)]);
+    return this.map(prevNode, (id) => this.next.at(this.get(id)));
   }
 
   private getDefaultNext(prevNode: ModuleNode): ModuleNode {
