@@ -35,29 +35,15 @@ export function smartMap<K extends string, T, U>(
   if (isArray(x)) {
     return x.map(f).filter(isDefined);
   } else if (isObject(x)) {
-    const g = (k: string): Record<K, U> =>
-      smartMap(smartMap(x[k as K], f), (v: U) => makeSingleton(k, v)) ??
-      initObject();
-    return combineObjects<K, U>(Object.keys(x).map(g));
+    const g = (k: string, v?: U): Record<string, U> =>
+      isDefined(v) ? { [k]: v } : {};
+    return Object.entries<T | undefined>(x)
+      .map(([k, v]) => g(k, smartMap(v, f)))
+      .reduce((prev, next) => ({ ...prev, ...next }), {}) as Record<K, U>;
   } else {
     return isNull(x) || isUndefined(x) ? x : f(x);
   }
 }
-export const combineObjects = <K extends PropertyKey, T>(
-  x: Array<PRecord<K, T>>
-): Record<K, T> =>
-  x.reduce<Record<K, T>>((prev, next) => ({ ...prev, ...next }), initObject());
-const initObject = <T extends object>(): T => {
-  const obj = {};
-  return obj as T;
-};
-export const makeSingleton = <K extends PropertyKey, V>(
-  k: K,
-  v: V
-): Record<K, V> => {
-  const obj = { [k]: v };
-  return obj as Record<K, V>;
-};
 
 export const hexlify = (str: string): string => {
   return str
