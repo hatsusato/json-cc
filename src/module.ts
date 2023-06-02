@@ -37,7 +37,7 @@ class ModuleElem extends ModuleNode {
   }
 }
 class NodeList {
-  private list: ModuleElem[] = [];
+  list: ModuleElem[] = [];
 
   inside(id: Id): boolean {
     return id < this.list.length;
@@ -67,9 +67,9 @@ class NodeList {
 }
 
 export class Module extends NodeList {
-  private top?: Id;
-  private age: number = 0;
-  private source?: string;
+  top?: Id;
+  age: number = 0;
+  source?: string;
 
   getTop(): Id {
     assert(isNumber(this.top) && this.inside(this.top));
