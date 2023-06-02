@@ -9,9 +9,8 @@ import {
 
 export type Id = number;
 export type IdValue = Id | Id[] | null;
-
 export type NodeValue = Record<string, IdValue>;
-class NodeParams {
+export class ModuleNode {
   type: string;
   token: string | null;
   value: NodeValue;
@@ -21,9 +20,10 @@ class NodeParams {
     this.value = args.value;
   }
 }
-export class ModuleNode extends NodeParams {
+
+class ModuleElem extends ModuleNode {
   id: Id;
-  constructor(args: { id: Id } & NodeParams) {
+  constructor(args: { id: Id } & ModuleNode) {
     super(args);
     this.id = args.id;
   }
@@ -32,42 +32,37 @@ export class ModuleNode extends NodeParams {
     return key in this.value ? this.value[key] : null;
   }
 
-  clone(value?: NodeValue): ModuleNode {
-    return new ModuleNode({ ...this, value: value ?? {} });
-  }
-
   setType(type: string): void {
     this.type = type;
   }
 
-  update(node: NodeParams): void {
+  update(node: ModuleNode): void {
     this.setType(node.type);
     this.token = node.token;
     this.value = node.value;
   }
 }
-
 class NodeList {
-  private list: ModuleNode[] = [];
+  private list: ModuleElem[] = [];
 
   inside(id: Id): boolean {
     return id < this.list.length;
   }
 
-  push(node: NodeParams): Id {
+  push(node: ModuleNode): Id {
     const id = this.list.length;
-    this.list.push(new ModuleNode({ ...node, id }));
+    this.list.push(new ModuleElem({ ...node, id }));
     return id;
   }
 
-  at(id: Id): ModuleNode {
+  at(id: Id): ModuleElem {
     assert(this.inside(id));
     const node = this.list[id];
     assert(node.id === id);
     return node;
   }
 
-  setNode(id: Id, node: NodeParams): void {
+  setNode(id: Id, node: ModuleNode): void {
     assert(this.inside(id) && this.list[id].id === id);
     this.list[id].update(node);
   }
@@ -82,6 +77,7 @@ type TransformMap = (
   get: (id: Id) => ModuleNode
 ) => ModuleNode | undefined;
 type VisitorMap = (node: ModuleNode) => string[];
+
 export class Module extends NodeList {
   private top?: Id;
   private age: number = 0;
@@ -145,7 +141,7 @@ class Transformer {
 
   private prepareNext(prevId: Id): [Id, ModuleNode] {
     const prevNode = this.prev.at(prevId);
-    const nextId = this.next.push(prevNode.clone());
+    const nextId = this.next.push({ ...prevNode, value: {} });
     this.table[prevId] = nextId;
     return [nextId, prevNode];
   }
@@ -159,7 +155,8 @@ class Transformer {
     const nextEntries = Object.entries(prevNode.value).map(([k, v]) =>
       makeSingleton(k, smartMap(v, get))
     );
-    return prevNode.clone(combineObjects<string, IdValue>(nextEntries));
+    const value = combineObjects<string, IdValue>(nextEntries);
+    return { ...prevNode, value };
   }
 
   private done(id: Id): boolean {
