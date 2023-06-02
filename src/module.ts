@@ -47,14 +47,10 @@ type TransformMap = (
 ) => ModuleNode | undefined;
 type VisitorMap = (node: ModuleNode) => string[];
 export class Module {
-  root: ModuleNode[] = [];
-  top?: Id;
-  age: number = 0;
-  source?: string;
-
-  constructor(list: ModuleNode[]) {
-    this.root = list;
-  }
+  private root: ModuleNode[] = [];
+  private top?: Id;
+  private age: number = 0;
+  private source?: string;
 
   getTop(): Id {
     assert(isNumber(this.top) && this.top < this.root.length);

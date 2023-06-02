@@ -1,12 +1,6 @@
 import assert from "assert";
 import { CParser } from "../generated/scanner";
-import {
-  Module,
-  type Id,
-  type IdValue,
-  type ModuleNode,
-  type NodeValue,
-} from "./module";
+import { Module, type Id, type ModuleNode, type NodeValue } from "./module";
 import { hexlify, isArray, isNonNull, isNull } from "./util";
 
 interface LocType {
@@ -16,49 +10,7 @@ interface LocType {
   last_column: number;
 }
 
-class Ast {
-  module: Module = new Module([]);
-  locations: Array<LocType | null> = [];
-
-  private push(
-    elem: { type: string; token: string | null; value: NodeValue },
-    loc?: LocType
-  ): Id {
-    const id = this.module.push(elem);
-    this.locations.push(loc ?? null);
-    return id;
-  }
-
-  finish(top: Id, source: string): Module {
-    return this.module.finish(top, source);
-  }
-
-  pushAst(type: string, value: NodeValue): Id {
-    return this.push({ type, token: null, value });
-  }
-
-  pushToken(type: string, loc: LocType, token?: string): Id {
-    return this.push({ type, token: token ?? type, value: {} }, loc);
-  }
-
-  pushList(type: string, children: Id[]): Id {
-    assert(children.length < 4);
-    const list = this.getList(children);
-    return this.pushAst(type, { list, children });
-  }
-
-  private getList(children: Id[]): Id[] {
-    if (children.length < 2) {
-      return children;
-    }
-    const value = this.module.at(children[0]).value;
-    assert("list" in value && isArray(value.list));
-    const last = children[children.length - 1];
-    return [...value.list, last];
-  }
-}
-
-const ast = new Ast();
+const ast = new Module();
 export const parseAst = (input: string, source: string): Module => {
   const top = new CParser().parse(input);
   return ast.finish(top, source);
@@ -97,17 +49,28 @@ export const getName = (module: Module, id: Id): string => {
   return list.join(", ");
 };
 
-export const newAst = (type: string, value: Record<string, IdValue>): Id => {
-  return ast.pushAst(type, value);
+export const newAst = (type: string, value: NodeValue): Id => {
+  return ast.push({ type, token: null, value });
 };
 export const newToken = (type: string, loc: LocType, token?: string): Id => {
-  return ast.pushToken(type, loc, token);
+  return ast.push({ type, token: token ?? type, value: {} });
+};
+const getList = (children: Id[]): Id[] => {
+  if (children.length < 2) {
+    return children;
+  }
+  const value = ast.at(children[0]).value;
+  assert("list" in value && isArray(value.list));
+  const last = children[children.length - 1];
+  return [...value.list, last];
 };
 export const newList = (type: string, children: Id[]): Id => {
-  return ast.pushList(type, children);
+  assert(children.length < 4);
+  const list = getList(children);
+  return newAst(type, { list, children });
 };
 export const addOperator = (operator: string, id: Id): Id => {
-  ast.module.at(id).setType(operator);
+  ast.at(id).setType(operator);
   return id;
 };
 export const isTypedef = (text: string): boolean => {
