@@ -2,7 +2,7 @@ import assert from "assert";
 import { readFileSync } from "fs";
 import { parseAst } from "./ast";
 import { type Module, type ModuleElem, type Visitor } from "./module";
-import { getDefined, getString } from "./util";
+import { unwrap } from "./util";
 
 const getIdentifier = class implements Visitor {
   name?: ModuleElem;
@@ -44,17 +44,17 @@ const toIr = class implements Visitor {
   apply(node: ModuleElem, module: Module): string[] | undefined {
     const { type, id } = node;
     if (type === "function_definition") {
-      const name = getDefined(module.visit(getIdentifier, id).name?.token);
+      const name = unwrap(module.visit(getIdentifier, id).name?.token);
       this.funcs.push({ name, blocks: [{}] });
       return ["compound_statement"];
     } else if (type === "integer_constant") {
-      this.getCurrentBlock().val = getString(node.token);
+      this.getCurrentBlock().val = unwrap(node.token);
     }
     return undefined;
   }
 
   getCurrentFunc(): IrFunc {
-    return this.funcs[getDefined(this.funcs.length - 1)];
+    return this.funcs[unwrap(this.funcs.length - 1)];
   }
 
   getCurrentBlock(): IrBlock {
@@ -70,8 +70,8 @@ export const compile = (module: Module): string => {
     ...funcs.map((func) => {
       const block = func.blocks[0];
       return [
-        `define dso_local i32 @${getString(func.name)}() {`,
-        `  ret i32 ${block.val}`,
+        `define dso_local i32 @${unwrap(func.name)}() {`,
+        `  ret i32 ${unwrap(block.val)}`,
         "}",
       ].join("\n");
     }),
