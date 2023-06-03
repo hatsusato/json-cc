@@ -45,7 +45,7 @@ const toIr = class implements Visitor {
 const converts = [
   class implements Transformer {
     tag: string = "constant propagation";
-    apply(
+    transform(
       elem: ModuleElem,
       get: (id: Id) => ModuleElem,
       push: (node: ModuleNode) => Id

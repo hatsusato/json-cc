@@ -118,7 +118,7 @@ export class Module extends NodeList {
 
 export interface Transformer {
   tag: string;
-  apply: (
+  transform: (
     elem: ModuleElem,
     get: (id: Id) => ModuleElem,
     push: (node: ModuleNode) => Id
@@ -136,7 +136,7 @@ class TransformerManager {
   }
 
   run(id: Id): [Id, NodeList] {
-    id = this.lookup(id);
+    id = this.findNext(id);
     assert(isDefined(id));
     return [id, this.next];
   }
@@ -152,27 +152,23 @@ class TransformerManager {
     const { type, token, value } = this.prev.at(prevId);
     this.table[prevId] = this.next.push({ type, token, value: {} });
     const nextId = this.table[prevId];
-    this.next.at(nextId).value = this.transform(value);
+    const f = (id: IdValue): IdValue => smartMap(id, this.findNext.bind(this));
+    this.next.at(nextId).value = smartMap(value, f);
     return nextId;
   }
 
-  private lookup(id: Id): Id {
+  private findNext(id: Id): Id {
     if (id in this.table) {
       return this.table[id];
     }
     id = this.initNext(id);
     const get = this.next.at.bind(this.next);
     const push = this.next.push.bind(this.next);
-    const node = this.transfomer.apply(get(id), get, push);
+    const node = this.transfomer.transform(get(id), get, push);
     if (isDefined(node)) {
       this.updateNext(id, node);
     }
     return id;
-  }
-
-  private transform(value: NodeValue): NodeValue {
-    const f = this.lookup.bind(this);
-    return smartMap(value, (id: IdValue) => smartMap(id, f));
   }
 }
 
