@@ -126,7 +126,7 @@ export class ModuleAdoptor {
 }
 export interface Transformer {
   tag: string;
-  transform(elem: ModuleElem, adoptor: ModuleAdoptor): ModuleNode | undefined;
+  apply(elem: ModuleElem, adoptor: ModuleAdoptor): void;
 }
 class TransformerManager {
   readonly prev: NodeList;
@@ -145,13 +145,6 @@ class TransformerManager {
     return [id, this.next];
   }
 
-  private updateNext(nextId: Id, node: ModuleNode): void {
-    const elem = this.next.at(nextId);
-    elem.type = node.type;
-    elem.token = node.token;
-    elem.value = node.value;
-  }
-
   private initNext(prevId: Id): Id {
     const { type, token, value } = this.prev.at(prevId);
     this.table[prevId] = this.next.push({ type, token, value: {} });
@@ -167,10 +160,7 @@ class TransformerManager {
     }
     id = this.initNext(id);
     const adoptor = new ModuleAdoptor(this.next);
-    const node = this.transfomer.transform(adoptor.get(id), adoptor);
-    if (isDefined(node)) {
-      this.updateNext(id, node);
-    }
+    this.transfomer.apply(adoptor.get(id), adoptor);
     return id;
   }
 }

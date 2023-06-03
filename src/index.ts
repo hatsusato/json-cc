@@ -4,7 +4,6 @@ import { getIdentifier, parseAst } from "./ast";
 import {
   IdValue,
   ModuleAdoptor,
-  ModuleNode,
   type Module,
   type ModuleElem,
   type Transformer,
@@ -45,10 +44,7 @@ const toIr = class implements Visitor {
 const converts = [
   class implements Transformer {
     tag: string = "constant propagation";
-    transform(
-      elem: ModuleElem,
-      adoptor: ModuleAdoptor
-    ): ModuleNode | undefined {
+    apply(elem: ModuleElem, adoptor: ModuleAdoptor): void {
       const { id, type, value } = elem;
       if (type === "integer_constant") {
         value.constant = id;
@@ -66,7 +62,6 @@ const converts = [
           });
         }
       }
-      return elem;
     }
     getConstant(id: IdValue, adoptor: ModuleAdoptor): ModuleElem | undefined {
       if (isNumber(id)) {
