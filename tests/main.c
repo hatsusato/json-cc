@@ -1,7 +1,7 @@
-int f(void) {
+int f1(void) {
   return 0;
 }
 
-int g(void) {
-  return 4 + 3;
+int f2(void) {
+  return 1 + 2 + 3 + 4;
 }
