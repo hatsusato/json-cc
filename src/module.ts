@@ -181,6 +181,7 @@ export interface Visitor {
 }
 class VisitorManager {
   readonly module: Module;
+  done: Record<Id, null> = {};
   visitor: Visitor;
 
   constructor(module: Module, visitor: Visitor) {
@@ -189,6 +190,11 @@ class VisitorManager {
   }
 
   visit(id: Id): void {
+    if (id in this.done) {
+      return;
+    } else {
+      this.done[id] = null;
+    }
     const node = this.module.at(id);
     const f = this.visit.bind(this);
     const children =

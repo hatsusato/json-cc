@@ -1,7 +1,16 @@
+import assert from "assert";
 import { readFileSync } from "fs";
 import { getIdentifier, parseAst } from "./ast";
-import { type Module, type ModuleElem, type Visitor } from "./module";
-import { unwrap } from "./util";
+import {
+  Id,
+  IdValue,
+  ModuleNode,
+  type Module,
+  type ModuleElem,
+  type Transformer,
+  type Visitor,
+} from "./module";
+import { isDefined, isNumber, isString, unwrap } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -33,8 +42,50 @@ const toIr = class implements Visitor {
     return func.blocks[func.blocks.length - 1];
   }
 };
+const converts = [
+  class implements Transformer {
+    tag: string = "constant propagation";
+    apply(
+      elem: ModuleElem,
+      get: (id: Id) => ModuleElem,
+      push: (node: ModuleNode) => Id
+    ): ModuleNode | undefined {
+      const { id, type, value } = elem;
+      if (type === "integer_constant") {
+        value.constant = id;
+      } else if (type === "addition") {
+        const left = this.getConstant(elem.value.left, get);
+        const right = this.getConstant(elem.value.right, get);
+        if (isDefined(left) && isDefined(right)) {
+          assert(isString(left.token) && isString(right.token));
+          const leftValue = parseInt(left.token);
+          const rightValue = parseInt(right.token);
+          elem.value.constant = push({
+            type: "integer_constant",
+            token: `${leftValue + rightValue}`,
+            value: {},
+          });
+        }
+      }
+      return elem;
+    }
+    getConstant(
+      id: IdValue,
+      get: (id: Id) => ModuleElem
+    ): ModuleElem | undefined {
+      if (isNumber(id)) {
+        const { value } = get(id);
+        if (isNumber(value.constant)) {
+          return get(value.constant);
+        }
+      }
+      return undefined;
+    }
+  },
+];
 
 export const compile = (module: Module): string => {
+  converts.forEach((convert) => module.transform(convert));
   const funcs = module.visit(toIr).funcs;
   return [
     ...module.emitHeader(),
