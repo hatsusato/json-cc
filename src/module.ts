@@ -55,6 +55,16 @@ class NodeList {
     return node;
   }
 
+  show(id: Id): string {
+    return JSON.stringify(this.expand(id), undefined, 2);
+  }
+
+  expand(id: Id): Record<string, unknown> {
+    const { type, value } = this.at(id);
+    const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
+    return { type, ...smartMap(value, f) };
+  }
+
   protected setList(other: NodeList): void {
     this.list = other.list;
   }
@@ -68,16 +78,6 @@ export class Module extends NodeList {
   getTop(): Id {
     assert(isNumber(this.top) && this.inside(this.top));
     return this.top;
-  }
-
-  show(id?: Id): string {
-    return JSON.stringify(this.expand(id ?? this.getTop()), undefined, 2);
-  }
-
-  expand(id: Id): Record<string, unknown> {
-    const { type, value } = this.at(id);
-    const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
-    return { type, ...smartMap(value, f) };
   }
 
   finish(top: Id, source: string): Module {
@@ -119,9 +119,11 @@ export class Module extends NodeList {
 export class ModuleAdoptor {
   get: (id: Id) => ModuleElem;
   push: (node: ModuleNode) => Id;
+  show: (id: Id) => string;
   constructor(list: NodeList) {
     this.get = list.at.bind(list);
     this.push = list.push.bind(list);
+    this.show = list.show.bind(list);
   }
 }
 export interface Transformer {
