@@ -10,7 +10,8 @@ import {
   type Transformer,
   type Visitor,
 } from "./module";
-import { isArray, isDefined, isNumber, isString, unwrap } from "./util";
+import { Option, isSome, none, some, unwrap } from "./option";
+import { isArray, isNumber } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -34,7 +35,7 @@ const toIr = class implements Visitor {
   }
 
   getCurrentFunc(): IrFunc {
-    return this.funcs[unwrap(this.funcs.length - 1)];
+    return this.funcs[this.funcs.length - 1];
   }
 
   getCurrentBlock(): IrBlock {
@@ -52,26 +53,25 @@ const converts = [
       } else if (type === "addition") {
         const left = this.getConstant(elem.value.left, adoptor);
         const right = this.getConstant(elem.value.right, adoptor);
-        if (isDefined(left) && isDefined(right)) {
-          assert(isString(left.token) && isString(right.token));
-          const leftValue = parseInt(left.token);
-          const rightValue = parseInt(right.token);
+        if (isSome(left) && isSome(right)) {
+          const leftValue = parseInt(unwrap(left.value.token));
+          const rightValue = parseInt(unwrap(right.value.token));
           elem.value.constant = adoptor.push({
             type: "integer_constant",
-            token: `${leftValue + rightValue}`,
+            token: some(`${leftValue + rightValue}`),
             value: {},
           });
         }
       }
     }
-    getConstant(id: IdValue, adoptor: ModuleAdoptor): ModuleElem | undefined {
+    getConstant(id: IdValue, adoptor: ModuleAdoptor): Option<ModuleElem> {
       if (isNumber(id)) {
         const { value } = adoptor.get(id);
         if (isNumber(value.constant)) {
-          return adoptor.get(value.constant);
+          return some(adoptor.get(value.constant));
         }
       }
-      return undefined;
+      return none();
     }
   },
   class implements Transformer {
@@ -103,8 +103,8 @@ export const compile = (module: Module): string => {
     ...funcs.map((func) => {
       const block = func.blocks[0];
       return [
-        `define dso_local i32 @${unwrap(func.name)}() {`,
-        `  ret i32 ${unwrap(block.val)}`,
+        `define dso_local i32 @${func.name}() {`,
+        `  ret i32 ${block.val}`,
         "}",
       ].join("\n");
     }),

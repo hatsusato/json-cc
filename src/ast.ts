@@ -7,7 +7,8 @@ import {
   type NodeValue,
   type Visitor,
 } from "./module";
-import { hexlify, isArray, isNonNull } from "./util";
+import { none, option, unwrap } from "./option";
+import { hexlify, isArray } from "./util";
 
 interface LocType {
   first_line: number;
@@ -39,8 +40,7 @@ export const getName = class implements Visitor {
   apply({ type, token }: ModuleElem): string[] | undefined {
     const nameList = { init_declarator_list: null, translation_unit: null };
     if (type === "identifier") {
-      assert(isNonNull(token));
-      this.list.push(token);
+      this.list.push(unwrap(token));
       return [];
     } else if (type in nameList) {
       return ["list"];
@@ -72,10 +72,10 @@ export const getIdentifier = class implements Visitor {
 
 export const newAst = (type: string, value: NodeValue): Id => {
   delete value.children;
-  return ast.push({ type, token: null, value });
+  return ast.push({ type, token: none(), value });
 };
 export const newToken = (type: string, loc: LocType, token?: string): Id => {
-  return ast.push({ type, token: token ?? type, value: {} });
+  return ast.push({ type, token: option(token), value: {} });
 };
 const getList = (children: Id[]): Id[] => {
   if (children.length < 2) {

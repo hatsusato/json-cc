@@ -1,4 +1,5 @@
 import assert from "assert";
+import { Option } from "./option";
 import { isArray, isDefined, isNumber, isString, smartMap } from "./util";
 
 export type Id = number;
@@ -6,9 +7,9 @@ export type IdValue = Id | Id[] | null;
 export type NodeValue = Record<string, IdValue>;
 export class ModuleNode {
   type: string;
-  token: string | null;
+  token: Option<string>;
   value: NodeValue;
-  constructor(args: { type: string; token: string | null; value: NodeValue }) {
+  constructor(args: { type: string; token: Option<string>; value: NodeValue }) {
     this.type = args.type;
     this.token = args.token;
     this.value = args.value;
