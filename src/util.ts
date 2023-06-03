@@ -2,7 +2,6 @@ import assert from "assert";
 
 type FuncType<A extends unknown[], R> = (...args: A) => R;
 type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
-type MapType<T, U> = (x: T) => U | undefined;
 
 export const isNull = (x: unknown): x is null => x === null;
 export const isNonNull = <T>(x: T | null): x is T => x !== null;
@@ -29,29 +28,6 @@ export const objMap = <T, U>(
     .map(([k, v]) => (isDefined(v) ? { [k]: f(v) } : {}))
     .reduce((prev, next) => ({ ...prev, ...next }), {});
 };
-
-export function smartMap<T, U>(x: T, f: MapType<T, U>): U;
-export function smartMap<T, U>(x: T[], f: MapType<T, U>): U[];
-export function smartMap<T, U>(x: null, f: MapType<T, U>): null;
-export function smartMap<T, U>(x: undefined, f: MapType<T, U>): undefined;
-export function smartMap<T, U>(
-  x: T | undefined,
-  f: MapType<T, U>
-): U | undefined;
-export function smartMap<T, U>(
-  x: T | T[] | null,
-  f: MapType<T, U>
-): U | U[] | null;
-export function smartMap<K extends string, T, U>(
-  x: T | T[] | null | undefined,
-  f: MapType<T, U>
-): U | U[] | null | undefined {
-  if (isArray(x)) {
-    return x.map(f).filter(isDefined);
-  } else {
-    return isNull(x) || isUndefined(x) ? x : f(x);
-  }
-}
 
 export const hexlify = (str: string): string => {
   return str

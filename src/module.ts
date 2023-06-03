@@ -1,13 +1,6 @@
 import assert from "assert";
 import { Option } from "./option";
-import {
-  isArray,
-  isDefined,
-  isNumber,
-  isString,
-  objMap,
-  smartMap,
-} from "./util";
+import { isArray, isDefined, isNumber, isString, objMap } from "./util";
 
 export type Id = number;
 export type IdValue = Id | Id[] | null;
@@ -22,6 +15,8 @@ export class ModuleNode {
     this.value = args.value;
   }
 }
+const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] | null =>
+  isNumber(x) ? f(x) : isArray(x) ? x.map(f) : x;
 
 export const getNumber = (x: IdValue): number => {
   assert(isNumber(x));
@@ -81,7 +76,7 @@ class ListExpander {
     this.done[id] = null;
     const { type, token, value } = this.list.at(id);
     const tokenSingleton = isString(token) ? { token } : {};
-    const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
+    const f = (id: IdValue): unknown => idMap(id, this.expand.bind(this));
     return { type, ...tokenSingleton, ...objMap(value, f) };
   }
 }
@@ -167,7 +162,7 @@ class TransformerManager {
     const { type, token, value } = this.prev.at(prevId);
     this.table[prevId] = this.next.push({ type, token, value: {} });
     const nextId = this.table[prevId];
-    const f = (id: IdValue): IdValue => smartMap(id, this.findNext.bind(this));
+    const f = (id: IdValue): IdValue => idMap(id, this.findNext.bind(this));
     this.next.at(nextId).value = objMap(value, f);
     return nextId;
   }
@@ -206,6 +201,6 @@ class VisitorManager {
     const f = this.visit.bind(this);
     const children =
       this.visitor.apply(node, this.module) ?? Object.keys(node.value);
-    children.forEach((key) => smartMap(node.value[key], f));
+    children.forEach((key) => idMap(node.value[key], f));
   }
 }
