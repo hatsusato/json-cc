@@ -62,7 +62,7 @@ class NodeList {
 
 export class Module extends NodeList {
   top?: Id;
-  age: number = 0;
+  history: string[] = [];
   source?: string;
 
   getTop(): Id {
@@ -90,9 +90,9 @@ export class Module extends NodeList {
     const transformer = new Class();
     const manager = new TransformerManager(this, transformer);
     const [top, list] = manager.run(id ?? this.getTop());
-    this.top = top;
     this.setList(list);
-    this.age += 1;
+    this.top = top;
+    this.history.push(transformer.tag);
     return transformer;
   }
 
@@ -117,39 +117,57 @@ export class Module extends NodeList {
 }
 
 export interface Transformer {
-  apply: (id: Id, module: Module) => ModuleNode | undefined;
+  tag: string;
+  apply: (
+    elem: ModuleElem,
+    get: (id: Id) => ModuleElem,
+    push: (node: ModuleNode) => Id
+  ) => ModuleNode | undefined;
 }
 class TransformerManager {
   readonly prev: NodeList;
-  readonly module: Module;
   next: NodeList = new NodeList();
   table: Record<Id, Id> = {};
   transfomer: Transformer;
 
   constructor(module: Module, transformer: Transformer) {
     this.prev = module;
-    this.module = module;
     this.transfomer = transformer;
   }
 
   run(id: Id): [Id, NodeList] {
-    const nextId = this.lookup(id);
-    assert(isDefined(nextId));
-    return [nextId, this.next];
+    id = this.lookup(id);
+    assert(isDefined(id));
+    return [id, this.next];
   }
 
-  private lookup(id: Id): Id | undefined {
-    if (!(id in this.table)) {
-      const node = this.transfomer.apply(id, this.module);
-      if (isDefined(node)) {
-        const { type, token, value } = node;
-        const nextNode = { type, token, value: {} };
-        const nextId = this.next.push(nextNode);
-        this.table[id] = nextId;
-        nextNode.value = this.transform(value);
-      }
+  private updateNext(nextId: Id, node: ModuleNode): void {
+    const elem = this.next.at(nextId);
+    elem.type = node.type;
+    elem.token = node.token;
+    elem.value = node.value;
+  }
+
+  private initNext(prevId: Id): Id {
+    const { type, token, value } = this.prev.at(prevId);
+    this.table[prevId] = this.next.push({ type, token, value: {} });
+    const nextId = this.table[prevId];
+    this.next.at(nextId).value = this.transform(value);
+    return nextId;
+  }
+
+  private lookup(id: Id): Id {
+    if (id in this.table) {
+      return this.table[id];
     }
-    return id in this.table ? this.table[id] : undefined;
+    id = this.initNext(id);
+    const get = this.next.at.bind(this.next);
+    const push = this.next.push.bind(this.next);
+    const node = this.transfomer.apply(get(id), get, push);
+    if (isDefined(node)) {
+      this.updateNext(id, node);
+    }
+    return id;
   }
 
   private transform(value: NodeValue): NodeValue {
