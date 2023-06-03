@@ -30,10 +30,6 @@ export class ModuleElem extends ModuleNode {
     super(args);
     this.id = args.id;
   }
-
-  get(key: string): IdValue {
-    return key in this.value ? this.value[key] : null;
-  }
 }
 class NodeList {
   list: ModuleElem[] = [];
@@ -202,6 +198,6 @@ class VisitorManager {
     const f = this.visit.bind(this);
     const children =
       this.visitor.apply(node, this.module) ?? Object.keys(node.value);
-    children.forEach((key) => smartMap(node.get(key), f));
+    children.forEach((key) => smartMap(node.value[key], f));
   }
 }
