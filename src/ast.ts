@@ -1,14 +1,14 @@
 import assert from "assert";
 import { CParser } from "../generated/scanner";
 import {
+  IdValue,
   Module,
   type Id,
   type ModuleElem,
-  type NodeValue,
   type Visitor,
 } from "./module";
 import { none, option, unwrap } from "./option";
-import { hexlify, isArray } from "./util";
+import { hexlify, isArray, objMap } from "./util";
 
 interface LocType {
   first_line: number;
@@ -70,9 +70,13 @@ export const getIdentifier = class implements Visitor {
   }
 };
 
-export const newAst = (type: string, value: NodeValue): Id => {
+export const newAst = (
+  type: string,
+  value: Record<string, IdValue | null>
+): Id => {
   delete value.children;
-  return ast.push({ type, token: none(), value });
+  const v = objMap(value, (v) => v ?? undefined);
+  return ast.push({ type, token: none(), value: v });
 };
 export const newToken = (type: string, loc: LocType, token?: string): Id => {
   return ast.push({ type, token: option(token), value: {} });

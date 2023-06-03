@@ -4,14 +4,13 @@ import { getIdentifier, parseAst } from "./ast";
 import {
   IdValue,
   ModuleAdoptor,
-  getNumber,
   type Module,
   type ModuleElem,
   type Transformer,
   type Visitor,
 } from "./module";
 import { Option, isSome, none, some, unwrap } from "./option";
-import { isArray, isNumber } from "./util";
+import { asNumber, isArray, isNumber } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -64,7 +63,10 @@ const converts = [
         }
       }
     }
-    getConstant(id: IdValue, adoptor: ModuleAdoptor): Option<ModuleElem> {
+    getConstant(
+      id: IdValue | undefined,
+      adoptor: ModuleAdoptor
+    ): Option<ModuleElem> {
       if (isNumber(id)) {
         const { value } = adoptor.get(id);
         if (isNumber(value.constant)) {
@@ -83,7 +85,7 @@ const converts = [
         delete elem.value.declaration_specifiers;
       } else if (type === "type_specifier") {
         elem.type = "builtin type";
-        elem.token = adoptor.get(getNumber(value.type_specifier)).token;
+        elem.token = adoptor.get(asNumber(value.type_specifier)).token;
         elem.value = {};
       } else if (type === "declaration_specifiers") {
         const spec = value.list;

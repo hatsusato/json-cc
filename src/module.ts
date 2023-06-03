@@ -1,10 +1,18 @@
 import assert from "assert";
 import { Option } from "./option";
-import { isArray, isDefined, isNumber, isString, objMap } from "./util";
+import {
+  PRecord,
+  asDefined,
+  isArray,
+  isDefined,
+  isNumber,
+  isString,
+  objMap,
+} from "./util";
 
 export type Id = number;
-export type IdValue = Id | Id[] | null;
-export type NodeValue = Record<string, IdValue>;
+export type IdValue = Id | Id[];
+export type NodeValue = PRecord<string, IdValue>;
 export class ModuleNode {
   type: string;
   token: Option<string>;
@@ -15,17 +23,8 @@ export class ModuleNode {
     this.value = args.value;
   }
 }
-const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] | null =>
+const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] =>
   isNumber(x) ? f(x) : isArray(x) ? x.map(f) : x;
-
-export const getNumber = (x: IdValue): number => {
-  assert(isNumber(x));
-  return x;
-};
-export const getList = (x: IdValue): Id[] => {
-  assert(isArray(x));
-  return x;
-};
 
 export class ModuleElem extends ModuleNode {
   id: Id;
@@ -201,6 +200,6 @@ class VisitorManager {
     const f = this.visit.bind(this);
     const children =
       this.visitor.apply(node, this.module) ?? Object.keys(node.value);
-    children.forEach((key) => idMap(node.value[key], f));
+    children.forEach((key) => idMap(asDefined(node.value[key]), f));
   }
 }

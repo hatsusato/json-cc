@@ -1,7 +1,7 @@
 import assert from "assert";
 
-type FuncType<A extends unknown[], R> = (...args: A) => R;
-type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
+export type FuncType<A extends unknown[], R> = (...args: A) => R;
+export type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
 
 export const isNull = (x: unknown): x is null => x === null;
 export const isNonNull = <T>(x: T | null): x is T => x !== null;
@@ -15,8 +15,16 @@ export const isObject = (x: unknown): x is object =>
 export const isNumberArray = (x: unknown): x is number[] =>
   isArray(x) && x.every(isNumber);
 
-export const unwrap = <T>(x: T | undefined | null): T => {
+export const asDefined = <T>(x: T | undefined | null): T => {
   assert(isDefined(x) && isNonNull(x));
+  return x;
+};
+export const asNumber = (x: unknown): number => {
+  assert(isNumber(x));
+  return x;
+};
+export const asArray = <T>(x: T | T[]): T[] => {
+  assert(isArray(x));
   return x;
 };
 
