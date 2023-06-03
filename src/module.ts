@@ -56,17 +56,29 @@ class NodeList {
   }
 
   show(id: Id): string {
-    return JSON.stringify(this.expand(id), undefined, 2);
-  }
-
-  expand(id: Id): Record<string, unknown> {
-    const { type, value } = this.at(id);
-    const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
-    return { type, ...smartMap(value, f) };
+    const result = new ListExpander(this).expand(id);
+    return JSON.stringify(result, undefined, 2);
   }
 
   protected setList(other: NodeList): void {
     this.list = other.list;
+  }
+}
+class ListExpander {
+  done: Record<Id, null> = {};
+  list: NodeList;
+  constructor(list: NodeList) {
+    this.list = list;
+  }
+  expand(id: Id): Record<string, unknown> {
+    if (id in this.done) {
+      return { ref: id };
+    }
+    this.done[id] = null;
+    const { type, token, value } = this.list.at(id);
+    const tokenSingleton = isString(token) ? { token } : {};
+    const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
+    return { type, ...tokenSingleton, ...smartMap(value, f) };
   }
 }
 
