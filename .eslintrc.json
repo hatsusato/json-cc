@@ -11,8 +11,7 @@
     "overrides": [
     ],
     "parserOptions": {
-        "ecmaVersion": "latest",
-        "project": "tsconfig.json"
+        "ecmaVersion": "latest"
     },
     "rules": {
     }
