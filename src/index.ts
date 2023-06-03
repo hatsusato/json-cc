@@ -4,12 +4,13 @@ import { getIdentifier, parseAst } from "./ast";
 import {
   IdValue,
   ModuleAdoptor,
+  getNumber,
   type Module,
   type ModuleElem,
   type Transformer,
   type Visitor,
 } from "./module";
-import { isDefined, isNumber, isString, unwrap } from "./util";
+import { isArray, isDefined, isNumber, isString, unwrap } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -43,7 +44,7 @@ const toIr = class implements Visitor {
 };
 const converts = [
   class implements Transformer {
-    tag: string = "constant propagation";
+    tag: string = "constant folding";
     apply(elem: ModuleElem, adoptor: ModuleAdoptor): void {
       const { id, type, value } = elem;
       if (type === "integer_constant") {
@@ -71,6 +72,25 @@ const converts = [
         }
       }
       return undefined;
+    }
+  },
+  class implements Transformer {
+    tag: string = "type simplification";
+    apply(elem: ModuleElem, adoptor: ModuleAdoptor): void {
+      const { id, type, value } = elem;
+      if (type === "function_definition") {
+        elem.value.return_type = value.declaration_specifiers;
+        delete elem.value.declaration_specifiers;
+      } else if (type === "type_specifier") {
+        elem.type = "builtin type";
+        elem.token = adoptor.get(getNumber(value.type_specifier)).token;
+        elem.value = {};
+      } else if (type === "declaration_specifiers") {
+        const spec = value.list;
+        assert(isArray(spec) && spec.length === 1);
+        const { type, token } = adoptor.get(spec[0]);
+        [elem.type, elem.token, elem.value] = [type, token, {}];
+      }
     }
   },
 ];
