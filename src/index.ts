@@ -2,8 +2,8 @@ import assert from "assert";
 import { readFileSync } from "fs";
 import { getIdentifier, parseAst } from "./ast";
 import {
-  Id,
   IdValue,
+  ModuleAdoptor,
   ModuleNode,
   type Module,
   type ModuleElem,
@@ -47,20 +47,19 @@ const converts = [
     tag: string = "constant propagation";
     transform(
       elem: ModuleElem,
-      get: (id: Id) => ModuleElem,
-      push: (node: ModuleNode) => Id
+      adoptor: ModuleAdoptor
     ): ModuleNode | undefined {
       const { id, type, value } = elem;
       if (type === "integer_constant") {
         value.constant = id;
       } else if (type === "addition") {
-        const left = this.getConstant(elem.value.left, get);
-        const right = this.getConstant(elem.value.right, get);
+        const left = this.getConstant(elem.value.left, adoptor);
+        const right = this.getConstant(elem.value.right, adoptor);
         if (isDefined(left) && isDefined(right)) {
           assert(isString(left.token) && isString(right.token));
           const leftValue = parseInt(left.token);
           const rightValue = parseInt(right.token);
-          elem.value.constant = push({
+          elem.value.constant = adoptor.push({
             type: "integer_constant",
             token: `${leftValue + rightValue}`,
             value: {},
@@ -69,14 +68,11 @@ const converts = [
       }
       return elem;
     }
-    getConstant(
-      id: IdValue,
-      get: (id: Id) => ModuleElem
-    ): ModuleElem | undefined {
+    getConstant(id: IdValue, adoptor: ModuleAdoptor): ModuleElem | undefined {
       if (isNumber(id)) {
-        const { value } = get(id);
+        const { value } = adoptor.get(id);
         if (isNumber(value.constant)) {
-          return get(value.constant);
+          return adoptor.get(value.constant);
         }
       }
       return undefined;

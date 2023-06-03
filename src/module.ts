@@ -116,13 +116,17 @@ export class Module extends NodeList {
   }
 }
 
+export class ModuleAdoptor {
+  get: (id: Id) => ModuleElem;
+  push: (node: ModuleNode) => Id;
+  constructor(list: NodeList) {
+    this.get = list.at.bind(list);
+    this.push = list.push.bind(list);
+  }
+}
 export interface Transformer {
   tag: string;
-  transform: (
-    elem: ModuleElem,
-    get: (id: Id) => ModuleElem,
-    push: (node: ModuleNode) => Id
-  ) => ModuleNode | undefined;
+  transform(elem: ModuleElem, adoptor: ModuleAdoptor): ModuleNode | undefined;
 }
 class TransformerManager {
   readonly prev: NodeList;
@@ -162,9 +166,8 @@ class TransformerManager {
       return this.table[id];
     }
     id = this.initNext(id);
-    const get = this.next.at.bind(this.next);
-    const push = this.next.push.bind(this.next);
-    const node = this.transfomer.transform(get(id), get, push);
+    const adoptor = new ModuleAdoptor(this.next);
+    const node = this.transfomer.transform(adoptor.get(id), adoptor);
     if (isDefined(node)) {
       this.updateNext(id, node);
     }
