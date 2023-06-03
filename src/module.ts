@@ -1,6 +1,13 @@
 import assert from "assert";
 import { Option } from "./option";
-import { isArray, isDefined, isNumber, isString, smartMap } from "./util";
+import {
+  isArray,
+  isDefined,
+  isNumber,
+  isString,
+  objMap,
+  smartMap,
+} from "./util";
 
 export type Id = number;
 export type IdValue = Id | Id[] | null;
@@ -75,7 +82,7 @@ class ListExpander {
     const { type, token, value } = this.list.at(id);
     const tokenSingleton = isString(token) ? { token } : {};
     const f = (id: IdValue): unknown => smartMap(id, this.expand.bind(this));
-    return { type, ...tokenSingleton, ...smartMap(value, f) };
+    return { type, ...tokenSingleton, ...objMap(value, f) };
   }
 }
 
@@ -161,7 +168,7 @@ class TransformerManager {
     this.table[prevId] = this.next.push({ type, token, value: {} });
     const nextId = this.table[prevId];
     const f = (id: IdValue): IdValue => smartMap(id, this.findNext.bind(this));
-    this.next.at(nextId).value = smartMap(value, f);
+    this.next.at(nextId).value = objMap(value, f);
     return nextId;
   }
 

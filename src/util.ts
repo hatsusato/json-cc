@@ -1,5 +1,9 @@
 import assert from "assert";
 
+type FuncType<A extends unknown[], R> = (...args: A) => R;
+type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
+type MapType<T, U> = (x: T) => U | undefined;
+
 export const isNull = (x: unknown): x is null => x === null;
 export const isNonNull = <T>(x: T | null): x is T => x !== null;
 export const isUndefined = (x: unknown): x is undefined => x === undefined;
@@ -17,14 +21,17 @@ export const unwrap = <T>(x: T | undefined | null): T => {
   return x;
 };
 
-type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
-type MapType<T, U> = (x: T) => U | undefined;
+export const objMap = <T, U>(
+  x: PRecord<string, T>,
+  f: FuncType<[T], U>
+): Record<string, U> => {
+  return Object.entries(x)
+    .map(([k, v]) => (isDefined(v) ? { [k]: f(v) } : {}))
+    .reduce((prev, next) => ({ ...prev, ...next }), {});
+};
+
 export function smartMap<T, U>(x: T, f: MapType<T, U>): U;
 export function smartMap<T, U>(x: T[], f: MapType<T, U>): U[];
-export function smartMap<K extends string, T, U>(
-  x: PRecord<K, T>,
-  f: MapType<T, U>
-): Record<K, U>;
 export function smartMap<T, U>(x: null, f: MapType<T, U>): null;
 export function smartMap<T, U>(x: undefined, f: MapType<T, U>): undefined;
 export function smartMap<T, U>(
@@ -36,17 +43,11 @@ export function smartMap<T, U>(
   f: MapType<T, U>
 ): U | U[] | null;
 export function smartMap<K extends string, T, U>(
-  x: T | T[] | PRecord<K, T> | null | undefined,
+  x: T | T[] | null | undefined,
   f: MapType<T, U>
-): U | U[] | Record<K, U> | null | undefined {
+): U | U[] | null | undefined {
   if (isArray(x)) {
     return x.map(f).filter(isDefined);
-  } else if (isObject(x)) {
-    const g = (k: string, v?: U): Record<string, U> =>
-      isDefined(v) ? { [k]: v } : {};
-    return Object.entries<T | undefined>(x)
-      .map(([k, v]) => g(k, smartMap(v, f)))
-      .reduce((prev, next) => ({ ...prev, ...next }), {}) as Record<K, U>;
   } else {
     return isNull(x) || isUndefined(x) ? x : f(x);
   }
