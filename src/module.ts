@@ -23,6 +23,15 @@ export class ModuleNode {
     this.value = args.value;
   }
 }
+class CheckList {
+  list: Record<Id, true> = {};
+  check(id: Id): void {
+    this.list[id] = true;
+  }
+  has(id: Id): boolean {
+    return id in this.list;
+  }
+}
 const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] =>
   isNumber(x) ? f(x) : isArray(x) ? x.map(f) : x;
 
@@ -63,16 +72,16 @@ class NodeList {
   }
 }
 class ListExpander {
-  done: Record<Id, null> = {};
+  done: CheckList = new CheckList();
   list: NodeList;
   constructor(list: NodeList) {
     this.list = list;
   }
   expand(id: Id): Record<string, unknown> {
-    if (id in this.done) {
-      return { ref: id };
+    if (this.done.has(id)) {
+      return { ref: id, type: this.list.at(id).type };
     }
-    this.done[id] = null;
+    this.done.check(id);
     const { type, token, value } = this.list.at(id);
     const tokenSingleton = isString(token) ? { token } : {};
     const f = (id: IdValue): unknown => idMap(id, this.expand.bind(this));
@@ -182,7 +191,7 @@ export interface Visitor {
 }
 class VisitorManager {
   readonly module: Module;
-  done: Record<Id, null> = {};
+  done: CheckList = new CheckList();
   visitor: Visitor;
 
   constructor(module: Module, visitor: Visitor) {
@@ -191,10 +200,10 @@ class VisitorManager {
   }
 
   visit(id: Id): void {
-    if (id in this.done) {
+    if (this.done.has(id)) {
       return;
     } else {
-      this.done[id] = null;
+      this.done.check(id);
     }
     const node = this.module.at(id);
     const f = this.visit.bind(this);

@@ -30,7 +30,6 @@ const toIr = class implements Visitor {
     } else if (type === "integer_constant") {
       this.getCurrentBlock().val = unwrap(node.token);
     }
-    return undefined;
   }
 
   getCurrentFunc(): IrFunc {
