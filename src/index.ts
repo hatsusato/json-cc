@@ -7,22 +7,32 @@ import {
   type Transformer,
   type Visitor,
 } from "./module";
-import { isDefined, replaceKey } from "./util";
+import { asDefined, isDefined, replaceKey } from "./util";
 
 interface IrBlock {
   val?: string;
 }
-interface IrFunc {
-  name?: string;
+class IrFunc {
+  name: string;
   blocks: IrBlock[];
+  constructor(name: string) {
+    [this.name, this.blocks] = [name, [{}]];
+  }
+  emit(): string {
+    return [
+      `define dso_local i32 @${this.name}() {`,
+      `  ret i32 ${this.blocks[0].val}`,
+      "}",
+    ].join("\n");
+  }
 }
 const toIr = class implements Visitor {
   funcs: IrFunc[] = [];
   apply(node: ModuleElem, module: Module): string[] | undefined {
     const { type, id } = node;
     if (type === "function_definition") {
-      const name = module.visit(getIdentifier, id).name?.token;
-      this.funcs.push({ name, blocks: [{}] });
+      const name = asDefined(module.visit(getIdentifier, id).name?.token);
+      this.funcs.push(new IrFunc(name));
       return ["compound_statement"];
     } else if (type === "integer_constant") {
       this.getCurrentBlock().val = node.token;
@@ -79,18 +89,8 @@ const converts = [
 
 export const compile = (module: Module): string => {
   converts.forEach((convert) => module.transform(convert));
-  const funcs = module.visit(toIr).funcs;
-  return [
-    ...module.emitHeader(),
-    ...funcs.map((func) => {
-      const block = func.blocks[0];
-      return [
-        `define dso_local i32 @${func.name}() {`,
-        `  ret i32 ${block.val}`,
-        "}",
-      ].join("\n");
-    }),
-  ].join("\n");
+  const header = module.emitHeader();
+  return [header, ...module.visit(toIr).funcs.map((f) => f.emit())].join("\n");
 };
 
 if (process.argv.length < 3) {

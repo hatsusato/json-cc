@@ -39,9 +39,11 @@ export class ModuleNode {
   }
 }
 class CheckList {
-  list: Record<Id, true> = {};
-  check(id: Id): void {
+  private list: Record<Id, true> = {};
+  check(id: Id): boolean {
+    const old = id in this.list;
     this.list[id] = true;
+    return old;
   }
   has(id: Id): boolean {
     return id in this.list;
@@ -51,14 +53,14 @@ const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] =>
   isNumber(x) ? f(x) : isArray(x) ? x.map(f) : x;
 
 export class ModuleElem extends ModuleNode {
-  id: Id;
+  readonly id: Id;
   constructor(args: { id: Id } & NodeParams) {
     super(args);
     this.id = args.id;
   }
 }
 class NodeList {
-  list: ModuleElem[] = [];
+  protected list: ModuleElem[] = [];
 
   inside(id: Id): boolean {
     return id < this.list.length;
@@ -72,9 +74,7 @@ class NodeList {
 
   at(id: Id): ModuleElem {
     assert(this.inside(id));
-    const node = this.list[id];
-    assert(node.id === id);
-    return node;
+    return this.list[id];
   }
 
   show(id: Id): string {
@@ -87,27 +87,25 @@ class NodeList {
   }
 }
 class ListExpander {
-  done: CheckList = new CheckList();
-  list: NodeList;
+  private done: CheckList = new CheckList();
+  private list: NodeList;
   constructor(list: NodeList) {
     this.list = list;
   }
   expand(id: Id): Record<string, unknown> {
-    if (this.done.has(id)) {
+    if (this.done.check(id)) {
       return { ref: id, type: this.list.at(id).type };
     }
-    this.done.check(id);
     const { type, token, value } = this.list.at(id);
-    const tokenSingleton = token === "" ? { token } : {};
     const f = (id: IdValue): unknown => idMap(id, this.expand.bind(this));
-    return { type, ...tokenSingleton, ...objMap(value, f) };
+    return { type, ...(token === "" ? { token } : {}), ...objMap(value, f) };
   }
 }
 
 export class Module extends NodeList {
-  top?: Id;
-  history: string[] = [];
-  source?: string;
+  private top?: Id;
+  private history: string[] = [];
+  private source?: string;
 
   getTop(): Id {
     assert(isNumber(this.top) && this.inside(this.top));
@@ -115,8 +113,7 @@ export class Module extends NodeList {
   }
 
   finish(top: Id, source: string): Module {
-    this.top = top;
-    this.source = source;
+    [this.top, this.source] = [top, source];
     return this;
   }
 
@@ -137,7 +134,7 @@ export class Module extends NodeList {
     return visitor;
   }
 
-  emitHeader(): string[] {
+  emitHeader(): string {
     assert(isString(this.source));
     const datalayout =
       "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
@@ -146,14 +143,14 @@ export class Module extends NodeList {
       `source_filename = "${this.source}"`,
       `target datalayout = "${datalayout}"`,
       `target triple = "${triple}"`,
-    ];
+    ].join("\n");
   }
 }
 
 export class ElemAccessor {
-  origin: Id;
-  current?: IdValue;
-  list: NodeList;
+  private origin: Id;
+  private current?: IdValue;
+  private list: NodeList;
   constructor(list: NodeList, id: Id) {
     [this.list, this.origin, this.current] = [list, id, id];
   }
@@ -183,16 +180,6 @@ export class ElemAccessor {
     const id = this.current;
     this.current = this.origin;
     return id;
-  }
-}
-export class ModuleAdoptor {
-  get: (id: Id) => ModuleElem;
-  push: (node: ModuleNode) => Id;
-  show: (id: Id) => string;
-  constructor(list: NodeList) {
-    this.get = list.at.bind(list);
-    this.push = list.push.bind(list);
-    this.show = list.show.bind(list);
   }
 }
 export interface Transformer {
@@ -249,15 +236,13 @@ class VisitorManager {
   }
 
   visit(id: Id): void {
-    if (this.done.has(id)) {
+    if (this.done.check(id)) {
       return;
-    } else {
-      this.done.check(id);
     }
-    const node = this.module.at(id);
+    const elem = this.module.at(id);
     const f = this.visit.bind(this);
     const children =
-      this.visitor.apply(node, this.module) ?? Object.keys(node.value);
-    children.forEach((key) => idMap(asDefined(node.value[key]), f));
+      this.visitor.apply(elem, this.module) ?? Object.keys(elem.value);
+    children.forEach((key) => idMap(asDefined(elem.value[key]), f));
   }
 }
