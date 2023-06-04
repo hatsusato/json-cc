@@ -19,21 +19,23 @@ export const asDefined = <T>(x: T | undefined | null): T => {
   assert(isDefined(x) && isNonNull(x));
   return x;
 };
-export const asNumber = (x: unknown): number => {
-  assert(isNumber(x));
-  return x;
+export const toNumber = (x: unknown): number | undefined => {
+  return isNumber(x) ? x : undefined;
 };
-export const asArray = <T>(x: T | T[]): T[] => {
-  assert(isArray(x));
-  return x;
+export const toArray = <T, U>(x: T[] | U): T[] | undefined => {
+  return isArray(x) ? x : undefined;
 };
 
+export const definedMap = <T, U>(
+  x: T | undefined,
+  f: FuncType<[T], U>
+): U | undefined => (isDefined(x) ? f(x) : undefined);
 export const objMap = <T, U>(
   x: PRecord<string, T>,
   f: FuncType<[T], U>
 ): Record<string, U> => {
   return Object.entries(x)
-    .map(([k, v]) => (isDefined(v) ? { [k]: f(v) } : {}))
+    .map(([k, v]) => definedMap(v, (v) => ({ [k]: f(v) })) ?? {})
     .reduce((prev, next) => ({ ...prev, ...next }), {});
 };
 
@@ -42,8 +44,7 @@ export const replaceKey = (
   from: string,
   to: string
 ): void => {
-  x[to] = x[from];
-  x[from] = undefined;
+  [x[to], x[from]] = [x[from], undefined];
 };
 
 export const hexlify = (str: string): string => {

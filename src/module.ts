@@ -2,11 +2,14 @@ import assert from "assert";
 import {
   PRecord,
   asDefined,
+  definedMap,
   isArray,
   isDefined,
   isNumber,
   isString,
   objMap,
+  toArray,
+  toNumber,
 } from "./util";
 
 export type Id = number;
@@ -22,9 +25,8 @@ export class ModuleNode {
   token: string;
   value: NodeValue;
   constructor(args: NodeParams) {
-    this.type = args.type;
-    this.token = args.token ?? "";
-    this.value = args.value ?? {};
+    const { type, token, value } = args;
+    [this.type, this.token, this.value] = [type, token ?? "", value ?? {}];
   }
   update(args: {
     type: string;
@@ -156,27 +158,23 @@ export class ElemAccessor {
     [this.list, this.origin, this.current] = [list, id, id];
   }
   at(key: string): ElemAccessor {
-    this.current = isNumber(this.current)
-      ? this.list.at(this.current).value[key]
-      : undefined;
+    this.current = definedMap(
+      toNumber(this.current),
+      (id) => this.list.at(id).value[key]
+    );
     return this;
   }
   choose(index: number): ElemAccessor {
-    if (isArray(this.current) && index < this.current.length) {
-      this.current = this.current[index];
-    } else {
-      this.current = undefined;
-    }
+    this.current = definedMap(toArray(this.current), (list) =>
+      index < list.length ? list[index] : undefined
+    );
     return this;
   }
   get(): ModuleElem | undefined {
-    const id = this.reset();
-    return isNumber(id) ? this.list.at(id) : undefined;
+    return definedMap(toNumber(this.reset()), (id) => this.list.at(id));
   }
   getDefined(): ModuleElem {
-    const elem = this.get();
-    assert(isDefined(elem));
-    return elem;
+    return asDefined(this.get());
   }
   push(node: NodeParams): Id {
     return this.list.push(node);
