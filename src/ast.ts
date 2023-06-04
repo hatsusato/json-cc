@@ -70,7 +70,7 @@ export const getIdentifier = class implements Visitor {
 };
 
 export const newAst = (type: string, value: NodeValue): Id => {
-  delete value.children;
+  value.children = undefined;
   return ast.push({ type, token: "", value });
 };
 export const newToken = (type: string, loc: LocType, token?: string): Id => {

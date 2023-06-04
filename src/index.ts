@@ -10,7 +10,7 @@ import {
   type Visitor,
 } from "./module";
 import { Option, isSome, none, some } from "./option";
-import { asNumber, isArray, isNumber } from "./util";
+import { asNumber, isArray, isNumber, replaceKey } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -80,8 +80,7 @@ const converts = [
     apply(elem: ModuleElem, adoptor: ModuleAdoptor): void {
       const { id, type, value } = elem;
       if (type === "function_definition") {
-        elem.value.return_type = value.declaration_specifiers;
-        delete elem.value.declaration_specifiers;
+        replaceKey(elem.value, "declaration_specifiers", "return_type");
       } else if (type === "type_specifier") {
         elem.type = "builtin type";
         elem.token = adoptor.get(asNumber(value.type_specifier)).token;

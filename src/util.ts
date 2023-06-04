@@ -37,6 +37,15 @@ export const objMap = <T, U>(
     .reduce((prev, next) => ({ ...prev, ...next }), {});
 };
 
+export const replaceKey = (
+  x: Record<string, unknown>,
+  from: string,
+  to: string
+): void => {
+  x[to] = x[from];
+  x[from] = undefined;
+};
+
 export const hexlify = (str: string): string => {
   return str
     .split("")
