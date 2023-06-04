@@ -12,14 +12,28 @@ import {
 export type Id = number;
 export type IdValue = Id | Id[];
 export type NodeValue = PRecord<string, IdValue>;
+export type NodeParams = {
+  type: string;
+  token?: string;
+  value?: NodeValue;
+};
 export class ModuleNode {
   type: string;
   token: string;
   value: NodeValue;
-  constructor(args: { type: string; token?: string; value?: NodeValue }) {
+  constructor(args: NodeParams) {
     this.type = args.type;
     this.token = args.token ?? "";
     this.value = args.value ?? {};
+  }
+  update(args: {
+    type: string;
+    token?: string;
+    value?: NodeValue;
+  }): ModuleNode {
+    const { type, token, value } = args;
+    [this.type, this.token, this.value] = [type, token ?? "", value ?? {}];
+    return this;
   }
 }
 class CheckList {
@@ -36,7 +50,7 @@ const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] =>
 
 export class ModuleElem extends ModuleNode {
   id: Id;
-  constructor(args: { id: Id } & ModuleNode) {
+  constructor(args: { id: Id } & NodeParams) {
     super(args);
     this.id = args.id;
   }
@@ -48,7 +62,7 @@ class NodeList {
     return id < this.list.length;
   }
 
-  push(node: ModuleNode): Id {
+  push(node: NodeParams): Id {
     const id = this.list.length;
     this.list.push(new ModuleElem({ ...node, id }));
     return id;
@@ -134,6 +148,45 @@ export class Module extends NodeList {
   }
 }
 
+export class ElemAccessor {
+  origin: Id;
+  current?: IdValue;
+  list: NodeList;
+  constructor(list: NodeList, id: Id) {
+    [this.list, this.origin, this.current] = [list, id, id];
+  }
+  at(key: string): ElemAccessor {
+    this.current = isNumber(this.current)
+      ? this.list.at(this.current).value[key]
+      : undefined;
+    return this;
+  }
+  choose(index: number): ElemAccessor {
+    if (isArray(this.current) && index < this.current.length) {
+      this.current = this.current[index];
+    } else {
+      this.current = undefined;
+    }
+    return this;
+  }
+  get(): ModuleElem | undefined {
+    const id = this.reset();
+    return isNumber(id) ? this.list.at(id) : undefined;
+  }
+  getDefined(): ModuleElem {
+    const elem = this.get();
+    assert(isDefined(elem));
+    return elem;
+  }
+  push(node: NodeParams): Id {
+    return this.list.push(node);
+  }
+  reset(): IdValue | undefined {
+    const id = this.current;
+    this.current = this.origin;
+    return id;
+  }
+}
 export class ModuleAdoptor {
   get: (id: Id) => ModuleElem;
   push: (node: ModuleNode) => Id;
@@ -146,7 +199,7 @@ export class ModuleAdoptor {
 }
 export interface Transformer {
   tag: string;
-  apply(elem: ModuleElem, adoptor: ModuleAdoptor): void;
+  apply(accessor: ElemAccessor): void;
 }
 class TransformerManager {
   readonly prev: NodeList;
@@ -179,8 +232,7 @@ class TransformerManager {
       return this.table[id];
     }
     id = this.initNext(id);
-    const adoptor = new ModuleAdoptor(this.next);
-    this.transfomer.apply(adoptor.get(id), adoptor);
+    this.transfomer.apply(new ElemAccessor(this.next, id));
     return id;
   }
 }

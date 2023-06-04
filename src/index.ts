@@ -1,7 +1,7 @@
-import assert from "assert";
 import { readFileSync } from "fs";
 import { getIdentifier, parseAst } from "./ast";
 import {
+  ElemAccessor,
   IdValue,
   ModuleAdoptor,
   type Module,
@@ -9,8 +9,8 @@ import {
   type Transformer,
   type Visitor,
 } from "./module";
-import { Option, isSome, none, some } from "./option";
-import { asNumber, isArray, isNumber, replaceKey } from "./util";
+import { Option, none, some } from "./option";
+import { isDefined, isNumber, replaceKey } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -44,20 +44,19 @@ const toIr = class implements Visitor {
 const converts = [
   class implements Transformer {
     tag: string = "constant folding";
-    apply(elem: ModuleElem, adoptor: ModuleAdoptor): void {
-      const { id, type, value } = elem;
+    apply(accessor: ElemAccessor): void {
+      const { id, type, value } = accessor.getDefined();
       if (type === "integer_constant") {
         value.constant = id;
       } else if (type === "addition") {
-        const left = this.getConstant(elem.value.left, adoptor);
-        const right = this.getConstant(elem.value.right, adoptor);
-        if (isSome(left) && isSome(right)) {
-          const leftValue = parseInt(left.value.token);
-          const rightValue = parseInt(right.value.token);
-          elem.value.constant = adoptor.push({
+        const left = accessor.at("left").at("constant").get();
+        const right = accessor.at("right").at("constant").get();
+        if (isDefined(left) && isDefined(right)) {
+          const leftValue = parseInt(left.token);
+          const rightValue = parseInt(right.token);
+          value.constant = accessor.push({
             type: "integer_constant",
             token: `${leftValue + rightValue}`,
-            value: {},
           });
         }
       }
@@ -77,19 +76,17 @@ const converts = [
   },
   class implements Transformer {
     tag: string = "type simplification";
-    apply(elem: ModuleElem, adoptor: ModuleAdoptor): void {
-      const { id, type, value } = elem;
+    apply(accessor: ElemAccessor): void {
+      const elem = accessor.getDefined();
+      const { type } = elem;
       if (type === "function_definition") {
         replaceKey(elem.value, "declaration_specifiers", "return_type");
       } else if (type === "type_specifier") {
-        elem.type = "builtin type";
-        elem.token = adoptor.get(asNumber(value.type_specifier)).token;
-        elem.value = {};
+        const { token } = accessor.at("type_specifier").getDefined();
+        elem.update({ type: "builtin type", token });
       } else if (type === "declaration_specifiers") {
-        const spec = value.list;
-        assert(isArray(spec) && spec.length === 1);
-        const { type, token } = adoptor.get(spec[0]);
-        [elem.type, elem.token, elem.value] = [type, token, {}];
+        const { type, token } = accessor.at("list").choose(0).getDefined();
+        elem.update({ type, token });
       }
     }
   },
