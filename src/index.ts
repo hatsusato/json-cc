@@ -9,7 +9,7 @@ import {
   type Transformer,
   type Visitor,
 } from "./module";
-import { Option, isSome, none, some, unwrap } from "./option";
+import { Option, isSome, none, some } from "./option";
 import { asNumber, isArray, isNumber } from "./util";
 
 interface IrBlock {
@@ -24,11 +24,11 @@ const toIr = class implements Visitor {
   apply(node: ModuleElem, module: Module): string[] | undefined {
     const { type, id } = node;
     if (type === "function_definition") {
-      const name = unwrap(module.visit(getIdentifier, id).name?.token);
+      const name = module.visit(getIdentifier, id).name?.token;
       this.funcs.push({ name, blocks: [{}] });
       return ["compound_statement"];
     } else if (type === "integer_constant") {
-      this.getCurrentBlock().val = unwrap(node.token);
+      this.getCurrentBlock().val = node.token;
     }
   }
 
@@ -52,11 +52,11 @@ const converts = [
         const left = this.getConstant(elem.value.left, adoptor);
         const right = this.getConstant(elem.value.right, adoptor);
         if (isSome(left) && isSome(right)) {
-          const leftValue = parseInt(unwrap(left.value.token));
-          const rightValue = parseInt(unwrap(right.value.token));
+          const leftValue = parseInt(left.value.token);
+          const rightValue = parseInt(right.value.token);
           elem.value.constant = adoptor.push({
             type: "integer_constant",
-            token: some(`${leftValue + rightValue}`),
+            token: `${leftValue + rightValue}`,
             value: {},
           });
         }

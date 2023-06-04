@@ -1,5 +1,4 @@
 import assert from "assert";
-import { Option } from "./option";
 import {
   PRecord,
   asDefined,
@@ -15,12 +14,12 @@ export type IdValue = Id | Id[];
 export type NodeValue = PRecord<string, IdValue>;
 export class ModuleNode {
   type: string;
-  token: Option<string>;
+  token: string;
   value: NodeValue;
-  constructor(args: { type: string; token: Option<string>; value: NodeValue }) {
+  constructor(args: { type: string; token?: string; value?: NodeValue }) {
     this.type = args.type;
-    this.token = args.token;
-    this.value = args.value;
+    this.token = args.token ?? "";
+    this.value = args.value ?? {};
   }
 }
 class CheckList {
@@ -83,7 +82,7 @@ class ListExpander {
     }
     this.done.check(id);
     const { type, token, value } = this.list.at(id);
-    const tokenSingleton = isString(token) ? { token } : {};
+    const tokenSingleton = token === "" ? { token } : {};
     const f = (id: IdValue): unknown => idMap(id, this.expand.bind(this));
     return { type, ...tokenSingleton, ...objMap(value, f) };
   }
