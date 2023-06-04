@@ -2,15 +2,12 @@ import { readFileSync } from "fs";
 import { getIdentifier, parseAst } from "./ast";
 import {
   ElemAccessor,
-  IdValue,
-  ModuleAdoptor,
   type Module,
   type ModuleElem,
   type Transformer,
   type Visitor,
 } from "./module";
-import { Option, none, some } from "./option";
-import { isDefined, isNumber, replaceKey } from "./util";
+import { isDefined, replaceKey } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -60,18 +57,6 @@ const converts = [
           });
         }
       }
-    }
-    getConstant(
-      id: IdValue | undefined,
-      adoptor: ModuleAdoptor
-    ): Option<ModuleElem> {
-      if (isNumber(id)) {
-        const { value } = adoptor.get(id);
-        if (isNumber(value.constant)) {
-          return some(adoptor.get(value.constant));
-        }
-      }
-      return none();
     }
   },
   class implements Transformer {
