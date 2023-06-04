@@ -276,7 +276,7 @@ ellipsis: ELLIPSIS { $$ = newToken($1, @1); };
 
 /* 6.1 Lexical elements */
 identifier_opt
-: /* empty */ { $$ = null; }
+: /* empty */ { $$ = undefined; }
 | identifier
 ;
 identifier
@@ -687,7 +687,7 @@ assignment_operator
 ;
 
 expression_opt
-: /* empty */ { $$ = null; }
+: /* empty */ { $$ = undefined; }
 | expression
 ;
 expression
@@ -703,7 +703,7 @@ expression
 
 /* 6.4 Constant expressions */
 constant_expression_opt
-: /* empty */ { $$ = null; }
+: /* empty */ { $$ = undefined; }
 | constant_expression
 ;
 constant_expression
@@ -769,7 +769,7 @@ init_declarator
 : declarator {
     $$ = newAst("init_declarator", {
         declarator: $1,
-        initializer: null,
+        initializer: undefined,
         children: [$1],
     });
 }
@@ -894,13 +894,13 @@ struct_declarator
 : declarator {
     $$ = newAst("struct_declarator", {
         declarator: $1,
-        constant_expression: null,
+        constant_expression: undefined,
         children: [$1],
     });
 }
 | colon constant_expression {
     $$ = newAst("struct_declarator", {
-        declarator: null,
+        declarator: undefined,
         constant_expression: $2,
         children: [$1, $2],
     });
@@ -943,7 +943,7 @@ enumerator
 : enumeration_constant {
     $$ = newAst("enumerator", {
         enumeration_constant: $1,
-        constant_expression: null,
+        constant_expression: undefined,
         children: [$1],
     });
 }
@@ -964,7 +964,7 @@ type_qualifier
 declarator
 : direct_declarator {
     $$ = newAst("declarator", {
-        pointer: null,
+        pointer: undefined,
         direct_declarator: $1,
         children: [$1],
     });
@@ -1017,7 +1017,7 @@ direct_declarator
 pointer
 : asterisk type_qualifier_list_opt {
     $$ = newAst("pointer", {
-        pointer: null,
+        pointer: undefined,
         type_qualifier_list: $2,
         children: [$1, $2],
     });
@@ -1115,8 +1115,8 @@ type_name
 abstract_declarator_opt
 : /* empty */ {
     $$ = newAst("abstract_declarator", {
-        pointer: null,
-        direct_abstract_declarator: null,
+        pointer: undefined,
+        direct_abstract_declarator: undefined,
         children: [],
     });
 }
@@ -1126,13 +1126,13 @@ abstract_declarator
 : pointer {
     $$ = newAst("abstract_declarator", {
         pointer: $1,
-        direct_abstract_declarator: null,
+        direct_abstract_declarator: undefined,
         children: [$1],
     });
 }
 | direct_abstract_declarator {
     $$ = newAst("abstract_declarator", {
-        pointer: null,
+        pointer: undefined,
         direct_abstract_declarator: $1,
         children: [$1],
     });
@@ -1155,7 +1155,7 @@ direct_abstract_declarator
 }
 | left_bracket constant_expression_opt right_bracket {
     $$ = newAst("bracket_direct_abstract_declarator", {
-        direct_abstract_declarator: null,
+        direct_abstract_declarator: undefined,
         constant_expression: $2,
         children: [$1, $2, $3],
     });
@@ -1169,7 +1169,7 @@ direct_abstract_declarator
 }
 | left_paren parameter_type_list_opt right_paren {
     $$ = newAst("parameter_direct_abstract_declarator", {
-        direct_abstract_declarator: null,
+        direct_abstract_declarator: undefined,
         parameter_type_list: $2,
         children: [$1, $2, $3],
     });
@@ -1323,7 +1323,7 @@ statement_list
 expression_statement
 : semicolon {
     $$ = newAst("expression_statement", {
-        expression: null,
+        expression: undefined,
         children: [$1],
     });
 }
@@ -1340,7 +1340,7 @@ selection_statement
     $$ = newAst("if_statement", {
         expression: $3,
         then: $5,
-        else: null,
+        else: undefined,
         children: [$1, $2, $3, $4, $5],
     });
 }
