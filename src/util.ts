@@ -3,24 +3,12 @@ import assert from "assert";
 export type FuncType<A extends unknown[], R> = (...args: A) => R;
 export type PRecord<K extends PropertyKey, T> = Partial<Record<K, T>>;
 
-export const isNull = (x: unknown): x is null => x === null;
-export const isNonNull = <T>(x: T | null): x is T => x !== null;
-export const isUndefined = (x: unknown): x is undefined => x === undefined;
-export const isDefined = <T>(x: T | undefined): x is T => x !== undefined;
+const isDefined = <T>(x: T | undefined): x is T => x !== undefined;
+const isNonNull = <T>(x: T | null): x is T => x !== null;
+const isObject = (x: unknown): x is object =>
+  typeof x === "object" && isNonNull(x) && !isArray(x);
 export const isNumber = (x: unknown): x is number => typeof x === "number";
-export const isString = (x: unknown): x is string => typeof x === "string";
 export const isArray = (x: unknown): x is unknown[] => Array.isArray(x);
-export const isObject = (x: unknown): x is object =>
-  !isNull(x) && !isArray(x) && typeof x === "object";
-export const isNumberArray = (x: unknown): x is number[] =>
-  isArray(x) && x.every(isNumber);
-
-export const toNumber = (x: unknown): number | undefined => {
-  return isNumber(x) ? x : undefined;
-};
-export const toArray = <T, U>(x: T[] | U): T[] | undefined => {
-  return isArray(x) ? x : undefined;
-};
 
 export class Option<T> {
   readonly value: T | undefined;
@@ -33,7 +21,10 @@ export class Option<T> {
   or(value: T): T {
     return isDefined(this.value) ? this.value : value;
   }
-  get get(): T {
+  get ok(): boolean {
+    return isDefined(this.value);
+  }
+  get unwrap(): T {
     assert(isDefined(this.value));
     return this.value;
   }

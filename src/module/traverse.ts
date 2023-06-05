@@ -1,5 +1,4 @@
-import assert from "assert";
-import { isDefined, objMap, option, toArray, toNumber } from "../util";
+import { Option, isArray, isNumber, objMap, option } from "../util";
 import { CheckList, NodeList, idMap } from "./list";
 import { Module } from "./module";
 import {
@@ -23,9 +22,7 @@ export class TransformerManager {
   }
 
   run(id: Id): [Id, NodeList] {
-    id = this.findNext(id);
-    assert(isDefined(id));
-    return [id, this.next];
+    return [this.findNext(id), this.next];
   }
 
   private initNext(prevId: Id): Id {
@@ -68,39 +65,37 @@ export class VisitorManager {
   }
 }
 
+const toNumber = <T>(x: IdValue): number | undefined =>
+  isNumber(x) ? x : undefined;
+const toArray = (x: IdValue): Id[] | undefined => (isArray(x) ? x : undefined);
 export class ElemAccessor {
   private origin: Id;
-  private current?: IdValue;
+  private current: Option<IdValue>;
   private list: NodeList;
   constructor(list: NodeList, id: Id) {
-    [this.list, this.origin, this.current] = [list, id, id];
+    [this.list, this.origin, this.current] = [list, id, option(id)];
   }
   at(key: string): ElemAccessor {
-    this.current = option(this.current)
+    this.current = this.current
       .map(toNumber)
-      .map((id) => this.list.at(id).value[key]).value;
+      .map((id) => this.list.at(id).value[key]);
     return this;
   }
   choose(index: number): ElemAccessor {
-    this.current = option(this.current)
-      .map(toArray)
-      .map((list) => (index < list.length ? list[index] : undefined)).value;
+    this.current = this.current.map(toArray).map((list) => list[index]);
     return this;
   }
-  get(): NodeElem | undefined {
-    return option(this.reset())
+  get finish(): Option<NodeElem> {
+    return this.reset()
       .map(toNumber)
-      .map((id) => this.list.at(id)).value;
-  }
-  getDefined(): NodeElem {
-    return option(this.get()).get;
+      .map((id) => this.list.at(id));
   }
   push(node: NodeParams): Id {
     return this.list.push(node);
   }
-  reset(): IdValue | undefined {
+  private reset(): Option<IdValue> {
     const id = this.current;
-    this.current = this.origin;
+    this.current = option(this.origin);
     return id;
   }
 }
