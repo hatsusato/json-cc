@@ -1,7 +1,7 @@
 import assert from "assert";
 import { objMap } from "../util";
 import { type Id, type IdValue, type NodeElem, type NodeParams } from "./types";
-import { CheckList, idMap, toElem } from "./util";
+import { idMap, normalize } from "./util";
 
 export class NodeList {
   protected list: NodeElem[] = [];
@@ -12,7 +12,7 @@ export class NodeList {
 
   push(node: NodeParams): Id {
     const id = this.list.length;
-    const elem = this.list.push(toElem(node, id));
+    const elem = this.list.push({ ...normalize(node), id });
     return id;
   }
 
@@ -43,5 +43,13 @@ class ListExpander {
     const { type, token, value } = this.list.at(id);
     const f = (id: IdValue): unknown => idMap(id, this.expand.bind(this));
     return { type, ...(token === "" ? { token } : {}), ...objMap(value, f) };
+  }
+}
+export class CheckList {
+  private list: Record<Id, true> = {};
+  check(id: Id): boolean {
+    const old = id in this.list;
+    this.list[id] = true;
+    return old;
   }
 }

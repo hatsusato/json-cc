@@ -7,7 +7,7 @@ import {
   toArray,
   toNumber,
 } from "../util";
-import { NodeList } from "./node";
+import { NodeList } from "./list";
 import { TransformerManager, VisitorManager } from "./traverse";
 import {
   Id,
