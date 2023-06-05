@@ -1,9 +1,8 @@
 import assert from "assert";
 import { asDefined, isDefined, objMap } from "../util";
-import { CheckList, NodeList } from "./list";
+import { CheckList, NodeList, idMap } from "./list";
 import { ElemAccessor, Module } from "./module";
 import { Id, IdValue, type Transformer, type Visitor } from "./types";
-import { idMap } from "./util";
 
 export class TransformerManager {
   readonly prev: NodeList;

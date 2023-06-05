@@ -1,8 +1,24 @@
 import assert from "assert";
-import { objMap } from "../util";
-import { type Id, type IdValue, type NodeElem, type NodeParams } from "./types";
-import { idMap, normalize } from "./util";
+import { isArray, isNumber, objMap } from "../util";
+import {
+  type Id,
+  type IdValue,
+  type Node,
+  type NodeElem,
+  type NodeParams,
+} from "./types";
 
+export const idMap = <T>(x: IdValue, f: (x: Id) => T): T | T[] =>
+  isNumber(x) ? f(x) : isArray(x) ? x.map(f) : x;
+const normalize = (node: NodeParams): Node => {
+  const { type, token, value } = node;
+  return { type, token: token ?? "", value: value ?? {} };
+};
+export const updateElem = (elem: NodeElem, node: NodeParams): NodeElem => {
+  const { type, token, value } = normalize(node);
+  [elem.type, elem.token, elem.value] = [type, token, value];
+  return elem;
+};
 export class NodeList {
   protected list: NodeElem[] = [];
 
