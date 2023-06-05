@@ -8,7 +8,7 @@ import {
   type Transformer,
   type Visitor,
 } from "./module";
-import { asDefined, isDefined, replaceKey } from "./util";
+import { isDefined, option, replaceKey } from "./util";
 
 interface IrBlock {
   val?: string;
@@ -32,7 +32,7 @@ const toIr = class implements Visitor {
   apply(node: NodeElem, module: Module): string[] | undefined {
     const { type, id } = node;
     if (type === "function_definition") {
-      const name = asDefined(module.visit(getIdentifier, id).name?.token);
+      const name = option(module.visit(getIdentifier, id).name?.token).get;
       this.funcs.push(new IrFunc(name));
       return ["compound_statement"];
     } else if (type === "integer_constant") {

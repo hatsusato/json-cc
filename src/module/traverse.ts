@@ -1,12 +1,5 @@
 import assert from "assert";
-import {
-  asDefined,
-  definedMap,
-  isDefined,
-  objMap,
-  toArray,
-  toNumber,
-} from "../util";
+import { isDefined, objMap, option, toArray, toNumber } from "../util";
 import { CheckList, NodeList, idMap } from "./list";
 import { Module } from "./module";
 import {
@@ -68,10 +61,10 @@ export class VisitorManager {
       return;
     }
     const elem = this.module.at(id);
-    const f = this.visit.bind(this);
-    const children =
-      this.visitor.apply(elem, this.module) ?? Object.keys(elem.value);
-    children.forEach((key) => idMap(asDefined(elem.value[key]), f));
+    option(this.visitor.apply(elem, this.module))
+      .or(Object.keys(elem.value))
+      .map((key) => option(elem.value[key]))
+      .forEach((id) => id.map((id) => idMap(id, this.visit.bind(this))));
   }
 }
 
@@ -83,23 +76,24 @@ export class ElemAccessor {
     [this.list, this.origin, this.current] = [list, id, id];
   }
   at(key: string): ElemAccessor {
-    this.current = definedMap(
-      toNumber(this.current),
-      (id) => this.list.at(id).value[key]
-    );
+    this.current = option(this.current)
+      .map(toNumber)
+      .map((id) => this.list.at(id).value[key]).value;
     return this;
   }
   choose(index: number): ElemAccessor {
-    this.current = definedMap(toArray(this.current), (list) =>
-      index < list.length ? list[index] : undefined
-    );
+    this.current = option(this.current)
+      .map(toArray)
+      .map((list) => (index < list.length ? list[index] : undefined)).value;
     return this;
   }
   get(): NodeElem | undefined {
-    return definedMap(toNumber(this.reset()), (id) => this.list.at(id));
+    return option(this.reset())
+      .map(toNumber)
+      .map((id) => this.list.at(id)).value;
   }
   getDefined(): NodeElem {
-    return asDefined(this.get());
+    return option(this.get()).get;
   }
   push(node: NodeParams): Id {
     return this.list.push(node);
