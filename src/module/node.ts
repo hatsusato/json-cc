@@ -1,34 +1,8 @@
 import assert from "assert";
 import { objMap } from "../util";
-import {
-  type Id,
-  type IdValue,
-  type NodeParams,
-  type NodeValue,
-} from "./types";
-import { CheckList, idMap } from "./util";
+import { type Id, type IdValue, type NodeElem, type NodeParams } from "./types";
+import { CheckList, idMap, toElem } from "./util";
 
-export class Node implements Required<NodeParams> {
-  type: string;
-  token: string;
-  value: NodeValue;
-  constructor(args: NodeParams) {
-    const { type, token, value } = args;
-    [this.type, this.token, this.value] = [type, token ?? "", value ?? {}];
-  }
-  update(args: NodeParams): Node {
-    const { type, token, value } = args;
-    [this.type, this.token, this.value] = [type, token ?? "", value ?? {}];
-    return this;
-  }
-}
-export class NodeElem extends Node {
-  readonly id: Id;
-  constructor(args: { id: Id } & NodeParams) {
-    super(args);
-    this.id = args.id;
-  }
-}
 export class NodeList {
   protected list: NodeElem[] = [];
 
@@ -38,7 +12,7 @@ export class NodeList {
 
   push(node: NodeParams): Id {
     const id = this.list.length;
-    this.list.push(new NodeElem({ ...node, id }));
+    const elem = this.list.push(toElem(node, id));
     return id;
   }
 

@@ -1,7 +1,8 @@
 import { readFileSync } from "fs";
 import { getIdentifier, parseAst } from "./ast";
 import {
-  ElemAccessor,
+  updateElem,
+  type ElemAccessor,
   type Module,
   type NodeElem,
   type Transformer,
@@ -78,10 +79,10 @@ const converts = [
         replaceKey(elem.value, "declaration_specifiers", "return_type");
       } else if (type === "type_specifier") {
         const { token } = accessor.at("type_specifier").getDefined();
-        elem.update({ type: "builtin type", token });
+        updateElem(elem, { type: "builtin type", token });
       } else if (type === "declaration_specifiers") {
         const { type, token } = accessor.at("list").choose(0).getDefined();
-        elem.update({ type, token });
+        updateElem(elem, { type, token });
       }
     }
   },

@@ -1,7 +1,5 @@
 import { PRecord } from "../util";
 import { type ElemAccessor, type Module } from "./module";
-import { type NodeElem } from "./node";
-export { type NodeElem };
 
 export type Id = number;
 export type IdValue = Id | Id[];
@@ -10,6 +8,10 @@ export type NodeParams = {
   type: string;
   token?: string;
   value?: NodeValue;
+};
+export type Node = Required<NodeParams>;
+export type NodeElem = Node & {
+  readonly id: Id;
 };
 export interface Transformer {
   tag: string;
