@@ -1,5 +1,6 @@
 import { PRecord } from "../util";
-import { type ElemAccessor, type Module } from "./module";
+import { type Module } from "./module";
+import { type ElemAccessor } from "./traverse";
 
 export type Id = number;
 export type IdValue = Id | Id[];

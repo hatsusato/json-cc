@@ -2,9 +2,9 @@ import assert from "assert";
 import { CParser } from "../generated/scanner";
 import {
   Module,
-  NodeValue,
   type Id,
   type NodeElem,
+  type NodeValue,
   type Visitor,
 } from "./module";
 import { hexlify, isArray } from "./util";

@@ -1,22 +1,8 @@
 import assert from "assert";
-import {
-  asDefined,
-  definedMap,
-  isNumber,
-  isString,
-  toArray,
-  toNumber,
-} from "../util";
+import { isNumber, isString } from "../util";
 import { NodeList } from "./list";
 import { TransformerManager, VisitorManager } from "./traverse";
-import {
-  Id,
-  IdValue,
-  NodeElem,
-  NodeParams,
-  Transformer,
-  Visitor,
-} from "./types";
+import { Id, Transformer, Visitor } from "./types";
 
 export class Module extends NodeList {
   private top?: Id;
@@ -60,41 +46,5 @@ export class Module extends NodeList {
       `target datalayout = "${datalayout}"`,
       `target triple = "${triple}"`,
     ].join("\n");
-  }
-}
-
-export class ElemAccessor {
-  private origin: Id;
-  private current?: IdValue;
-  private list: NodeList;
-  constructor(list: NodeList, id: Id) {
-    [this.list, this.origin, this.current] = [list, id, id];
-  }
-  at(key: string): ElemAccessor {
-    this.current = definedMap(
-      toNumber(this.current),
-      (id) => this.list.at(id).value[key]
-    );
-    return this;
-  }
-  choose(index: number): ElemAccessor {
-    this.current = definedMap(toArray(this.current), (list) =>
-      index < list.length ? list[index] : undefined
-    );
-    return this;
-  }
-  get(): NodeElem | undefined {
-    return definedMap(toNumber(this.reset()), (id) => this.list.at(id));
-  }
-  getDefined(): NodeElem {
-    return asDefined(this.get());
-  }
-  push(node: NodeParams): Id {
-    return this.list.push(node);
-  }
-  reset(): IdValue | undefined {
-    const id = this.current;
-    this.current = this.origin;
-    return id;
   }
 }
