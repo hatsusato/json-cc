@@ -22,7 +22,7 @@ export class Node implements Required<NodeParams> {
     return this;
   }
 }
-export class ModuleElem extends Node {
+export class NodeElem extends Node {
   readonly id: Id;
   constructor(args: { id: Id } & NodeParams) {
     super(args);
@@ -30,7 +30,7 @@ export class ModuleElem extends Node {
   }
 }
 export class NodeList {
-  protected list: ModuleElem[] = [];
+  protected list: NodeElem[] = [];
 
   inside(id: Id): boolean {
     return id < this.list.length;
@@ -38,11 +38,11 @@ export class NodeList {
 
   push(node: NodeParams): Id {
     const id = this.list.length;
-    this.list.push(new ModuleElem({ ...node, id }));
+    this.list.push(new NodeElem({ ...node, id }));
     return id;
   }
 
-  at(id: Id): ModuleElem {
+  at(id: Id): NodeElem {
     assert(this.inside(id));
     return this.list[id];
   }

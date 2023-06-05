@@ -12,7 +12,7 @@ import { TransformerManager, VisitorManager } from "./traverse";
 import {
   Id,
   IdValue,
-  ModuleElem,
+  NodeElem,
   NodeParams,
   Transformer,
   Visitor,
@@ -83,10 +83,10 @@ export class ElemAccessor {
     );
     return this;
   }
-  get(): ModuleElem | undefined {
+  get(): NodeElem | undefined {
     return definedMap(toNumber(this.reset()), (id) => this.list.at(id));
   }
-  getDefined(): ModuleElem {
+  getDefined(): NodeElem {
     return asDefined(this.get());
   }
   push(node: NodeParams): Id {

@@ -4,7 +4,7 @@ import {
   Module,
   NodeValue,
   type Id,
-  type ModuleElem,
+  type NodeElem,
   type Visitor,
 } from "./module";
 import { hexlify, isArray } from "./util";
@@ -36,7 +36,7 @@ const getNameKey = {
 };
 export const getName = class implements Visitor {
   list: string[] = [];
-  apply({ type, token }: ModuleElem): string[] | undefined {
+  apply({ type, token }: NodeElem): string[] | undefined {
     const nameList = { init_declarator_list: null, translation_unit: null };
     if (type === "identifier") {
       this.list.push(token);
@@ -54,8 +54,8 @@ export const getName = class implements Visitor {
 };
 
 export const getIdentifier = class implements Visitor {
-  name?: ModuleElem;
-  apply(node: ModuleElem, module: Module): string[] | undefined {
+  name?: NodeElem;
+  apply(node: NodeElem, module: Module): string[] | undefined {
     const { type } = node;
     if (type === "identifier") {
       this.name = node;

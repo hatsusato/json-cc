@@ -3,7 +3,7 @@ import { getIdentifier, parseAst } from "./ast";
 import {
   ElemAccessor,
   type Module,
-  type ModuleElem,
+  type NodeElem,
   type Transformer,
   type Visitor,
 } from "./module";
@@ -28,7 +28,7 @@ class IrFunc {
 }
 const toIr = class implements Visitor {
   funcs: IrFunc[] = [];
-  apply(node: ModuleElem, module: Module): string[] | undefined {
+  apply(node: NodeElem, module: Module): string[] | undefined {
     const { type, id } = node;
     if (type === "function_definition") {
       const name = asDefined(module.visit(getIdentifier, id).name?.token);

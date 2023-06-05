@@ -1,7 +1,7 @@
 import { PRecord } from "../util";
 import { type ElemAccessor, type Module } from "./module";
-import { type ModuleElem } from "./node";
-export { type ModuleElem };
+import { type NodeElem } from "./node";
+export { type NodeElem };
 
 export type Id = number;
 export type IdValue = Id | Id[];
@@ -16,5 +16,5 @@ export interface Transformer {
   apply(accessor: ElemAccessor): void;
 }
 export interface Visitor {
-  apply: (node: ModuleElem, module: Module) => string[] | undefined;
+  apply: (node: NodeElem, module: Module) => string[] | undefined;
 }
