@@ -193,7 +193,12 @@ directive               [#][^\n]*
 
 %start top
 %%
-top: translation_unit { return $1; }
+top: translation_unit {
+    return {
+        type: "translation_unit",
+        translation_unit: $1,
+    };
+}
 ;
 
 auto: AUTO {
@@ -486,36 +491,41 @@ string_literal
 primary_expression
 : identifier {
     $$ = {
-        type: "identifier",
+        type: "primary_expression",
         identifier: $1,
     };
 }
 | floating_constant {
     $$ = {
-        type: "floating_constant",
+        type: "primary_expression",
         floating_constant: $1,
     };
 }
 | integer_constant {
     $$ = {
-        type: "integer_constant",
+        type: "primary_expression",
         integer_constant: $1,
     };
 }
 | character_constant {
     $$ = {
-        type: "character_constant",
+        type: "primary_expression",
         character_constant: $1,
     };
 }
 | string_literal {
     $$ = {
-        type: "string_literal",
+        type: "primary_expression",
         string_literal: $1,
     };
 }
 | left_paren expression right_paren {
-    $$ = $2;
+    $$ = {
+        type: "primary_expression",
+        left_paren: $1,
+        expression: $2,
+        right_paren: $3,
+    };
 }
 ;
 
@@ -523,7 +533,7 @@ postfix_expression
 : primary_expression
 | postfix_expression left_bracket expression right_bracket {
     $$ = {
-        type: "array_access",
+        type: "postfix_expression",
         postfix_expression: $1,
         left_bracket: $2,
         expression: $3,
@@ -532,7 +542,7 @@ postfix_expression
 }
 | postfix_expression left_paren argument_expression_list_opt right_paren {
     $$ = {
-        type: "function_call",
+        type: "postfix_expression",
         postfix_expression: $1,
         left_paren: $2,
         argument_expression_list: $3,
@@ -541,7 +551,7 @@ postfix_expression
 }
 | postfix_expression period identifier {
     $$ = {
-        type: "member_access",
+        type: "postfix_expression",
         postfix_expression: $1,
         period: $2,
         identifier: $3,
@@ -549,7 +559,7 @@ postfix_expression
 }
 | postfix_expression arrow identifier {
     $$ = {
-        type: "pointer_member_access",
+        type: "postfix_expression",
         postfix_expression: $1,
         arrow: $2,
         identifier: $3,
@@ -557,14 +567,14 @@ postfix_expression
 }
 | postfix_expression increment {
     $$ = {
-        type: "post_increment",
+        type: "postfix_expression",
         postfix_expression: $1,
         increment: $2,
     };
 }
 | postfix_expression decrement {
     $$ = {
-        type: "post_decrement",
+        type: "postfix_expression",
         postfix_expression: $1,
         decrement: $2,
     };
@@ -590,35 +600,35 @@ unary_expression
 : postfix_expression
 | increment unary_expression {
     $$ = {
-        type: "pre_increment",
+        type: "unary_expression",
         increment: $1,
         unary_expression: $2,
     };
 }
 | decrement unary_expression {
     $$ = {
-        type: "pre_decrement",
+        type: "unary_expression",
         decrement: $1,
         unary_expression: $2,
     };
 }
 | unary_operator cast_expression {
     $$ = {
-        type: "unary_operator",
+        type: "unary_expression",
         unary_operator: $1,
         cast_expression: $2,
     };
 }
 | sizeof unary_expression {
     $$ = {
-        type: "sizeof_expression",
+        type: "unary_expression",
         sizeof: $1,
         unary_expression: $2,
     };
 }
 | sizeof left_paren type_name right_paren {
     $$ = {
-        type: "sizeof_type",
+        type: "unary_expression",
         sizeof: $1,
         left_paren: $2,
         type_name: $3,
@@ -639,7 +649,7 @@ cast_expression
 : unary_expression
 | left_paren type_name right_paren cast_expression {
     $$ = {
-        type: "cast",
+        type: "cast_expression",
         left_paren: $1,
         type_name: $2,
         right_paren: $3,
@@ -652,7 +662,7 @@ multiplicative_expression
 : cast_expression
 | multiplicative_expression asterisk cast_expression {
     $$ = {
-        type: "multiplication",
+        type: "binary_expression",
         left: $1,
         asterisk: $2,
         right: $3,
@@ -660,7 +670,7 @@ multiplicative_expression
 }
 | multiplicative_expression slash cast_expression {
     $$ = {
-        type: "division",
+        type: "binary_expression",
         left: $1,
         slash: $2,
         right: $3,
@@ -668,7 +678,7 @@ multiplicative_expression
 }
 | multiplicative_expression percent cast_expression {
     $$ = {
-        type: "modulo",
+        type: "binary_expression",
         left: $1,
         percent: $2,
         right: $3,
@@ -680,7 +690,7 @@ additive_expression
 : multiplicative_expression
 | additive_expression plus multiplicative_expression {
     $$ = {
-        type: "addition",
+        type: "binary_expression",
         left: $1,
         plus: $2,
         right: $3,
@@ -688,7 +698,7 @@ additive_expression
 }
 | additive_expression minus multiplicative_expression {
     $$ = {
-        type: "subtraction",
+        type: "binary_expression",
         left: $1,
         minus: $2,
         right: $3,
@@ -700,7 +710,7 @@ shift_expression
 : additive_expression
 | shift_expression left_shift additive_expression {
     $$ = {
-        type: "left_shift",
+        type: "binary_expression",
         left: $1,
         left_shift: $2,
         right: $3,
@@ -708,7 +718,7 @@ shift_expression
 }
 | shift_expression right_shift additive_expression {
     $$ = {
-        type: "right_shift",
+        type: "binary_expression",
         left: $1,
         right_shift: $2,
         right: $3,
@@ -720,7 +730,7 @@ relational_expression
 : shift_expression
 | relational_expression less_than shift_expression {
     $$ = {
-        type: "less_than",
+        type: "binary_expression",
         left: $1,
         less_than: $2,
         right: $3,
@@ -728,7 +738,7 @@ relational_expression
 }
 | relational_expression greater_than shift_expression {
     $$ = {
-        type: "greater_than",
+        type: "binary_expression",
         left: $1,
         greater_than: $2,
         right: $3,
@@ -736,7 +746,7 @@ relational_expression
 }
 | relational_expression less_equal shift_expression {
     $$ = {
-        type: "less_equal",
+        type: "binary_expression",
         left: $1,
         less_equal: $2,
         right: $3,
@@ -744,7 +754,7 @@ relational_expression
 }
 | relational_expression greater_equal shift_expression {
     $$ = {
-        type: "greater_equal",
+        type: "binary_expression",
         left: $1,
         greater_equal: $2,
         right: $3,
@@ -756,7 +766,7 @@ equality_expression
 : relational_expression
 | equality_expression equal relational_expression {
     $$ = {
-        type: "equal",
+        type: "binary_expression",
         left: $1,
         equal: $2,
         right: $3,
@@ -764,7 +774,7 @@ equality_expression
 }
 | equality_expression not_equal relational_expression {
     $$ = {
-        type: "not_equal",
+        type: "binary_expression",
         left: $1,
         not_equal: $2,
         right: $3,
@@ -776,7 +786,7 @@ and_expression
 : equality_expression
 | and_expression ampersand equality_expression {
     $$ = {
-        type: "bitwise_and",
+        type: "binary_expression",
         left: $1,
         ampersand: $2,
         right: $3,
@@ -788,7 +798,7 @@ exclusive_or_expression
 : and_expression
 | exclusive_or_expression caret and_expression {
     $$ = {
-        type: "bitwise_xor",
+        type: "binary_expression",
         left: $1,
         caret: $2,
         right: $3,
@@ -800,7 +810,7 @@ inclusive_or_expression
 : exclusive_or_expression
 | inclusive_or_expression bar exclusive_or_expression {
     $$ = {
-        type: "bitwise_or",
+        type: "binary_expression",
         left: $1,
         bar: $2,
         right: $3,
@@ -812,7 +822,7 @@ logical_and_expression
 : inclusive_or_expression
 | logical_and_expression and inclusive_or_expression {
     $$ = {
-        type: "logical_and",
+        type: "binary_expression",
         left: $1,
         and: $2,
         right: $3,
@@ -824,7 +834,7 @@ logical_or_expression
 : logical_and_expression
 | logical_or_expression or logical_and_expression {
     $$ = {
-        type: "logical_or",
+        type: "binary_expression",
         left: $1,
         or: $2,
         right: $3,
@@ -836,12 +846,12 @@ conditional_expression
 : logical_or_expression
 | logical_or_expression question expression colon conditional_expression {
     $$ = {
-        type: "ternary",
+        type: "conditional_expression",
         condition: $1,
         question: $2,
-        left: $3,
+        then: $3,
         colon: $4,
-        right: $5,
+        else: $5,
     };
 }
 ;
@@ -850,7 +860,7 @@ assignment_expression
 : conditional_expression
 | unary_expression assignment_operator assignment_expression {
     $$ = {
-        type: "assignment",
+        type: "assignment_expression",
         left: $1,
         assignment_operator: $2,
         right: $3,
@@ -881,7 +891,7 @@ expression
 : assignment_expression
 | expression comma assignment_expression {
     $$ = {
-        type: "comma",
+        type: "comma_expression",
         left: $1,
         comma: $2,
         right: $3,
@@ -923,19 +933,19 @@ declaration_specifiers
 declaration_specifier
 : storage_class_specifier {
     $$ = {
-        type: "storage_class_specifier",
+        type: "declaration_specifier",
         storage_class_specifier: $1,
     };
 }
 | type_specifier {
     $$ = {
-        type: "type_specifier",
+        type: "declaration_specifier",
         type_specifier: $1,
     };
 }
 | type_qualifier {
     $$ = {
-        type: "type_qualifier",
+        type: "declaration_specifier",
         type_qualifier: $1,
     };
 }
@@ -961,7 +971,6 @@ init_declarator
     $$ = {
         type: "init_declarator",
         declarator: $1,
-        initializer: null,
     };
 }
 | declarator assign initializer {
@@ -1013,7 +1022,6 @@ struct_or_union_specifier
         type: "struct_or_union_specifier",
         struct_or_union: $1,
         identifier: $2,
-        struct_declaration_list: [],
     };
 }
 ;
@@ -1055,13 +1063,13 @@ specifier_qualifier_list
 specifier_qualifier
 : type_specifier {
     $$ = {
-        type: "type_specifier",
+        type: "specifier_qualifier",
         type_specifier: $1,
     };
 }
 | type_qualifier {
     $$ = {
-        type: "type_qualifier",
+        type: "specifier_qualifier",
         type_qualifier: $1,
     };
 }
@@ -1081,13 +1089,11 @@ struct_declarator
     $$ = {
         type: "struct_declarator",
         declarator: $1,
-        constant_expression: null,
     };
 }
 | colon constant_expression {
     $$ = {
         type: "struct_declarator",
-        declarator: null,
         colon: $1,
         constant_expression: $2,
     };
@@ -1118,7 +1124,6 @@ enum_specifier
         type: "enum_specifier",
         enum: $1,
         identifier: $2,
-        enumerator_list: [],
     };
 }
 ;
@@ -1137,7 +1142,6 @@ enumerator
     $$ = {
         type: "enumerator",
         enumeration_constant: $1,
-        constant_expression: null,
     };
 }
 | enumeration_constant assign constant_expression {
@@ -1159,7 +1163,6 @@ declarator
 : direct_declarator {
     $$ = {
         type: "declarator",
-        pointer: null,
         direct_declarator: $1,
     };
 }
@@ -1175,13 +1178,13 @@ declarator
 direct_declarator
 : identifier {
     $$ = {
-        type: "identifier_direct_declarator",
+        type: "direct_declarator",
         identifier: $1,
     };
 }
 | left_paren declarator right_paren {
     $$ = {
-        type: "paren_direct_declarator",
+        type: "direct_declarator",
         left_parent: $1,
         direct_declarator: $2,
         right_parent: $3,
@@ -1189,7 +1192,7 @@ direct_declarator
 }
 | direct_declarator left_bracket constant_expression_opt right_bracket {
     $$ = {
-        type: "array_direct_declarator",
+        type: "direct_declarator",
         direct_declarator: $1,
         left_bracket: $2,
         constant_expression: $3,
@@ -1198,7 +1201,7 @@ direct_declarator
 }
 | direct_declarator left_paren parameter_type_list right_paren {
     $$ = {
-        type: "function_direct_declarator",
+        type: "direct_declarator",
         direct_declarator: $1,
         left_parent: $2,
         parameter_type_list: $3,
@@ -1207,7 +1210,7 @@ direct_declarator
 }
 | direct_declarator left_paren identifier_list_opt right_paren {
     $$ = {
-        type: "old_direct_declarator",
+        type: "direct_declarator",
         direct_declarator: $1,
         left_parent: $2,
         identifier_list: $3,
@@ -1220,7 +1223,6 @@ pointer
 : asterisk type_qualifier_list_opt {
     $$ = {
         type: "pointer",
-        pointer: null,
         asterisk: $1,
         type_qualifier_list: $2,
     };
@@ -1252,11 +1254,7 @@ type_qualifier_list
 
 parameter_type_list_opt
 : /* empty */ {
-    $$ = {
-        type: "parameter_type_list",
-        parameter_list: [],
-        variadic: false,
-    };
+    $$ = null;
 }
 | parameter_type_list
 ;
@@ -1265,7 +1263,6 @@ parameter_type_list
     $$ = {
         type: "parameter_type_list",
         parameter_list: $1,
-        variadic: false,
     };
 }
 | parameter_list comma ellipsis {
@@ -1274,7 +1271,6 @@ parameter_type_list
         parameter_list: $1,
         comma: $2,
         ellipsis: $3,
-        variadic: true,
     };
 }
 ;
@@ -1297,7 +1293,7 @@ parameter_declaration
 }
 | declaration_specifiers abstract_declarator_opt {
     $$ = {
-        type: "parameter_abstract_declaration",
+        type: "parameter_declaration",
         declaration_specifiers: $1,
         abstract_declarator: $2,
     };
@@ -1331,11 +1327,7 @@ type_name
 
 abstract_declarator_opt
 : /* empty */ {
-    $$ = {
-        type: "abstract_declarator",
-        pointer: null,
-        direct_abstract_declarator: null,
-    };
+    $$ = null;
 }
 | abstract_declarator
 ;
@@ -1344,13 +1336,11 @@ abstract_declarator
     $$ = {
         type: "abstract_declarator",
         pointer: $1,
-        direct_abstract_declarator: null,
     };
 }
 | direct_abstract_declarator {
     $$ = {
         type: "abstract_declarator",
-        pointer: null,
         direct_abstract_declarator: $1,
     };
 }
@@ -1374,8 +1364,7 @@ direct_abstract_declarator
 }
 | left_bracket constant_expression_opt right_bracket {
     $$ = {
-        type: "bracket_direct_abstract_declarator",
-        direct_abstract_declarator: null,
+        type: "direct_abstract_declarator",
         left_bracket: $1,
         constant_expression: $2,
         right_bracket: $3,
@@ -1383,7 +1372,7 @@ direct_abstract_declarator
 }
 | direct_abstract_declarator left_bracket constant_expression_opt right_bracket {
     $$ = {
-        type: "bracket_direct_abstract_declarator",
+        type: "direct_abstract_declarator",
         direct_abstract_declarator: $1,
         left_bracket: $2,
         constant_expression: $3,
@@ -1392,8 +1381,7 @@ direct_abstract_declarator
 }
 | left_paren parameter_type_list_opt right_paren {
     $$ = {
-        type: "paren_direct_abstract_declarator",
-        abstract_declarator: null,
+        type: "direct_abstract_declarator",
         left_paren: $1,
         parameter_type_list: $2,
         right_paren: $3,
@@ -1401,8 +1389,8 @@ direct_abstract_declarator
 }
 | direct_abstract_declarator left_paren parameter_type_list_opt right_paren {
     $$ = {
-        type: "paren_direct_abstract_declarator",
-        abstract_declarator: $1,
+        type: "direct_abstract_declarator",
+        direct_abstract_declarator: $1,
         left_paren: $2,
         parameter_type_list: $3,
         right_paren: $4,
@@ -1453,37 +1441,37 @@ initializer_list
 statement
 : labeled_statement {
     $$ = {
-        type: "labeled_statement",
+        type: "statement",
         labeled_statement: $1,
     };
 }
 | compound_statement {
     $$ = {
-        type: "compound_statement",
+        type: "statement",
         compound_statement: $1,
     };
 }
 | expression_statement {
     $$ = {
-        type: "expression_statement",
+        type: "statement",
         expression_statement: $1,
     };
 }
 | selection_statement {
     $$ = {
-        type: "selection_statement",
+        type: "statement",
         selection_statement: $1,
     };
 }
 | iteration_statement {
     $$ = {
-        type: "iteration_statement",
+        type: "statement",
         iteration_statement: $1,
     };
 }
 | jump_statement {
     $$ = {
-        type: "jump_statement",
+        type: "statement",
         jump_statement: $1,
     };
 }
@@ -1500,7 +1488,7 @@ labeled_statement
 }
 | case constant_expression colon statement {
     $$ = {
-        type: "case_statement",
+        type: "labeled_statement",
         case: $1,
         constant_expression: $2,
         colon: $3,
@@ -1509,7 +1497,7 @@ labeled_statement
 }
 | default colon statement {
     $$ = {
-        type: "default_statement",
+        type: "labeled_statement",
         default: $1,
         colon: $2,
         statement: $3,
@@ -1563,7 +1551,6 @@ expression_statement
 : semicolon {
     $$ = {
         type: "expression_statement",
-        expression: null,
         semicolon: $1,
     };
 }
@@ -1579,18 +1566,17 @@ expression_statement
 selection_statement
 : if left_paren expression right_paren statement %prec THEN {
     $$ = {
-        type: "if_statement",
+        type: "selection_statement",
         if: $1,
         left_paren: $2,
         expression: $3,
         right_paren: $4,
         then_statement: $5,
-        else_statement: null,
     };
 }
 | if left_paren expression right_paren statement else statement {
     $$ = {
-        type: "if_statement",
+        type: "selection_statement",
         if: $1,
         left_paren: $2,
         expression: $3,
@@ -1602,7 +1588,7 @@ selection_statement
 }
 | switch left_paren expression right_paren statement {
     $$ = {
-        type: "switch_statement",
+        type: "selection_statement",
         switch: $1,
         left_paren: $2,
         expression: $3,
@@ -1615,7 +1601,7 @@ selection_statement
 iteration_statement
 : while left_paren expression right_paren statement {
     $$ = {
-        type: "while_statement",
+        type: "iteration_statement",
         while: $1,
         left_paren: $2,
         expression: $3,
@@ -1625,7 +1611,7 @@ iteration_statement
 }
 | do statement while left_paren expression right_paren semicolon {
     $$ = {
-        type: "do_while_statement",
+        type: "iteration_statement",
         do: $1,
         statement: $2,
         while: $3,
@@ -1637,13 +1623,13 @@ iteration_statement
 }
 | for left_paren expression_opt semicolon expression_opt semicolon expression_opt right_paren statement {
     $$ = {
-        type: "for_statement",
+        type: "iteration_statement",
         for: $1,
         left_paren: $2,
         init_expression: $3,
-        semicolon1: $4,
+        init_semicolon: $4,
         cond_expression: $5,
-        semicolon2: $6,
+        cond_semicolon: $6,
         next_expression: $7,
         right_paren: $8,
         statement: $9,
@@ -1654,7 +1640,7 @@ iteration_statement
 jump_statement
 : goto identifier semicolon {
     $$ = {
-        type: "goto_statement",
+        type: "jump_statement",
         goto: $1,
         identifier: $2,
         semicolon: $3,
@@ -1662,21 +1648,21 @@ jump_statement
 }
 | continue semicolon {
     $$ = {
-        type: "continue_statement",
+        type: "jump_statement",
         continue: $1,
         semicolon: $2,
     };
 }
 | break semicolon {
     $$ = {
-        type: "break_statement",
+        type: "jump_statement",
         break: $1,
         semicolon: $2,
     };
 }
 | return expression_opt semicolon {
     $$ = {
-        type: "return_statement",
+        type: "jump_statement",
         return: $1,
         expression: $2,
         semicolon: $3,
@@ -1708,7 +1694,6 @@ function_definition
 : declarator declaration_list_opt compound_statement {
     $$ = {
         type: "function_definition",
-        declaration_specifiers: [],
         declarator: $1,
         declaration_list: $2,
         compound_statement: $3,
