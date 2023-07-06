@@ -1,15 +1,8 @@
 import assert from "assert";
 import { Module } from "./module";
 import { Id } from "./type";
+import { asString, isNonNull, isObject } from "./util";
 import { Value } from "./value";
-
-const asString = (x: unknown): string => {
-  assert(typeof x === "string");
-  return x;
-};
-const isNonNull = <T>(x: T | null): x is T => x !== null;
-const isObject = (x: unknown): x is Record<string, unknown> =>
-  typeof x === "object" && x !== null;
 
 class AstVisitor {
   module: Module;
