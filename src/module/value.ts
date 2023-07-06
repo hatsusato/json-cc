@@ -1,4 +1,4 @@
-type Id = number;
+import { Id } from "./type";
 
 export class Value {
   id: Id;
