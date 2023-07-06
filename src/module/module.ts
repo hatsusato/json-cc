@@ -8,4 +8,7 @@ export class Module {
     this.list.push(value);
     return value;
   }
+  show(): string {
+    return JSON.stringify(this.list, undefined, 2);
+  }
 }

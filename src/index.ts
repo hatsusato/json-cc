@@ -15,7 +15,7 @@ const main = (argv: string[]): number => {
         writeFileSync("all.json", JSON.stringify(ast, undefined, 2) + "\n");
       } else {
         const module = convert(ast);
-        console.log(JSON.stringify(module, undefined, 2));
+        console.log(module.show());
       }
     });
     return 0;
