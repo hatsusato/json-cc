@@ -1,7 +1,7 @@
 import assert from "assert";
 import { Module } from "./module";
 import { Id } from "./type";
-import { asString, isNonNull, isObject } from "./util";
+import { Option, isArray, isObject, isString, objMap, option } from "./util";
 import { Value } from "./value";
 
 class AstVisitor {
@@ -12,32 +12,38 @@ class AstVisitor {
   create(type: string): Value {
     return this.module.createValue(type);
   }
-  visit(key: string, ast: unknown): Id | null {
-    if (Array.isArray(ast)) {
+  visit(key: string, ast: unknown): Option<Id> {
+    if (isArray(ast)) {
       const value = this.create(key);
-      value.list = ast.map((x) => this.visit(key, x)).filter(isNonNull);
-      return value.id;
-    } else if (isObject(ast) && "symbol" in ast) {
-      const value = this.create(key);
-      value.symbol = asString(ast.symbol);
-      return value.id;
-    } else if (isObject(ast) && "type" in ast) {
-      const { type, ...children } = ast;
-      const value = this.create(asString(type));
-      value.children = Object.entries(children)
-        .map(([k, v]) => ({ [k]: this.visit(k, v) }))
-        .reduce((prev, next) => ({ ...prev, ...next }), {});
-      return value.id;
+      const list = ast.map((x) => this.visit(key, x));
+      assert(list.every((x) => x.ok));
+      value.list = list.map((x) => x.value);
+      return option(value.id);
+    } else if (isObject(ast)) {
+      if ("symbol" in ast) {
+        assert(isString(ast.symbol));
+        const value = this.create(key);
+        value.symbol = ast.symbol;
+        return option(value.id);
+      } else if ("type" in ast) {
+        assert(isString(ast.type));
+        const { type, ...children } = ast;
+        const value = this.create(type);
+        value.children = objMap(children, ([k, v]) => this.visit(k, v));
+        return option(value.id);
+      } else {
+        assert(false);
+      }
     } else {
       assert(ast === null);
-      return null;
+      return option();
     }
   }
 }
-export const convert = (top: unknown): Module => {
+export const convert = (ast: unknown): Module => {
   const module = new Module();
   const visitor = new AstVisitor(module);
-  const id = visitor.visit("top", top);
-  assert(id === 0);
+  const id = visitor.visit("ast", ast);
+  assert(id.value === 0);
   return module;
 };
