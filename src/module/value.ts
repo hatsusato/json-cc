@@ -1,5 +1,4 @@
-import { Id } from "./type";
-import { Option } from "./util";
+import { type Id, type Option } from "./types";
 
 export class Value {
   id: Id;

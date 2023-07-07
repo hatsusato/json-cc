@@ -1,8 +1,7 @@
 import assert from "assert";
 import { Module } from "./module";
-import { Id } from "./type";
-import { Option, isArray, isObject, isString, objMap, option } from "./util";
-import { Value } from "./value";
+import { type Id, type Option, type Value } from "./types";
+import { isArray, isObject, isString, objMap, option } from "./util";
 
 class AstVisitor {
   module: Module;
