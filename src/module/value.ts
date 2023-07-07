@@ -5,7 +5,7 @@ export class Value {
   type: string;
   symbol?: string;
   list?: Id[];
-  children: Partial<Record<string, Option<Id>>>;
+  children: Record<string, Option<Id>>;
   constructor(id: Id, type: string) {
     this.id = id;
     this.type = type;
