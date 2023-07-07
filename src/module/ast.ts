@@ -44,5 +44,6 @@ export const convert = (ast: unknown): Module => {
   const visitor = new AstVisitor(module);
   const id = visitor.visit("ast", ast);
   assert(id.value === 0);
+  module.setTop(0);
   return module;
 };
