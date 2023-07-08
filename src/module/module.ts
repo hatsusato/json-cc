@@ -10,7 +10,7 @@ export class Module {
   private top: Option<Id> = option();
   createValue(type: string): Value {
     const id = this.list.length;
-    const value = new Value(id, type);
+    const value = new Value(this, id, type);
     this.list.push(value);
     return value;
   }
@@ -74,15 +74,13 @@ class ExpandVisitor {
   visit(id: Id): object {
     if (id in this.done) return { ref: id };
     this.done[id] = id;
-    const value = this.module.at(id);
-    const list = value.list?.map((x) => this.visit(x));
-    const children = objMap(value.children, ([, v]) =>
-      v.ok ? this.visit(v.value) : null
-    );
+    const { module: _, children, list, ...value } = this.module.at(id);
     return {
       ...value,
-      ...(isEmpty(list) ? {} : { list }),
-      ...(isEmpty(children) ? {} : { children }),
+      ...(isEmpty(list) ? {} : { list: list?.map((x) => this.visit(x)) }),
+      children: objMap(children, ([, v]) =>
+        v.ok ? this.visit(v.value) : null
+      ),
     };
   }
 }
