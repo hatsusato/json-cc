@@ -62,7 +62,7 @@ class TransformVisitor {
     next.children = objMap(value.children, ([_, id]) =>
       id.map((x) => this.visit(x))
     );
-    this.transform.apply(next);
+    next.id = this.transform.apply(value) ?? next.id;
     return next.id;
   }
 }
