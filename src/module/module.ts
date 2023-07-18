@@ -35,11 +35,13 @@ export class Module {
     assert(isDefined(value));
     return value;
   }
-  transform<T extends Transform>(Class: new () => T): T {
-    const transform = new Class();
-    const visitor = new TransformVisitor(this, transform);
-    this.setTop(visitor.visit(this.top.value));
-    return transform;
+  transform<T extends Transform>(Classes: (new () => T)[]): void {
+    Classes.forEach((Class) => {
+      const transform = new Class();
+      const visitor = new TransformVisitor(this, transform);
+      const top = visitor.visit(this.top.value);
+      this.setTop(top);
+    });
   }
 }
 
