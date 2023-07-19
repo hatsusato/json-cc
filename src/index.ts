@@ -1,10 +1,17 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
-import { convert } from "./module";
+import { convert, type Transform, type Value } from "./module";
 
 const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
   return new CParser().parse(input);
+};
+const modulePrinter = class implements Transform {
+  tag = "module printer";
+  apply(value: Value): number | void {
+    const { module: _, ...rest } = value;
+    console.log(rest);
+  }
 };
 
 const main = (argv: string[]): number => {
@@ -15,7 +22,7 @@ const main = (argv: string[]): number => {
         writeFileSync("all.json", JSON.stringify(ast, undefined, 2) + "\n");
       } else {
         const module = convert(ast);
-        console.log(module.show());
+        module.transform([modulePrinter]);
       }
     });
     return 0;
