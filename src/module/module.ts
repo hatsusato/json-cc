@@ -27,6 +27,9 @@ export class Module {
   show(id?: Id): string {
     return JSON.stringify(this.expand(id ?? this.top.value), undefined, 2);
   }
+  getTop(): Id {
+    return this.top.value;
+  }
   setTop(id: Id): void {
     this.top = option(id);
   }
@@ -61,8 +64,7 @@ class TransformVisitor {
     if (isDefined(value.list))
       next.list = value.list.map((v) => this.visit(v.id));
     next.children = objMap(value.children, ([_, v]) => this.visit(v.id));
-    next.id = this.transform.apply(value) ?? next.id;
-    return next;
+    return this.transform.apply(value) ?? next;
   }
 }
 

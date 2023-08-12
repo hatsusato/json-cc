@@ -8,9 +8,8 @@ const parse = (source: string): unknown => {
 };
 const modulePrinter = class implements Transform {
   tag = "module printer";
-  apply(value: Value): number | void {
-    const { module: _, ...rest } = value;
-    console.log(rest);
+  apply(value: Value): Value | void {
+    if (value.id === value.module.getTop()) console.log(value.show());
   }
 };
 
