@@ -1,4 +1,4 @@
-import { type Id, type Module, type Option } from "./types";
+import { type Id, type Module } from "./types";
 
 export class Value {
   module: Module;
@@ -6,7 +6,7 @@ export class Value {
   type: string;
   symbol?: string;
   list?: Id[];
-  children: Record<string, Option<Id>>;
+  children: Record<string, Id>;
   constructor(module: Module, id: Id, type: string) {
     this.module = module;
     this.id = id;

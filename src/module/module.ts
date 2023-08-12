@@ -59,9 +59,7 @@ class TransformVisitor {
     const next = this.module.cloneValue(value);
     this.done[id] = next.id;
     if (isDefined(value.list)) next.list = value.list.map((x) => this.visit(x));
-    next.children = objMap(value.children, ([_, id]) =>
-      id.map((x) => this.visit(x))
-    );
+    next.children = objMap(value.children, ([_, id]) => this.visit(id));
     next.id = this.transform.apply(value) ?? next.id;
     return next.id;
   }
@@ -80,9 +78,7 @@ class ExpandVisitor {
     return {
       ...value,
       ...(isEmpty(list) ? {} : { list: list?.map((x) => this.visit(x)) }),
-      children: objMap(children, ([, v]) =>
-        v.ok ? this.visit(v.value) : null
-      ),
+      children: objMap(children, ([, v]) => this.visit(v)),
     };
   }
 }

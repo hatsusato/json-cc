@@ -19,27 +19,26 @@ class AstVisitor {
     }
     return this.null.value;
   }
-  visit(key: string, ast: unknown): Option<Id> {
+  visit(key: string, ast: unknown): Id {
     if (ast === null) {
-      return option(this.getNull());
+      return this.getNull();
     } else if (isArray(ast)) {
       const value = this.create(key);
       const list = ast.map((x) => this.visit(key, x));
-      assert(list.every((x) => x.ok));
-      value.list = list.map((x) => x.value);
-      return option(value.id);
+      value.list = list;
+      return value.id;
     } else if (isObject(ast)) {
       if ("symbol" in ast) {
         assert(isString(ast.symbol));
         const value = this.create(key);
         value.symbol = ast.symbol;
-        return option(value.id);
+        return value.id;
       } else if ("type" in ast) {
         assert(isString(ast.type));
         const { type, ...children } = ast;
         const value = this.create(type);
         value.children = objMap(children, ([k, v]) => this.visit(k, v));
-        return option(value.id);
+        return value.id;
       }
     }
     assert(false);
@@ -49,7 +48,6 @@ export const convert = (ast: unknown): Module => {
   const module = new Module();
   const visitor = new AstVisitor(module);
   const id = visitor.visit("ast", ast);
-  assert(id.value === 0);
-  module.setTop(0);
+  module.setTop(id);
   return module;
 };
