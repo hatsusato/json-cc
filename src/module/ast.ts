@@ -1,44 +1,44 @@
 import assert from "assert";
 import { Module } from "./module";
-import { type Id, type Option, type Value } from "./types";
+import { type Option, type Value } from "./types";
 import { isArray, isObject, isString, objMap, option } from "./util";
 
 class AstVisitor {
   module: Module;
-  null: Option<Id> = option();
+  null: Option<Value> = option();
   constructor(module: Module) {
     this.module = module;
   }
   create(type: string): Value {
     return this.module.createValue(type);
   }
-  getNull(): Id {
+  getNull(): Value {
     if (!this.null.ok) {
       const value = this.create("null");
-      this.null = option(value.id);
+      this.null = option(value);
     }
     return this.null.value;
   }
-  visit(key: string, ast: unknown): Id {
+  visit(key: string, ast: unknown): Value {
     if (ast === null) {
       return this.getNull();
     } else if (isArray(ast)) {
       const value = this.create(key);
       const list = ast.map((x) => this.visit(key, x));
       value.list = list;
-      return value.id;
+      return value;
     } else if (isObject(ast)) {
       if ("symbol" in ast) {
         assert(isString(ast.symbol));
         const value = this.create(key);
         value.symbol = ast.symbol;
-        return value.id;
+        return value;
       } else if ("type" in ast) {
         assert(isString(ast.type));
         const { type, ...children } = ast;
         const value = this.create(type);
         value.children = objMap(children, ([k, v]) => this.visit(k, v));
-        return value.id;
+        return value;
       }
     }
     assert(false);
@@ -47,7 +47,7 @@ class AstVisitor {
 export const convert = (ast: unknown): Module => {
   const module = new Module();
   const visitor = new AstVisitor(module);
-  const id = visitor.visit("ast", ast);
-  module.setTop(id);
+  const value = visitor.visit("ast", ast);
+  module.setTop(value.id);
   return module;
 };

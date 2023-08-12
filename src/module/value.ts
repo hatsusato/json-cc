@@ -5,8 +5,8 @@ export class Value {
   id: Id;
   type: string;
   symbol?: string;
-  list?: Id[];
-  children: Record<string, Id>;
+  list?: Value[];
+  children: Record<string, Value>;
   constructor(module: Module, id: Id, type: string) {
     this.module = module;
     this.id = id;

@@ -40,7 +40,7 @@ export class Module {
       const transform = new Class();
       const visitor = new TransformVisitor(this, transform);
       const top = visitor.visit(this.top.value);
-      this.setTop(top);
+      this.setTop(top.id);
     });
   }
 }
@@ -53,15 +53,16 @@ class TransformVisitor {
     this.module = module;
     this.transform = transform;
   }
-  visit(id: Id): Id {
-    if (id in this.done) return this.done[id];
+  visit(id: Id): Value {
+    if (id in this.done) return this.module.at(this.done[id]);
     const value = this.module.at(id);
     const next = this.module.cloneValue(value);
     this.done[id] = next.id;
-    if (isDefined(value.list)) next.list = value.list.map((x) => this.visit(x));
-    next.children = objMap(value.children, ([_, id]) => this.visit(id));
+    if (isDefined(value.list))
+      next.list = value.list.map((v) => this.visit(v.id));
+    next.children = objMap(value.children, ([_, v]) => this.visit(v.id));
     next.id = this.transform.apply(value) ?? next.id;
-    return next.id;
+    return next;
   }
 }
 
@@ -77,8 +78,8 @@ class ExpandVisitor {
     const { module: _, children, list, ...value } = this.module.at(id);
     return {
       ...value,
-      ...(isEmpty(list) ? {} : { list: list?.map((x) => this.visit(x)) }),
-      children: objMap(children, ([, v]) => this.visit(v)),
+      ...(isEmpty(list) ? {} : { list: list?.map((x) => this.visit(x.id)) }),
+      children: objMap(children, ([, v]) => this.visit(v.id)),
     };
   }
 }
