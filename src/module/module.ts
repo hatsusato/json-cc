@@ -33,7 +33,7 @@ export class Module {
     Classes.forEach((Class) => {
       const transform = new Class();
       const visitor = new TransformVisitor(this, transform);
-      const top = visitor.visit(this.top.value.id);
+      const top = visitor.visit(this.top.value);
       this.setTop(top);
     });
   }
@@ -47,15 +47,15 @@ class TransformVisitor {
     this.module = module;
     this.transform = transform;
   }
-  visit(id: Id): Value {
-    const value = this.module.at(id);
+  visit(value: Value): Value {
+    const { id } = value.idref;
     if (id in this.done) return value;
     else this.done[id] = id;
     const recurse = () => {
       if (isDefined(value.list)) {
-        value.list = value.list.map((v) => this.visit(v.id));
+        value.list = value.list.map((v) => this.visit(v));
       }
-      value.children = objMap(value.children, ([_, v]) => this.visit(v.id));
+      value.children = objMap(value.children, ([_, v]) => this.visit(v));
     };
     return this.transform.apply(value, recurse) ?? value;
   }
