@@ -7,5 +7,5 @@ export { type Value } from "./value";
 export type Id = number;
 export interface Transform {
   readonly tag: string;
-  apply(value: Value): Value | void;
+  apply(value: Value, visit: () => void): Value | void;
 }

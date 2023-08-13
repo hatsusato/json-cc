@@ -58,14 +58,16 @@ class TransformVisitor {
     this.transform = transform;
   }
   visit(id: Id): Value {
-    if (id in this.done) return this.module.at(this.done[id]);
     const value = this.module.at(id);
-    const next = this.module.cloneValue(value);
-    this.done[id] = next.id;
-    if (isDefined(value.list))
-      next.list = value.list.map((v) => this.visit(v.id));
-    next.children = objMap(value.children, ([_, v]) => this.visit(v.id));
-    return this.transform.apply(value) ?? next;
+    if (id in this.done) return value;
+    else this.done[id] = id;
+    const recurse = () => {
+      if (isDefined(value.list)) {
+        value.list = value.list.map((v) => this.visit(v.id));
+      }
+      value.children = objMap(value.children, ([_, v]) => this.visit(v.id));
+    };
+    return this.transform.apply(value, recurse) ?? value;
   }
 }
 

@@ -6,10 +6,10 @@ const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
   return new CParser().parse(input);
 };
-const modulePrinter = class implements Transform {
-  tag = "module printer";
+const printModule = class implements Transform {
+  tag = "print module";
   apply(value: Value): Value | void {
-    if (value.id === value.module.getTop()) console.log(value.show());
+    console.info(value.show());
   }
 };
 
