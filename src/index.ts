@@ -16,10 +16,10 @@ class ConvertIR implements Transform {
   tag = "convert IR";
   apply(value: Value, visit: () => void): Value | void {
     visit();
-    if (value.type === "translation_unit") {
-      if ("translation_unit" in value.children)
-        return value.children.translation_unit;
-      else value.type = "module";
+    if (value.type === "top") {
+      return value.children.translation_unit;
+    } else if (value.type === "translation_unit") {
+      value.type = "module";
     } else if (value.type === "compound_statement") {
       return value.children.statement_list;
     } else if (value.type === "statement_list") {

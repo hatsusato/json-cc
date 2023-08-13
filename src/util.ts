@@ -8,6 +8,12 @@ export const isObject = (x: unknown): x is Record<string, unknown> =>
 export const isArray = <T>(x: T[] | unknown): x is T[] => Array.isArray(x);
 export const isEmpty = (x?: object): boolean =>
   Object.keys(x ?? {}).length === 0;
+
+export const asString = (x: unknown): string => {
+  assert(isString(x));
+  return x;
+};
+
 export const objMap = <T, U>(
   x: Record<string, T>,
   f: (x: [string, T]) => U

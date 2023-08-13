@@ -1,5 +1,5 @@
 import assert from "assert";
-import { Option, isArray, isObject, isString, objMap, option } from "../util";
+import { Option, asString, isArray, isObject, objMap, option } from "../util";
 import { Module } from "./module";
 import type { Value } from "./types";
 
@@ -22,32 +22,31 @@ class AstVisitor {
   visit(key: string, ast: unknown): Value {
     if (ast === null) {
       return this.getNull();
-    } else if (isArray(ast)) {
-      const value = this.create(key);
-      const list = ast.map((x) => this.visit(key, x));
-      value.list = list;
-      return value;
-    } else if (isObject(ast)) {
-      if ("symbol" in ast) {
-        assert(isString(ast.symbol));
-        const value = this.create(key);
-        value.symbol = ast.symbol;
-        return value;
-      } else if ("type" in ast) {
-        assert(isString(ast.type));
-        const { type, ...children } = ast;
-        const value = this.create(type);
-        value.children = objMap(children, ([k, v]) => this.visit(k, v));
-        return value;
+    } else {
+      assert(
+        isArray(ast) || (isObject(ast) && ("symbol" in ast || "type" in ast))
+      );
+      if ("type" in ast) {
+        key = asString(ast.type);
       }
     }
-    assert(false);
+    const value = this.create(key);
+    if (isArray(ast)) {
+      value.list = ast.map((x) => this.visit(key, x));
+    } else if ("symbol" in ast) {
+      value.symbol = asString(ast.symbol);
+    } else if ("type" in ast) {
+      const { type: _, ...children } = ast;
+      value.children = objMap(children, ([k, v]) => this.visit(k, v));
+    }
+    return value;
   }
 }
 export const convert = (ast: unknown): Module => {
   const module = new Module();
   const visitor = new AstVisitor(module);
-  const value = visitor.visit("ast", ast);
+  const value = visitor.visit("top", ast);
+  value.type = "top";
   module.setTop(value);
   return module;
 };
