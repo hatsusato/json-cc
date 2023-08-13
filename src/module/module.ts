@@ -5,7 +5,7 @@ import { Value } from "./value";
 
 export class Module {
   private list: Value[] = [];
-  private top: Option<Id> = option();
+  private top: Option<Value> = option();
   createValue(type: string): Value {
     const id = this.list.length;
     const value = new Value(this, id, type);
@@ -18,11 +18,11 @@ export class Module {
     if (isDefined(value.symbol)) clone.symbol = value.symbol;
     return clone;
   }
-  getTop(): Id {
+  getTop(): Value {
     return this.top.value;
   }
-  setTop(id: Id): void {
-    this.top = option(id);
+  setTop(value: Value): void {
+    this.top = option(value);
   }
   at(id: Id): Value {
     const value = this.list[id];
@@ -33,8 +33,8 @@ export class Module {
     Classes.forEach((Class) => {
       const transform = new Class();
       const visitor = new TransformVisitor(this, transform);
-      const top = visitor.visit(this.top.value);
-      this.setTop(top.id);
+      const top = visitor.visit(this.top.value.id);
+      this.setTop(top);
     });
   }
 }

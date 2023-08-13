@@ -48,6 +48,6 @@ export const convert = (ast: unknown): Module => {
   const module = new Module();
   const visitor = new AstVisitor(module);
   const value = visitor.visit("ast", ast);
-  module.setTop(value.id);
+  module.setTop(value);
   return module;
 };
