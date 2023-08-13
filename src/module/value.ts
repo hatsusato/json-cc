@@ -1,23 +1,29 @@
 import { isEmpty, objMap } from "../util";
-import type { Module } from "./types";
+import type { Id, Module } from "./types";
 
-export type Id = number;
+export class Done {
+  done: Record<Id, Id> = {};
+  set(id: Id, next?: Id): void {
+    this.done[id] = next ?? id;
+  }
+  isDone(id: Id): boolean {
+    return id in this.done;
+  }
+}
+
 export interface IdRef {
   id: Id;
   module: Module;
 }
-export type Done = Record<Id, Id>;
-
 export class Value {
   idref: IdRef;
   type: string;
   symbol?: string;
   list?: Value[];
-  children: Record<string, Value>;
+  children: Record<string, Value> = {};
   constructor(module: Module, id: Id, type: string) {
     this.idref = { id, module };
     this.type = type;
-    this.children = {};
   }
   show(stringify: boolean = true): string | object {
     const value = new ExpandVisitor().visit(this);
@@ -25,12 +31,11 @@ export class Value {
   }
 }
 
-class ExpandVisitor {
-  done: Done = {};
+class ExpandVisitor extends Done {
   visit(value: Value): object {
     const { id } = value.idref;
-    if (id in this.done) return { ref: id };
-    this.done[id] = id;
+    if (this.isDone(id)) return { ref: id };
+    else this.set(id);
     const { idref, children, list, ...rest } = value;
     return {
       id,

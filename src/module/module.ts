@@ -1,7 +1,7 @@
 import assert from "assert";
-import type { Done, Id } from "./types";
+import type { Id } from "./types";
 import { Option, isDefined, objMap, option } from "./util";
-import { Value } from "./value";
+import { Done, Value } from "./value";
 
 export class Module {
   private list: Value[] = [];
@@ -32,7 +32,7 @@ export class Module {
   transform<T extends Transform>(Classes: (new () => T)[]): void {
     Classes.forEach((Class) => {
       const transform = new Class();
-      const visitor = new TransformVisitor(this, transform);
+      const visitor = new TransformVisitor(transform);
       const top = visitor.visit(this.top.value);
       this.setTop(top);
     });
@@ -44,18 +44,16 @@ export interface Transform {
   apply(value: Value, visit: () => void): Value | void;
 }
 
-class TransformVisitor {
-  module: Module;
+class TransformVisitor extends Done {
   transform: Transform;
-  done: Done = {};
-  constructor(module: Module, transform: Transform) {
-    this.module = module;
+  constructor(transform: Transform) {
+    super();
     this.transform = transform;
   }
   visit(value: Value): Value {
     const { id } = value.idref;
-    if (id in this.done) return value;
-    else this.done[id] = id;
+    if (this.isDone(id)) return value;
+    else this.set(id);
     const recurse = () => {
       if (isDefined(value.list)) {
         value.list = value.list.map((v) => this.visit(v));

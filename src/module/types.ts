@@ -1,2 +1,4 @@
 export type { Module, Transform } from "./module";
-export type { Done, Id, IdRef, Value } from "./value";
+export type { IdRef, Value } from "./value";
+
+export type Id = number;
