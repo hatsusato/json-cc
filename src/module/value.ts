@@ -1,10 +1,13 @@
 import { isEmpty, objMap } from "../util";
-import type { Done, Id, Module } from "./types";
+import type { Module } from "./types";
 
+export type Id = number;
 export interface IdRef {
   id: Id;
   module: Module;
 }
+export type Done = Record<Id, Id>;
+
 export class Value {
   idref: IdRef;
   type: string;
@@ -17,18 +20,13 @@ export class Value {
     this.children = {};
   }
   show(stringify: boolean = true): string | object {
-    const expand = new ExpandVisitor(this.idref.module);
-    const value = expand.visit(this);
+    const value = new ExpandVisitor().visit(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
   }
 }
 
 class ExpandVisitor {
-  module: Module;
   done: Done = {};
-  constructor(module: Module) {
-    this.module = module;
-  }
   visit(value: Value): object {
     const { id } = value.idref;
     if (id in this.done) return { ref: id };

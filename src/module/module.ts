@@ -1,6 +1,6 @@
 import assert from "assert";
-import type { Done, Id, Option, Transform } from "./types";
-import { isDefined, objMap, option } from "./util";
+import type { Done, Id } from "./types";
+import { Option, isDefined, objMap, option } from "./util";
 import { Value } from "./value";
 
 export class Module {
@@ -37,6 +37,11 @@ export class Module {
       this.setTop(top);
     });
   }
+}
+
+export interface Transform {
+  readonly tag: string;
+  apply(value: Value, visit: () => void): Value | void;
 }
 
 class TransformVisitor {
