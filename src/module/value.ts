@@ -1,4 +1,5 @@
-import { type Id, type Module } from "./types";
+import { isEmpty, objMap } from "../util";
+import type { Done, Id, Module } from "./types";
 
 export class Value {
   module: Module;
@@ -14,6 +15,26 @@ export class Value {
     this.children = {};
   }
   show(stringify: boolean = true): string | object {
-    return this.module.show(this.id, stringify);
+    const expand = new ExpandVisitor(this.module);
+    const value = expand.visit(this.id);
+    return stringify ? JSON.stringify(value, undefined, 2) : value;
+  }
+}
+
+class ExpandVisitor {
+  module: Module;
+  done: Done = {};
+  constructor(module: Module) {
+    this.module = module;
+  }
+  visit(id: Id): object {
+    if (id in this.done) return { ref: id };
+    this.done[id] = id;
+    const { module: _, children, list, ...value } = this.module.at(id);
+    return {
+      ...value,
+      ...(isEmpty(list) ? {} : { list: list?.map((x) => this.visit(x.id)) }),
+      children: objMap(children, ([, v]) => this.visit(v.id)),
+    };
   }
 }

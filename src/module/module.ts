@@ -1,9 +1,7 @@
 import assert from "assert";
-import { isDefined, isEmpty, objMap, option } from "../util";
-import { type Id, type Option, type Transform } from "./types";
+import type { Done, Id, Option, Transform } from "./types";
+import { isDefined, objMap, option } from "./util";
 import { Value } from "./value";
-
-type Done = Record<Id, Id>;
 
 export class Module {
   private list: Value[] = [];
@@ -19,14 +17,6 @@ export class Module {
     if (isDefined(value.list)) clone.list = value.list;
     if (isDefined(value.symbol)) clone.symbol = value.symbol;
     return clone;
-  }
-  expand(id: Id): object {
-    const visitor = new ExpandVisitor(this);
-    return visitor.visit(id);
-  }
-  show(id?: Id, stringify: boolean = true): string | object {
-    const obj = this.expand(id ?? this.top.value);
-    return stringify ? JSON.stringify(obj, undefined, 2) : obj;
   }
   getTop(): Id {
     return this.top.value;
@@ -68,23 +58,5 @@ class TransformVisitor {
       value.children = objMap(value.children, ([_, v]) => this.visit(v.id));
     };
     return this.transform.apply(value, recurse) ?? value;
-  }
-}
-
-class ExpandVisitor {
-  module: Module;
-  done: Done = {};
-  constructor(module: Module) {
-    this.module = module;
-  }
-  visit(id: Id): object {
-    if (id in this.done) return { ref: id };
-    this.done[id] = id;
-    const { module: _, children, list, ...value } = this.module.at(id);
-    return {
-      ...value,
-      ...(isEmpty(list) ? {} : { list: list?.map((x) => this.visit(x.id)) }),
-      children: objMap(children, ([, v]) => this.visit(v.id)),
-    };
   }
 }
