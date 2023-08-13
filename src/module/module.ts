@@ -1,6 +1,6 @@
 import assert from "assert";
+import { Option, isDefined, objMap, option } from "../util";
 import type { Id } from "./types";
-import { Option, isDefined, objMap, option } from "./util";
 import { Done, Value } from "./value";
 
 export class Module {
