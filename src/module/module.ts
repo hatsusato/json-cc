@@ -24,8 +24,9 @@ export class Module {
     const visitor = new ExpandVisitor(this);
     return visitor.visit(id);
   }
-  show(id?: Id): string {
-    return JSON.stringify(this.expand(id ?? this.top.value), undefined, 2);
+  show(id?: Id, stringify: boolean = true): string | object {
+    const obj = this.expand(id ?? this.top.value);
+    return stringify ? JSON.stringify(obj, undefined, 2) : obj;
   }
   getTop(): Id {
     return this.top.value;

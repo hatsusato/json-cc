@@ -13,7 +13,7 @@ export class Value {
     this.type = type;
     this.children = {};
   }
-  show(): void {
-    console.log(this.module.show(this.id));
+  show(stringify: boolean = true): string | object {
+    return this.module.show(this.id, stringify);
   }
 }
