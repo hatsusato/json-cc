@@ -15,6 +15,19 @@ export interface IdRef {
   id: Id;
   module: Module;
 }
+
+export class ValueRef {
+  readonly id: Id;
+  private module: Module;
+  constructor(id: Id, module: Module) {
+    this.id = id;
+    this.module = module;
+  }
+  get value(): Value {
+    return this.module.at(this.id);
+  }
+}
+
 export class Value {
   idref: IdRef;
   type: string;
