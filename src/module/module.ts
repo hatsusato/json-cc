@@ -51,7 +51,7 @@ class TransformVisitor extends Done {
     this.transform = transform;
   }
   visit(value: Value): Value {
-    const { id } = value.idref;
+    const id = value.id;
     if (this.isDone(id)) return value;
     else this.set(id);
     const recurse = () => {

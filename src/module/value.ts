@@ -1,4 +1,4 @@
-import { isEmpty, objMap } from "../util";
+import { isDefined, isEmpty, objMap } from "../util";
 import type { Id, Module } from "./types";
 
 export class Done {
@@ -9,11 +9,6 @@ export class Done {
   isDone(id: Id): boolean {
     return id in this.done;
   }
-}
-
-export interface IdRef {
-  id: Id;
-  module: Module;
 }
 
 export class ValueRef {
@@ -29,30 +24,34 @@ export class ValueRef {
 }
 
 export class Value {
-  idref: IdRef;
+  private ref: ValueRef;
   type: string;
   symbol?: string;
   list?: Value[];
   children: Record<string, Value> = {};
   constructor(module: Module, id: Id, type: string) {
-    this.idref = { id, module };
+    this.ref = new ValueRef(id, module);
     this.type = type;
   }
   show(stringify: boolean = true): string | object {
     const value = new ExpandVisitor().visit(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
   }
+  get id(): Id {
+    return this.ref.id;
+  }
 }
 
 class ExpandVisitor extends Done {
   visit(value: Value): object {
-    const { id } = value.idref;
+    const id = value.id;
     if (this.isDone(id)) return { ref: id };
     else this.set(id);
-    const { idref, children, list, ...rest } = value;
+    const { children, list, type, symbol } = value;
     return {
       id,
-      ...rest,
+      type,
+      ...(isDefined(symbol) ? { symbol } : {}),
       ...(isEmpty(list) ? {} : { list: list?.map((v) => this.visit(v)) }),
       children: objMap(children, ([, v]) => this.visit(v)),
     };
