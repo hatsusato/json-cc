@@ -1,15 +1,5 @@
-import { isDefined, isEmpty, objMap } from "../util";
 import type { Id, Module } from "./types";
-
-export class Done {
-  done: Record<Id, Id> = {};
-  set(id: Id, next?: Id): void {
-    this.done[id] = next ?? id;
-  }
-  isDone(id: Id): boolean {
-    return id in this.done;
-  }
-}
+import { ExpandVisitor } from "./visit";
 
 export class ValueRef {
   readonly id: Id;
@@ -39,21 +29,5 @@ export class Value {
   }
   get id(): Id {
     return this.ref.id;
-  }
-}
-
-class ExpandVisitor extends Done {
-  visit(value: Value): object {
-    const id = value.id;
-    if (this.isDone(id)) return { ref: id };
-    else this.set(id);
-    const { children, list, type, symbol } = value;
-    return {
-      id,
-      type,
-      ...(isDefined(symbol) ? { symbol } : {}),
-      ...(isEmpty(list) ? {} : { list: list?.map((v) => this.visit(v)) }),
-      children: objMap(children, ([, v]) => this.visit(v)),
-    };
   }
 }
