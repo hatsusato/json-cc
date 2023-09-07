@@ -8,18 +8,18 @@ const parse = (source: string): unknown => {
 };
 class ConvertIR implements Transform {
   tag = "convert IR";
-  apply(value: Value, visit: () => void): Value | void {
+  apply(value: Value, visit: () => void): void {
     visit();
     if (value.type === "top") {
-      return value.children.translation_unit;
+      // return value.children.translation_unit;
     } else if (value.type === "translation_unit") {
       value.type = "module";
     } else if (value.type === "compound_statement") {
-      return value.children.statement_list;
+      // return value.children.statement_list;
     } else if (value.type === "statement_list") {
-      return value.list?.[0];
+      // return value.list?.[0];
     } else if (value.type === "statement") {
-      return value.children.jump_statement;
+      // return value.children.jump_statement;
     } else if (value.type === "jump_statement") {
       if ("return" in value.children) {
         value.type = "return_statement";

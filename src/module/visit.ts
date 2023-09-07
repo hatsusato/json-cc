@@ -13,7 +13,7 @@ class Done {
 
 export interface Transform {
   readonly tag: string;
-  apply(value: Value, visit: () => void): Value | void;
+  apply(value: Value, visit: () => void): void;
 }
 
 export class TransformVisitor extends Done {
@@ -22,17 +22,17 @@ export class TransformVisitor extends Done {
     super();
     this.transform = transform;
   }
-  visit(value: Value): Value {
+  visit(value: Value): void {
     const id = value.id;
-    if (this.isDone(id)) return value;
+    if (this.isDone(id)) return;
     else this.set(id);
     const recurse = () => {
       if (isDefined(value.list)) {
-        value.list = value.list.map((v) => this.visit(v));
+        value.list.forEach((v) => this.visit(v));
       }
-      value.children = objMap(value.children, ([_, v]) => this.visit(v));
+      objMap(value.children, ([_, v]) => this.visit(v));
     };
-    return this.transform.apply(value, recurse) ?? value;
+    this.transform.apply(value, recurse);
   }
 }
 

@@ -34,8 +34,7 @@ export class Module {
     Classes.forEach((Class) => {
       const transform = new Class();
       const visitor = new TransformVisitor(transform);
-      const top = visitor.visit(this.top.value);
-      this.setTop(top);
+      visitor.visit(this.top.value);
     });
   }
 }
