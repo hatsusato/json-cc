@@ -2,7 +2,7 @@ import assert from "assert";
 import { Option, isDefined, option } from "../util";
 import type { Id, Transform } from "./types";
 import { Value } from "./value";
-import { TransformVisitor } from "./visit";
+import { applyTransforms } from "./visit";
 
 export class Module {
   private list: Value[] = [];
@@ -31,10 +31,6 @@ export class Module {
     return value;
   }
   transform<T extends Transform>(Classes: (new () => T)[]): void {
-    Classes.forEach((Class) => {
-      const transform = new Class();
-      const visitor = new TransformVisitor(transform);
-      visitor.visit(this.top.value);
-    });
+    applyTransforms(this.top.value, Classes);
   }
 }

@@ -16,7 +16,7 @@ export interface Transform {
   apply(value: Value, visit: () => void): void;
 }
 
-export class TransformVisitor extends Done {
+class TransformVisitor extends Done {
   transform: Transform;
   constructor(transform: Transform) {
     super();
@@ -35,8 +35,16 @@ export class TransformVisitor extends Done {
     this.transform.apply(value, recurse);
   }
 }
+export const applyTransforms = <T extends Transform>(
+  top: Value,
+  Classes: (new () => T)[]
+): void => {
+  Classes.forEach((Class) => {
+    new TransformVisitor(new Class()).visit(top);
+  });
+};
 
-export class ExpandVisitor extends Done {
+class ExpandVisitor extends Done {
   visit(value: Value): object {
     const id = value.id;
     if (this.isDone(id)) return { ref: id };
@@ -51,3 +59,6 @@ export class ExpandVisitor extends Done {
     };
   }
 }
+export const expandValue = (value: Value): object => {
+  return new ExpandVisitor().visit(value);
+};

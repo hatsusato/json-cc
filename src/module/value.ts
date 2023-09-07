@@ -1,5 +1,5 @@
 import type { Id, Module } from "./types";
-import { ExpandVisitor } from "./visit";
+import { expandValue } from "./visit";
 
 export class ValueRef {
   readonly id: Id;
@@ -24,7 +24,7 @@ export class Value {
     this.type = type;
   }
   show(stringify: boolean = true): string | object {
-    const value = new ExpandVisitor().visit(this);
+    const value = expandValue(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
   }
   get id(): Id {
