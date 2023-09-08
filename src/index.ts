@@ -10,34 +10,28 @@ const parse = (source: string): unknown => {
 };
 class MakeModule implements Transform {
   tag = "make Module";
-  module: Option<Value> = option();
-  source_filename: string;
-  datalayout: string =
-    "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
-  triple: string = "x86_64-unknown-linux-gnu";
+  module: Value;
   constructor(source_filename: string) {
-    this.source_filename = source_filename;
-  }
-  initModule(value: Value) {
     const module = newValue("module");
-    module.children.source_filename = newSymbol(this.source_filename);
-    module.children.datalayout = newSymbol(this.datalayout);
-    module.children.triple = newSymbol(this.triple);
+    const datalayout =
+      "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
+    const triple = "x86_64-unknown-linux-gnu";
+    module.children.source_filename = newSymbol(source_filename);
+    module.children.datalayout = newSymbol(datalayout);
+    module.children.triple = newSymbol(triple);
     module.children.functions = newList();
-    this.module = option(module);
+    this.module = module;
   }
   newFunction(): Value {
-    const module = this.module.unwrap();
     const func = newValue("function");
     func.list = option([]);
-    module.children.functions.list.unwrap().push(func);
+    this.module.children.functions.list.unwrap().push(func);
     return func;
   }
   apply(value: Value, visit: () => void): void {
     if (value.type === "translation_unit") {
-      this.initModule(value);
       visit();
-      value.children.ir = this.module.unwrap();
+      value.children.ir = this.module;
     } else if (value.type === "function_definition") {
       value.children.ir = this.newFunction();
     } else {
