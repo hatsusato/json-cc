@@ -82,6 +82,35 @@ class ConvertIR implements Transform {
   }
 }
 
+class EmitIR implements Transform {
+  tag = "emit IR";
+  output: string[];
+  constructor(output: string[]) {
+    this.output = output;
+  }
+  apply(value: Value, visit: () => void): void {
+    if (value.type === "module") {
+      const { source_filename, datalayout, triple } = value.children;
+      this.output.push(
+        `source_filename = "${source_filename.getSymbol()}"`,
+        `target datalayout = "${datalayout.getSymbol()}"`,
+        `target triple = "${triple.getSymbol()}"`
+      );
+      visit();
+    } else if (value.type === "function") {
+      const name = "main";
+      this.output.push(`define dso_local i32 @${name}() {`);
+      visit();
+      this.output.push(`}`);
+    } else if (value.type === "inst.ret") {
+      const ret = value.children.value.getSymbol();
+      this.output.push(`  ret i32 ${ret}`);
+      visit();
+    } else {
+      visit();
+    }
+  }
+}
 const emitIR = (
   source_filename: string,
   output: string[]
@@ -93,36 +122,11 @@ const emitIR = (
           console.info(value.show());
         }
       }
-    : class implements Transform {
-        tag = "emit IR";
-        apply(value: Value, visit: () => void): void | Value {
-          if (value.type === "module") {
-            const datalayout =
-              "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
-            const triple = "x86_64-unknown-linux-gnu";
-            output.push(
-              `source_filename = "${source_filename}"`,
-              `target datalayout = "${datalayout}"`,
-              `target triple = "${triple}"`
-            );
-            visit();
-          } else if (value.type === "function_definition") {
-            const name =
-              value.children.declarator.children.direct_declarator.children
-                .direct_declarator.children.identifier.symbol;
-            output.push(`define dso_local i32 @${name}() {`);
-            visit();
-            output.push(`}`);
-          } else if (value.type === "return_statement") {
-            const ret =
-              value.children.expression.children.integer_constant.symbol;
-            output.push(`  ret i32 ${ret}`);
-          } else {
-            visit();
-          }
+    : class extends EmitIR {
+        constructor() {
+          super(output);
         }
       };
-
 const main = (argv: string[]): number => {
   if (2 < argv.length) {
     argv.slice(2).forEach((source) => {
@@ -135,7 +139,6 @@ const main = (argv: string[]): number => {
         applyTransforms([
           makeModule(source),
           MakeFunction,
-          ConvertIR,
           emitIR(source, output),
         ]);
         console.log(output.join("\n"));
