@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { convert, type Transform, type Value } from "./module";
 import { getPool } from "./module/pool";
+import { newValue } from "./module/value";
 import { Option, isDefined, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -19,7 +20,7 @@ class MakeModule implements Transform {
     this.source_filename = source_filename;
   }
   initModule(value: Value) {
-    const module = value.newValue("module");
+    const module = newValue("module");
     module.children.source_filename = value.newSymbol(this.source_filename);
     module.children.datalayout = value.newSymbol(this.datalayout);
     module.children.triple = value.newSymbol(this.triple);
@@ -28,7 +29,7 @@ class MakeModule implements Transform {
   }
   newFunction(): Value {
     const module = this.module.unwrap();
-    const func = module.newValue("function");
+    const func = newValue("function");
     func.list = option([]);
     module.children.functions.list.unwrap().push(func);
     return func;
@@ -61,7 +62,7 @@ class MakeFunction implements Transform {
   }
   newBlock(): Value {
     const func = this.getFunction();
-    const block = func.newValue("block");
+    const block = newValue("block");
     block.list = option([]);
     func.list.unwrap().push(block);
     return block;
@@ -79,7 +80,7 @@ class MakeFunction implements Transform {
   }
   newInst(type: string): Value {
     const block = this.getBlock();
-    const inst = block.newValue(`inst.${type}`);
+    const inst = newValue(`inst.${type}`);
     block.list.unwrap().push(inst);
     return inst;
   }

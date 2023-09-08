@@ -18,16 +18,13 @@ export class Value {
     const value = expandValue(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
   }
-  newValue(type: string): Value {
-    return getPool().createValue(type);
-  }
   newSymbol(symbol: string): Value {
-    const value = this.newValue("symbol");
+    const value = newValue("symbol");
     value.symbol = option(symbol);
     return value;
   }
   newList(): Value {
-    const value = this.newValue("list");
+    const value = newValue("list");
     value.list = option([]);
     return value;
   }
@@ -36,3 +33,5 @@ export class Value {
     this.list.unwrap().push(elem);
   }
 }
+
+export const newValue = (type: string) => getPool().createValue(type);
