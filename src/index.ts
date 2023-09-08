@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransforms, convert, type Transform, type Value } from "./module";
-import { newBlock, newFunction, newModule, newValue } from "./module/value";
-import { Option, isDefined, option } from "./util";
+import { newFunction, newModule, newValue } from "./module/value";
+import { Option, option } from "./util";
 
 const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
@@ -39,16 +39,8 @@ class MakeFunction implements Transform {
   getFunction(): Value {
     return this.func.unwrap();
   }
-  getBlock(): Value {
-    const block = this.getFunction().getList().at(-1);
-    if (isDefined(block)) {
-      return block;
-    } else {
-      return newBlock(this.func.unwrap());
-    }
-  }
   newInst(type: string): Value {
-    const block = this.getBlock();
+    const block = this.getFunction().getBlock();
     const inst = newValue(`inst.${type}`);
     block.list.unwrap().push(inst);
     return inst;

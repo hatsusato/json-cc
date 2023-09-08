@@ -28,6 +28,11 @@ export class Value {
     assert(this.type === "list" && this.list.ok);
     return this.list.unwrap();
   }
+  getBlock(): Value {
+    assert(this.type === "function");
+    const block = this.children.blocks.getList().at(-1);
+    return block ?? newBlock(this);
+  }
 }
 
 export const newValue = (type: string) => getPool().createValue(type);
