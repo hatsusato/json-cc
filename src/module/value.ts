@@ -41,3 +41,14 @@ export const newList = () => {
   value.list = option([]);
   return value;
 };
+export const newModule = (source_filename: string): Value => {
+  const module = newValue("module");
+  const datalayout =
+    "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
+  const triple = "x86_64-unknown-linux-gnu";
+  module.children.source_filename = newSymbol(source_filename);
+  module.children.datalayout = newSymbol(datalayout);
+  module.children.triple = newSymbol(triple);
+  module.children.functions = newList();
+  return module;
+};
