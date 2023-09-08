@@ -1,3 +1,4 @@
+import { assert } from "console";
 import { Option, option } from "../util";
 import { getPool } from "./pool";
 import type { Id } from "./types";
@@ -16,6 +17,14 @@ export class Value {
   show(stringify: boolean = true): string | object {
     const value = expandValue(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
+  }
+  getSymbol(): string {
+    assert(this.type === "symbol" && this.symbol.ok);
+    return this.symbol.unwrap();
+  }
+  getList(): Value[] {
+    assert(this.type === "list" && this.list.ok);
+    return this.list.unwrap();
   }
 }
 
