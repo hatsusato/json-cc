@@ -1,6 +1,5 @@
 import assert from "assert";
 import { isDefined } from "../util";
-import { AstVisitor } from "./ast";
 import type { Id, Transform } from "./types";
 import { Value } from "./value";
 import { applyTransforms } from "./visit";
@@ -33,10 +32,5 @@ export class ValuePool {
   }
   transform<T extends Transform>(Classes: (new () => T)[]): void {
     applyTransforms(this.top, Classes);
-  }
-  convert(ast: unknown) {
-    const visitor = new AstVisitor(this);
-    const value = visitor.visit("top", ast);
-    this.top.children = value.children;
   }
 }

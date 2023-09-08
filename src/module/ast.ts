@@ -2,11 +2,13 @@ import assert from "assert";
 import { asString, isArray, isObject, objMap, option } from "../util";
 import type { Value, ValuePool } from "./types";
 
-export class AstVisitor {
+class AstVisitor {
   pool: ValuePool;
+  top: Value;
   null: Value;
   constructor(pool: ValuePool) {
     this.pool = pool;
+    this.top = pool.getTop();
     this.null = pool.createValue("null");
   }
   visit(key: string, ast: unknown): Value {
@@ -31,4 +33,12 @@ export class AstVisitor {
     }
     return value;
   }
+  updateTop(top: Value) {
+    this.top.children = top.children;
+  }
 }
+export const convert = (ast: unknown, pool: ValuePool) => {
+  const visitor = new AstVisitor(pool);
+  const top = visitor.visit("top", ast);
+  visitor.updateTop(top);
+};
