@@ -71,3 +71,9 @@ export const newBlock = (func: Value): Value => {
   func.children.blocks.getList().push(block);
   return block;
 };
+export const newInstruction = (block: Value, opcode: string): Value => {
+  assert(block.type === "block");
+  const inst = newValue(`inst.${opcode}`);
+  block.children.instructions.getList().push(inst);
+  return inst;
+};

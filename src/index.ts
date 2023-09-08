@@ -1,7 +1,12 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransforms, convert, type Transform, type Value } from "./module";
-import { newFunction, newModule, newValue } from "./module/value";
+import {
+  newFunction,
+  newInstruction,
+  newModule,
+  newSymbol,
+} from "./module/value";
 import { Option, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -39,12 +44,6 @@ class MakeFunction implements Transform {
   getFunction(): Value {
     return this.func.unwrap();
   }
-  newInst(type: string): Value {
-    const block = this.getFunction().getBlock();
-    const inst = newValue(`inst.${type}`);
-    block.list.unwrap().push(inst);
-    return inst;
-  }
   apply(value: Value, visit: () => void): void {
     if (value.type === "function_definition") {
       this.func = option(value.children.ir);
@@ -55,8 +54,10 @@ class MakeFunction implements Transform {
         expr.type === "primary_expression" &&
         "integer_constant" in expr.children
       ) {
-        const inst = this.newInst("ret");
-        inst.symbol = expr.children.integer_constant.symbol;
+        const inst = newInstruction(this.block.unwrap(), "ret");
+        inst.children.value = newSymbol(
+          expr.children.integer_constant.symbol.unwrap()
+        );
       }
     } else {
       visit();
