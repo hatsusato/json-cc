@@ -12,7 +12,7 @@ export class ValuePool {
   }
   createValue(type: string): Value {
     const id = this.list.length;
-    const value = new Value(this, id, type);
+    const value = new Value(id, type);
     this.list.push(value);
     return value;
   }
@@ -34,3 +34,5 @@ export class ValuePool {
     applyTransforms(this.top, Classes);
   }
 }
+const globalPool = new ValuePool();
+export const getPool = () => globalPool;

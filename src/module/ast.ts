@@ -1,13 +1,13 @@
 import assert from "assert";
 import { asString, isArray, isObject, objMap, option } from "../util";
-import type { Value, ValuePool } from "./types";
+import { getPool } from "./pool";
+import type { Value } from "./types";
 
 class AstVisitor {
-  pool: ValuePool;
   top: Value;
   null: Value;
-  constructor(pool: ValuePool) {
-    this.pool = pool;
+  constructor() {
+    const pool = getPool();
     this.top = pool.getTop();
     this.null = pool.createValue("null");
   }
@@ -22,7 +22,7 @@ class AstVisitor {
         key = asString(ast.type);
       }
     }
-    const value = this.pool.createValue(key);
+    const value = getPool().createValue(key);
     if (isArray(ast)) {
       value.list = option(ast.map((x) => this.visit(key, x)));
     } else if ("symbol" in ast) {
@@ -37,8 +37,8 @@ class AstVisitor {
     this.top.children = top.children;
   }
 }
-export const convert = (ast: unknown, pool: ValuePool) => {
-  const visitor = new AstVisitor(pool);
+export const convert = (ast: unknown) => {
+  const visitor = new AstVisitor();
   const top = visitor.visit("top", ast);
   visitor.updateTop(top);
 };
