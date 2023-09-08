@@ -29,15 +29,15 @@ export class Option<T> {
     this._value = value as T;
     this.ok = ok;
   }
-  get value(): T {
+  unwrap(): T {
     assert(this.ok);
     return this._value;
   }
   or(alt: T): T {
-    return this.ok ? this.value : alt;
+    return this.ok ? this.unwrap() : alt;
   }
   map<U>(f: (x: T) => U, pred?: (x: unknown) => boolean): Option<U> {
-    return this.ok ? option(f(this.value), pred) : option();
+    return this.ok ? option(f(this.unwrap()), pred) : option();
   }
   as<U>(pred: (x: unknown) => boolean): Option<U> {
     return this.map((x) => x as unknown as U, pred);

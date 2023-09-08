@@ -1,4 +1,4 @@
-import { isDefined, isEmpty, objMap } from "../util";
+import { objMap } from "../util";
 import type { Id, Value } from "./types";
 
 class Done {
@@ -27,8 +27,8 @@ class TransformVisitor extends Done {
     if (this.isDone(id)) return;
     else this.set(id);
     const recurse = () => {
-      if (isDefined(value.list)) {
-        value.list.forEach((v) => this.visit(v));
+      if (value.list.ok) {
+        value.list.unwrap().forEach((v) => this.visit(v));
       }
       objMap(value.children, ([_, v]) => this.visit(v));
     };
@@ -53,8 +53,8 @@ class ExpandVisitor extends Done {
     return {
       id,
       type,
-      ...(isDefined(symbol) ? { symbol } : {}),
-      ...(isEmpty(list) ? {} : { list: list?.map((v) => this.visit(v)) }),
+      ...(symbol.ok ? { symbol: symbol.unwrap() } : {}),
+      ...(list.ok ? { list: list.unwrap().map((v) => this.visit(v)) } : {}),
       children: objMap(children, ([, v]) => this.visit(v)),
     };
   }

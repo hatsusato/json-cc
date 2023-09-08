@@ -1,3 +1,4 @@
+import { Option, option } from "../util";
 import type { Id, Module } from "./types";
 import { expandValue } from "./visit";
 
@@ -17,8 +18,8 @@ export class Value {
   private ref: ValueRef;
   private module: Module;
   type: string;
-  symbol?: string;
-  list?: Value[];
+  symbol: Option<string> = option();
+  list: Option<Value[]> = option();
   children: Record<string, Value> = {};
   constructor(module: Module, id: Id, type: string) {
     this.ref = new ValueRef(id, module);

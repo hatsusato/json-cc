@@ -20,7 +20,7 @@ export class Module {
     return clone;
   }
   getTop(): Value {
-    return this.top.value;
+    return this.top.unwrap();
   }
   setTop(value: Value): void {
     this.top = option(value);
@@ -31,6 +31,6 @@ export class Module {
     return value;
   }
   transform<T extends Transform>(Classes: (new () => T)[]): void {
-    applyTransforms(this.top.value, Classes);
+    applyTransforms(this.top.unwrap(), Classes);
   }
 }
