@@ -40,10 +40,6 @@ const makeModule = (source_filename: string): new () => Transform =>
 class MakeFunction implements Transform {
   tag = "make Function";
   func: Option<Value> = option();
-  block: Option<Value> = option();
-  getFunction(): Value {
-    return this.func.unwrap();
-  }
   apply(value: Value, visit: () => void): void {
     if (value.type === "function_definition") {
       this.func = option(value.children.ir);
@@ -54,7 +50,7 @@ class MakeFunction implements Transform {
         expr.type === "primary_expression" &&
         "integer_constant" in expr.children
       ) {
-        const inst = newInstruction(this.block.unwrap(), "ret");
+        const inst = newInstruction(this.func.unwrap().getBlock(), "ret");
         inst.children.value = newSymbol(
           expr.children.integer_constant.symbol.unwrap()
         );
