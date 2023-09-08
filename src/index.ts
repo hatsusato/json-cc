@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { convert, type Transform, type Value } from "./module";
 import { getPool } from "./module/pool";
-import { newValue } from "./module/value";
+import { newList, newSymbol, newValue } from "./module/value";
 import { Option, isDefined, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -21,10 +21,10 @@ class MakeModule implements Transform {
   }
   initModule(value: Value) {
     const module = newValue("module");
-    module.children.source_filename = value.newSymbol(this.source_filename);
-    module.children.datalayout = value.newSymbol(this.datalayout);
-    module.children.triple = value.newSymbol(this.triple);
-    module.children.functions = value.newList();
+    module.children.source_filename = newSymbol(this.source_filename);
+    module.children.datalayout = newSymbol(this.datalayout);
+    module.children.triple = newSymbol(this.triple);
+    module.children.functions = newList();
     this.module = option(module);
   }
   newFunction(): Value {
