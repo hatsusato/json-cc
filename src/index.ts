@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransforms, convert, type Transform, type Value } from "./module";
-import { newList, newModule, newValue } from "./module/value";
+import { newFunction, newModule, newValue } from "./module/value";
 import { Option, isDefined, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -14,18 +14,12 @@ class MakeModule implements Transform {
   constructor(source_filename: string) {
     this.module = newModule(source_filename);
   }
-  newFunction(): Value {
-    const func = newValue("function");
-    func.children.blocks = newList();
-    this.module.children.functions.getList().push(func);
-    return func;
-  }
   apply(value: Value, visit: () => void): void {
     if (value.type === "translation_unit") {
       visit();
       value.children.ir = this.module;
     } else if (value.type === "function_definition") {
-      value.children.ir = this.newFunction();
+      value.children.ir = newFunction(this.module);
     } else {
       visit();
     }

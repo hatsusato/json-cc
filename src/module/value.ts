@@ -52,3 +52,10 @@ export const newModule = (source_filename: string): Value => {
   module.children.functions = newList();
   return module;
 };
+export const newFunction = (module: Value): Value => {
+  assert(module.type === "module");
+  const func = newValue("function");
+  func.children.blocks = newList();
+  module.children.functions.getList().push(func);
+  return func;
+};
