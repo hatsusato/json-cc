@@ -10,9 +10,19 @@ const parse = (source: string): unknown => {
 class MakeModule implements Transform {
   tag = "make Module";
   module: Option<Value> = option();
+  source_filename: string;
+  datalayout: string =
+    "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
+  triple: string = "x86_64-unknown-linux-gnu";
+  constructor(source_filename: string) {
+    this.source_filename = source_filename;
+  }
   initModule(value: Value) {
     const module = value.newValue("module");
     module.list = option([]);
+    module.children.source_filename = value.newSymbol(this.source_filename);
+    module.children.datalayout = value.newSymbol(this.datalayout);
+    module.children.triple = value.newSymbol(this.triple);
     this.module = option(module);
   }
   newFunction(): Value {
@@ -34,6 +44,13 @@ class MakeModule implements Transform {
     }
   }
 }
+const makeModule = (source_filename: string): new () => Transform =>
+  class extends MakeModule {
+    constructor() {
+      super(source_filename);
+    }
+  };
+
 class MakeFunction implements Transform {
   tag = "make Function";
   func: Option<Value> = option();
@@ -156,7 +173,7 @@ const main = (argv: string[]): number => {
         const module = convert(ast);
         const output: string[] = [];
         module.transform([
-          MakeModule,
+          makeModule(source),
           MakeFunction,
           ConvertIR,
           emitIR(source, output),

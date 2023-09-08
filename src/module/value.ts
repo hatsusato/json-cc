@@ -36,6 +36,11 @@ export class Value {
   newValue(type: string): Value {
     return this.module.createValue(type);
   }
+  newSymbol(symbol: string): Value {
+    const value = this.newValue("symbol");
+    value.symbol = option(symbol);
+    return value;
+  }
   get id(): Id {
     return this.ref.id;
   }
