@@ -59,3 +59,10 @@ export const newFunction = (module: Value): Value => {
   module.children.functions.getList().push(func);
   return func;
 };
+export const newBlock = (func: Value): Value => {
+  assert(func.type === "function");
+  const block = newValue("block");
+  block.children.instructions = newList();
+  func.children.blocks.getList().push(block);
+  return block;
+};

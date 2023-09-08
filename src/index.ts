@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransforms, convert, type Transform, type Value } from "./module";
-import { newFunction, newModule, newValue } from "./module/value";
+import { newBlock, newFunction, newModule, newValue } from "./module/value";
 import { Option, isDefined, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -39,22 +39,12 @@ class MakeFunction implements Transform {
   getFunction(): Value {
     return this.func.unwrap();
   }
-  newBlock(): Value {
-    const func = this.getFunction();
-    const block = newValue("block");
-    block.list = option([]);
-    func.list.unwrap().push(block);
-    return block;
-  }
   getBlock(): Value {
-    const list = this.getFunction().list.unwrap();
-    const block = list.at(-1);
+    const block = this.getFunction().getList().at(-1);
     if (isDefined(block)) {
       return block;
     } else {
-      const block = this.newBlock();
-      list.push(block);
-      return block;
+      return newBlock(this.func.unwrap());
     }
   }
   newInst(type: string): Value {
