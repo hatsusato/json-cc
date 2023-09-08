@@ -1,7 +1,6 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
-import { convert, type Transform, type Value } from "./module";
-import { getPool } from "./module/pool";
+import { applyTransforms, convert, type Transform, type Value } from "./module";
 import { newList, newSymbol, newValue } from "./module/value";
 import { Option, isDefined, option } from "./util";
 
@@ -174,7 +173,7 @@ const main = (argv: string[]): number => {
       } else {
         convert(ast);
         const output: string[] = [];
-        getPool().transform([
+        applyTransforms([
           makeModule(source),
           MakeFunction,
           ConvertIR,

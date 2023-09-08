@@ -1,8 +1,7 @@
 import assert from "assert";
 import { isDefined } from "../util";
-import type { Id, Transform } from "./types";
+import type { Id } from "./types";
 import { Value } from "./value";
-import { applyTransforms } from "./visit";
 
 export class ValuePool {
   private list: Value[] = [];
@@ -23,9 +22,6 @@ export class ValuePool {
     const value = this.list[id];
     assert(isDefined(value));
     return value;
-  }
-  transform<T extends Transform>(Classes: (new () => T)[]): void {
-    applyTransforms(this.top, Classes);
   }
 }
 const globalPool = new ValuePool();
