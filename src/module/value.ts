@@ -4,24 +4,14 @@ import { getPool } from "./pool";
 import type { Id } from "./types";
 import { expandValue } from "./visit";
 
-export class ValueRef {
-  readonly id: Id;
-  constructor(id: Id) {
-    this.id = id;
-  }
-  get value(): Value {
-    return getPool().at(this.id);
-  }
-}
-
 export class Value {
-  private ref: ValueRef;
+  id: Id;
   type: string;
   symbol: Option<string> = option();
   list: Option<Value[]> = option();
   children: Record<string, Value> = {};
   constructor(id: Id, type: string) {
-    this.ref = new ValueRef(id);
+    this.id = id;
     this.type = type;
   }
   show(stringify: boolean = true): string | object {
@@ -44,8 +34,5 @@ export class Value {
   pushList(elem: Value): void {
     assert(this.type === "list" && this.list.ok);
     this.list.unwrap().push(elem);
-  }
-  get id(): Id {
-    return this.ref.id;
   }
 }
