@@ -1,26 +1,17 @@
 import assert from "assert";
-import { Option, asString, isArray, isObject, objMap, option } from "../util";
+import { asString, isArray, isObject, objMap, option } from "../util";
 import type { Value, ValuePool } from "./types";
 
 export class AstVisitor {
   pool: ValuePool;
-  null: Option<Value> = option();
+  null: Value;
   constructor(pool: ValuePool) {
     this.pool = pool;
-  }
-  create(type: string): Value {
-    return this.pool.createValue(type);
-  }
-  getNull(): Value {
-    if (!this.null.ok) {
-      const value = this.create("null");
-      this.null = option(value);
-    }
-    return this.null.unwrap();
+    this.null = pool.createValue("null");
   }
   visit(key: string, ast: unknown): Value {
     if (ast === null) {
-      return this.getNull();
+      return this.null;
     } else {
       assert(
         isArray(ast) || (isObject(ast) && ("symbol" in ast || "type" in ast))
@@ -29,7 +20,7 @@ export class AstVisitor {
         key = asString(ast.type);
       }
     }
-    const value = this.create(key);
+    const value = this.pool.createValue(key);
     if (isArray(ast)) {
       value.list = option(ast.map((x) => this.visit(key, x)));
     } else if ("symbol" in ast) {
