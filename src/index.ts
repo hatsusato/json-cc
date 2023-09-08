@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { convert, type Transform, type Value } from "./module";
-import { Option, option } from "./util";
+import { Option, isDefined, option } from "./util";
 
 const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
@@ -18,6 +18,7 @@ class MakeModule implements Transform {
   newFunction(): Value {
     const module = this.module.unwrap();
     const func = module.newValue("function");
+    func.list = option([]);
     module.list.unwrap().push(func);
     return func;
   }
@@ -28,6 +29,55 @@ class MakeModule implements Transform {
       value.children.ir = this.module.unwrap();
     } else if (value.type === "function_definition") {
       value.children.ir = this.newFunction();
+    } else {
+      visit();
+    }
+  }
+}
+class MakeFunction implements Transform {
+  tag = "make Function";
+  func: Option<Value> = option();
+  block: Option<Value> = option();
+  getFunction(): Value {
+    return this.func.unwrap();
+  }
+  newBlock(): Value {
+    const func = this.getFunction();
+    const block = func.newValue("block");
+    block.list = option([]);
+    func.list.unwrap().push(block);
+    return block;
+  }
+  getBlock(): Value {
+    const list = this.getFunction().list.unwrap();
+    const block = list.at(-1);
+    if (isDefined(block)) {
+      return block;
+    } else {
+      const block = this.newBlock();
+      list.push(block);
+      return block;
+    }
+  }
+  newInst(type: string): Value {
+    const block = this.getBlock();
+    const inst = block.newValue(`inst.${type}`);
+    block.list.unwrap().push(inst);
+    return inst;
+  }
+  apply(value: Value, visit: () => void): void {
+    if (value.type === "function_definition") {
+      this.func = option(value.children.ir);
+      visit();
+    } else if (value.type === "jump_statement" && "return" in value.children) {
+      const expr = value.children.expression;
+      if (
+        expr.type === "primary_expression" &&
+        "integer_constant" in expr.children
+      ) {
+        const inst = this.newInst("ret");
+        inst.symbol = expr.children.integer_constant.symbol;
+      }
     } else {
       visit();
     }
@@ -105,7 +155,12 @@ const main = (argv: string[]): number => {
       } else {
         const module = convert(ast);
         const output: string[] = [];
-        module.transform([MakeModule, ConvertIR, emitIR(source, output)]);
+        module.transform([
+          MakeModule,
+          MakeFunction,
+          ConvertIR,
+          emitIR(source, output),
+        ]);
         console.log(output.join("\n"));
       }
     });
