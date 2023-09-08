@@ -16,12 +16,6 @@ export class ValuePool {
     this.list.push(value);
     return value;
   }
-  cloneValue(value: Value): Value {
-    const clone = this.createValue(value.type);
-    if (isDefined(value.list)) clone.list = value.list;
-    if (isDefined(value.symbol)) clone.symbol = value.symbol;
-    return clone;
-  }
   getTop(): Value {
     return this.top;
   }

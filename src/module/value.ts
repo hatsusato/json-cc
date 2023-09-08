@@ -28,9 +28,6 @@ export class Value {
     const value = expandValue(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
   }
-  clone(): Value {
-    return getPool().cloneValue(this);
-  }
   newValue(type: string): Value {
     return getPool().createValue(type);
   }
