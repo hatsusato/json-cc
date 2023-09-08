@@ -14,9 +14,11 @@ export class Value {
     this.id = id;
     this.type = type;
   }
-  show(stringify: boolean = true): string | object {
-    const value = expandValue(this);
-    return stringify ? JSON.stringify(value, undefined, 2) : value;
+  show(): string {
+    return JSON.stringify(this.showObject(), undefined, 2);
+  }
+  showObject(): object {
+    return expandValue(this);
   }
   getSymbol(): string {
     assert(this.type === "symbol" && this.symbol.ok);
