@@ -1,11 +1,38 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { convert, type Transform, type Value } from "./module";
+import { Option, option } from "./util";
 
 const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
   return new CParser().parse(input);
 };
+class MakeModule implements Transform {
+  tag = "make Module";
+  module: Option<Value> = option();
+  initModule(value: Value) {
+    const module = value.newValue("module");
+    module.list = option([]);
+    this.module = option(module);
+  }
+  newFunction(): Value {
+    const module = this.module.unwrap();
+    const func = module.newValue("function");
+    module.list.unwrap().push(func);
+    return func;
+  }
+  apply(value: Value, visit: () => void): void {
+    if (value.type === "translation_unit") {
+      this.initModule(value);
+      visit();
+      value.children.ir = this.module.unwrap();
+    } else if (value.type === "function_definition") {
+      value.children.ir = this.newFunction();
+    } else {
+      visit();
+    }
+  }
+}
 class ConvertIR implements Transform {
   tag = "convert IR";
   apply(value: Value, visit: () => void): void {
@@ -78,7 +105,7 @@ const main = (argv: string[]): number => {
       } else {
         const module = convert(ast);
         const output: string[] = [];
-        module.transform([ConvertIR, emitIR(source, output)]);
+        module.transform([MakeModule, ConvertIR, emitIR(source, output)]);
         console.log(output.join("\n"));
       }
     });
