@@ -19,17 +19,17 @@ class MakeModule implements Transform {
   }
   initModule(value: Value) {
     const module = value.newValue("module");
-    module.list = option([]);
     module.children.source_filename = value.newSymbol(this.source_filename);
     module.children.datalayout = value.newSymbol(this.datalayout);
     module.children.triple = value.newSymbol(this.triple);
+    module.children.functions = value.newList();
     this.module = option(module);
   }
   newFunction(): Value {
     const module = this.module.unwrap();
     const func = module.newValue("function");
     func.list = option([]);
-    module.list.unwrap().push(func);
+    module.children.functions.list.unwrap().push(func);
     return func;
   }
   apply(value: Value, visit: () => void): void {
