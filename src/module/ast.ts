@@ -2,7 +2,7 @@ import assert from "assert";
 import { Option, asString, isArray, isObject, objMap, option } from "../util";
 import type { Value, ValuePool } from "./types";
 
-class AstVisitor {
+export class AstVisitor {
   pool: ValuePool;
   null: Option<Value> = option();
   constructor(pool: ValuePool) {
@@ -41,9 +41,3 @@ class AstVisitor {
     return value;
   }
 }
-export const convert = (pool: ValuePool, ast: unknown): Value => {
-  const visitor = new AstVisitor(pool);
-  const value = visitor.visit("top", ast);
-  value.type = "top";
-  return value;
-};

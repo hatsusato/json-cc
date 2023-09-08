@@ -1,13 +1,16 @@
 import assert from "assert";
-import { Option, isDefined, option } from "../util";
-import { convert } from "./ast";
+import { isDefined } from "../util";
+import { AstVisitor } from "./ast";
 import type { Id, Transform } from "./types";
 import { Value } from "./value";
 import { applyTransforms } from "./visit";
 
 export class ValuePool {
   private list: Value[] = [];
-  private top: Option<Value> = option();
+  private top: Value;
+  constructor() {
+    this.top = this.createValue("top");
+  }
   createValue(type: string): Value {
     const id = this.list.length;
     const value = new Value(this, id, type);
@@ -21,10 +24,7 @@ export class ValuePool {
     return clone;
   }
   getTop(): Value {
-    return this.top.unwrap();
-  }
-  setTop(value: Value): void {
-    this.top = option(value);
+    return this.top;
   }
   at(id: Id): Value {
     const value = this.list[id];
@@ -32,9 +32,11 @@ export class ValuePool {
     return value;
   }
   transform<T extends Transform>(Classes: (new () => T)[]): void {
-    applyTransforms(this.top.unwrap(), Classes);
+    applyTransforms(this.top, Classes);
   }
   convert(ast: unknown) {
-    this.setTop(convert(this, ast));
+    const visitor = new AstVisitor(this);
+    const value = visitor.visit("top", ast);
+    this.top.children = value.children;
   }
 }
