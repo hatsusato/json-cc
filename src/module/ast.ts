@@ -1,7 +1,6 @@
 import assert from "assert";
 import { Option, asString, isArray, isObject, objMap, option } from "../util";
-import { ValuePool } from "./pool";
-import type { Value } from "./types";
+import type { Value, ValuePool } from "./types";
 
 class AstVisitor {
   pool: ValuePool;
@@ -42,11 +41,9 @@ class AstVisitor {
     return value;
   }
 }
-export const convert = (ast: unknown): ValuePool => {
-  const pool = new ValuePool();
+export const convert = (pool: ValuePool, ast: unknown): Value => {
   const visitor = new AstVisitor(pool);
   const value = visitor.visit("top", ast);
   value.type = "top";
-  pool.setTop(value);
-  return pool;
+  return value;
 };

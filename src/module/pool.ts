@@ -1,5 +1,6 @@
 import assert from "assert";
 import { Option, isDefined, option } from "../util";
+import { convert } from "./ast";
 import type { Id, Transform } from "./types";
 import { Value } from "./value";
 import { applyTransforms } from "./visit";
@@ -32,5 +33,8 @@ export class ValuePool {
   }
   transform<T extends Transform>(Classes: (new () => T)[]): void {
     applyTransforms(this.top.unwrap(), Classes);
+  }
+  convert(ast: unknown) {
+    this.setTop(convert(this, ast));
   }
 }

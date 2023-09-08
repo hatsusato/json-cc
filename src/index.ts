@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
-import { convert, type Transform, type Value } from "./module";
+import { ValuePool, type Transform, type Value } from "./module";
 import { Option, isDefined, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -170,9 +170,10 @@ const main = (argv: string[]): number => {
       if (source === "all.c") {
         writeFileSync("all.json", JSON.stringify(ast, undefined, 2) + "\n");
       } else {
-        const module = convert(ast);
+        const pool = new ValuePool();
+        pool.convert(ast);
         const output: string[] = [];
-        module.transform([
+        pool.transform([
           makeModule(source),
           MakeFunction,
           ConvertIR,
