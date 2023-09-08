@@ -1,4 +1,3 @@
-import { assert } from "console";
 import { Option, option } from "../util";
 import { getPool } from "./pool";
 import type { Id } from "./types";
@@ -17,10 +16,6 @@ export class Value {
   show(stringify: boolean = true): string | object {
     const value = expandValue(this);
     return stringify ? JSON.stringify(value, undefined, 2) : value;
-  }
-  pushList(elem: Value): void {
-    assert(this.type === "list" && this.list.ok);
-    this.list.unwrap().push(elem);
   }
 }
 
