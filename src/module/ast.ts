@@ -34,6 +34,8 @@ class AstVisitor {
 }
 export const convert = (ast: unknown) => {
   const visitor = new AstVisitor();
-  const top = visitor.visit("top", ast);
-  getPool().getTop().children = top.children;
+  const { translation_unit } = visitor.visit("top", ast).children;
+  const top = getPool().getTop();
+  top.type = translation_unit.type;
+  top.list = translation_unit.list;
 };

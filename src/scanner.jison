@@ -195,7 +195,7 @@ directive               [#][^\n]*
 %%
 top: translation_unit {
     return {
-        type: "translation_unit",
+        type: "top",
         translation_unit: $1,
     };
 }
