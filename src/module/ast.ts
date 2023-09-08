@@ -1,16 +1,16 @@
 import assert from "assert";
 import { Option, asString, isArray, isObject, objMap, option } from "../util";
-import { Module } from "./module";
+import { ValuePool } from "./pool";
 import type { Value } from "./types";
 
 class AstVisitor {
-  module: Module;
+  pool: ValuePool;
   null: Option<Value> = option();
-  constructor(module: Module) {
-    this.module = module;
+  constructor(pool: ValuePool) {
+    this.pool = pool;
   }
   create(type: string): Value {
-    return this.module.createValue(type);
+    return this.pool.createValue(type);
   }
   getNull(): Value {
     if (!this.null.ok) {
@@ -42,11 +42,11 @@ class AstVisitor {
     return value;
   }
 }
-export const convert = (ast: unknown): Module => {
-  const module = new Module();
-  const visitor = new AstVisitor(module);
+export const convert = (ast: unknown): ValuePool => {
+  const pool = new ValuePool();
+  const visitor = new AstVisitor(pool);
   const value = visitor.visit("top", ast);
   value.type = "top";
-  module.setTop(value);
-  return module;
+  pool.setTop(value);
+  return pool;
 };

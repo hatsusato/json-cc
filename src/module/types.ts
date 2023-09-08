@@ -1,4 +1,4 @@
-export type { Module } from "./module";
+export type { ValuePool } from "./pool";
 export type { Value } from "./value";
 export type { Transform } from "./visit";
 

@@ -1,30 +1,30 @@
 import { assert } from "console";
 import { Option, option } from "../util";
-import type { Id, Module } from "./types";
+import type { Id, ValuePool } from "./types";
 import { expandValue } from "./visit";
 
 export class ValueRef {
   readonly id: Id;
-  private readonly module: Module;
-  constructor(id: Id, module: Module) {
+  private readonly pool: ValuePool;
+  constructor(id: Id, pool: ValuePool) {
     this.id = id;
-    this.module = module;
+    this.pool = pool;
   }
   get value(): Value {
-    return this.module.at(this.id);
+    return this.pool.at(this.id);
   }
 }
 
 export class Value {
   private ref: ValueRef;
-  private module: Module;
+  private pool: ValuePool;
   type: string;
   symbol: Option<string> = option();
   list: Option<Value[]> = option();
   children: Record<string, Value> = {};
-  constructor(module: Module, id: Id, type: string) {
-    this.ref = new ValueRef(id, module);
-    this.module = module;
+  constructor(pool: ValuePool, id: Id, type: string) {
+    this.ref = new ValueRef(id, pool);
+    this.pool = pool;
     this.type = type;
   }
   show(stringify: boolean = true): string | object {
@@ -32,10 +32,10 @@ export class Value {
     return stringify ? JSON.stringify(value, undefined, 2) : value;
   }
   clone(): Value {
-    return this.module.cloneValue(this);
+    return this.pool.cloneValue(this);
   }
   newValue(type: string): Value {
-    return this.module.createValue(type);
+    return this.pool.createValue(type);
   }
   newSymbol(symbol: string): Value {
     const value = this.newValue("symbol");

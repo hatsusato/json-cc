@@ -4,7 +4,7 @@ import type { Id, Transform } from "./types";
 import { Value } from "./value";
 import { applyTransforms } from "./visit";
 
-export class Module {
+export class ValuePool {
   private list: Value[] = [];
   private top: Option<Value> = option();
   createValue(type: string): Value {
