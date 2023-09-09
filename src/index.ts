@@ -45,6 +45,14 @@ class MarkDeclarator implements Transform {
     node.children.is_decl = newFlag(true);
   }
 }
+class MarkParameter implements Transform {
+  tag = "mark Parameter";
+  filter = "parameter_type_list";
+  apply(node: Node, visit: (cont: boolean) => void): void {
+    visit(true);
+    node.children.is_param = newFlag(true);
+  }
+}
 
 type SymbolTable = Record<string, Node>;
 class MakeSymbolTable implements Transform {
@@ -72,7 +80,7 @@ class MakeSymbolTable implements Transform {
       visit(true);
       this.table.pop();
     } else if (node.type === "identifier") {
-      if (node.children.is_decl.getFlag()) {
+      if ("is_decl" in node.children) {
         this.insertSymbol(node);
       } else {
         console.log("TODO");
@@ -101,6 +109,10 @@ class MakeFunction implements Transform {
         );
       }
       visit(false);
+    } else if (node.type === "identifier") {
+      if ("is_decl" in node.children && !("is_param" in node.children)) {
+        this.func.unwrap().children.name = node;
+      }
     }
   }
 }
@@ -121,7 +133,7 @@ class EmitIR implements Transform {
         `target triple = "${triple.getSymbol()}"`
       );
     } else if (node.type === "function") {
-      const name = "main";
+      const name = node.children.name.getSymbol();
       this.output.push(`define dso_local i32 @${name}() {`);
       visit(true);
       this.output.push(`}`);
@@ -162,6 +174,7 @@ const main = (argv: string[]): number => {
         const output: string[] = [];
         applyTransform(translation_unit, makeModule(source));
         applyTransform(translation_unit, MarkDeclarator);
+        applyTransform(translation_unit, MarkParameter);
         applyTransform(translation_unit, MakeSymbolTable);
         applyTransform(translation_unit, MakeFunction);
         applyTransform(translation_unit, emitIR(source, output));
