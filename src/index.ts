@@ -98,21 +98,34 @@ class MakeFunction implements Transform {
     if (node.type === "function_definition") {
       this.func = node.children.function;
       visit(true);
-    } else if (node.type === "jump_statement" && "return" in node.children) {
-      const expr = node.children.expression;
-      if (
-        expr.type === "primary_expression" &&
-        "integer_constant" in expr.children
-      ) {
-        const inst = newInstruction(this.func.getBlock(), "ret");
-        inst.children.value = newSymbol(
-          expr.children.integer_constant.getSymbol()
-        );
-      }
-      visit(false);
     } else if (node.type === "identifier") {
       if ("is_decl" in node.children && !("is_param" in node.children)) {
         this.func.children.name = node;
+      }
+    }
+  }
+}
+
+class BuildBlock implements Transform {
+  tag = "build Block";
+  filter = "function_definition";
+  func: Node = getNull();
+  apply(node: Node, visit: (cont: boolean) => void): void {
+    if (node.type === "function_definition") {
+      this.func = node.children.function;
+      visit(true);
+    } else if (node.type === "jump_statement") {
+      if ("return" in node.children) {
+        const expr = node.children.expression;
+        if (
+          expr.type === "primary_expression" &&
+          "integer_constant" in expr.children
+        ) {
+          const inst = newInstruction(this.func.getBlock(), "ret");
+          inst.children.value = newSymbol(
+            expr.children.integer_constant.getSymbol()
+          );
+        }
       }
     }
   }
@@ -179,6 +192,7 @@ const main = (argv: string[]): number => {
           MarkParameter,
           MakeSymbolTable,
           MakeFunction,
+          BuildBlock,
           emitIR(source, output),
         ].forEach((transform) =>
           applyTransform(translation_unit, new transform())
