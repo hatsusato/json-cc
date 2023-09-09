@@ -7,6 +7,7 @@ import { expandNode } from "./visit";
 type Leaf =
   | { type: "symbol"; symbol: string }
   | { type: "list"; list: Node[] }
+  | { type: "ref"; ref: Id }
   | { type: "branch" };
 
 export class Node {
@@ -38,6 +39,15 @@ export class Node {
     this.leaf = { type: "list", list };
     return this;
   }
+  getRef(): Node {
+    return this.leaf.type === "ref"
+      ? getPool().at(this.leaf.ref)
+      : unreachable();
+  }
+  setRef(node: Node): Node {
+    this.leaf = { type: "ref", ref: node.id };
+    return this;
+  }
   getBlock(): Node {
     assert(this.type === "function");
     const block = this.children.blocks.getList().at(-1);
@@ -45,10 +55,11 @@ export class Node {
   }
 }
 
-export const newNode = (type: string): Node => getPool().createNode(type);
+const newNode = (type: string): Node => getPool().createNode(type);
 export const newSymbol = (symbol: string): Node =>
   newNode("symbol").setSymbol(symbol);
 export const newList = (): Node => newNode("list").setList([]);
+export const newRef = (node: Node): Node => newNode("ref").setRef(node);
 export const newModule = (source_filename: string): Node => {
   const module = newNode("module");
   const datalayout =

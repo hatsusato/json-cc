@@ -68,6 +68,8 @@ class ExpandVisitor extends Done {
         ? { symbol: leaf.symbol }
         : leaf.type === "list"
         ? { list: leaf.list.map((v) => this.visit(v)) }
+        : leaf.type === "ref"
+        ? { ref: leaf.ref }
         : {}),
       children: objMap(children, ([, v]) => this.visit(v)),
     };
