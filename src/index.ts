@@ -17,28 +17,6 @@ const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
   return new CParser().parse(input);
 };
-class MakeModule implements Transform {
-  tag = "make Module";
-  module: Node;
-  constructor(source_filename: string) {
-    this.module = getPool().getModule();
-  }
-  apply(node: Node, visit: (cont: boolean | Node) => void): void {
-    if (node.type === "translation_unit") {
-      visit(true);
-      node.children.module = this.module;
-    } else if (node.type === "function_definition") {
-      node.children.function = newFunction(this.module);
-      visit(false);
-    }
-  }
-}
-const makeModule = (source_filename: string): new () => Transform =>
-  class extends MakeModule implements Transform {
-    constructor() {
-      super(source_filename);
-    }
-  };
 
 const setName = (src: Node, dst: Node) => {
   if ("name" in src.children) {
@@ -107,8 +85,9 @@ class MakeFunction implements Transform {
   func: Node = getNull();
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
-      this.func = node.children.function;
-      setName(node.children.declarator, this.func);
+      const func = newFunction(getPool().getModule());
+      setName(node.children.declarator, func);
+      node.children.function = func;
       visit(false);
     }
   }
@@ -141,13 +120,15 @@ class BuildBlock implements Transform {
 
 class EmitIR implements Transform {
   tag = "emit IR";
-  filter = "module";
   output: string[];
   constructor(output: string[]) {
     this.output = output;
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
-    if (node.type === "module") {
+    if (node.type === "translation_unit") {
+      console.log(node.show());
+      visit(getPool().getModule());
+    } else if (node.type === "module") {
       const { source_filename, datalayout, triple } = node.children;
       this.output.push(
         `source_filename = "${source_filename.getSymbol()}"`,
@@ -196,7 +177,6 @@ const main = (argv: string[]): number => {
         const output: string[] = [];
         getPool().initModule(source);
         [
-          makeModule(source),
           SimplifyDeclarators,
           MakeSymbolTable,
           MakeFunction,
