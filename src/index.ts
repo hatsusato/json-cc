@@ -8,6 +8,7 @@ import {
   getPool,
   newFunction,
   newInstruction,
+  newNode,
   newSymbol,
   type Node,
   type Transform,
@@ -97,15 +98,34 @@ class MakeFunction implements Transform {
 class CollectDeclarators implements Transform {
   tag = "collect Declarators";
   func: Node = getNull();
+  allocs: Node = getNull();
+  init(func: Node) {
+    const allocs = newNode("allocs");
+    this.func = func;
+    this.allocs = func.children.allocs = allocs;
+  }
+  newAlloca(name: Node): Node {
+    const block = this.func.getBlock();
+    const inst = newInstruction(block, "alloca");
+    inst.children.name = name;
+    return inst;
+  }
+  pushInst(inst: Node) {
+    const block = this.func.getBlock();
+    block.children.instructions.getList().push(inst);
+  }
+  insertAlloc(alloc: Node) {
+    const { name } = alloc.children;
+    this.allocs.children[name.getSymbol()] = alloc;
+  }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
-      this.func = node.children.function;
+      this.init(node.children.function);
       visit(node.children.compound_statement);
     } else if (node.type === "declarator") {
-      const block = this.func.getBlock();
-      const inst = newInstruction(block, "alloca");
-      inst.children.name = node.children.name;
-      block.children.instructions.getList().push(inst);
+      const inst = this.newAlloca(node.children.name);
+      this.pushInst(inst);
+      this.insertAlloc(inst);
     }
   }
 }

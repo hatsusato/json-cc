@@ -71,7 +71,7 @@ export class Node {
   }
 }
 
-const newNode = (type: string): Node => getPool().createNode(type);
+export const newNode = (type: string): Node => getPool().createNode(type);
 export const newSymbol = (symbol: string): Node =>
   newNode("symbol").setSymbol(symbol);
 export const newList = (): Node => newNode("list").setList([]);
