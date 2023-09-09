@@ -2,7 +2,6 @@ import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransform, convert, type Node, type Transform } from "./module";
 import {
-  newFlag,
   newFunction,
   newInstruction,
   newModule,
@@ -65,15 +64,6 @@ class SimplifyDeclarators implements Transform {
   }
 }
 
-class MarkDeclarator implements Transform {
-  tag = "mark Declarator";
-  filter = "declarator";
-  apply(node: Node, visit: (cont: boolean | Node) => void): void {
-    visit(true);
-    node.children.is_decl = newFlag(true);
-  }
-}
-
 type SymbolTable = Record<string, Node>;
 class MakeSymbolTable implements Transform {
   tag = "make SymbolTable";
@@ -94,17 +84,16 @@ class MakeSymbolTable implements Transform {
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "declarator") {
-      visit(true);
+      if ("name" in node.children) {
+        this.insertSymbol(node.children.name);
+      } else {
+        console.log("TODO");
+      }
+      visit(false);
     } else if (node.type === "compound_statement") {
       this.table.push({});
       visit(true);
       this.table.pop();
-    } else if (node.type === "identifier") {
-      if ("is_decl" in node.children) {
-        this.insertSymbol(node);
-      } else {
-        console.log("TODO");
-      }
     }
   }
 }
@@ -205,7 +194,6 @@ const main = (argv: string[]): number => {
         [
           makeModule(source),
           SimplifyDeclarators,
-          MarkDeclarator,
           MakeSymbolTable,
           MakeFunction,
           BuildBlock,
