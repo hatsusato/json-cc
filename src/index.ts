@@ -1,3 +1,4 @@
+import assert from "assert";
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import {
@@ -124,20 +125,24 @@ class EmitIR implements Transform {
   constructor(output: string[]) {
     this.output = output;
   }
+  printModuleHeader(module: Node) {
+    assert(module.type === "module");
+    const { source_filename, datalayout, triple } = module.children;
+    this.output.push(
+      `source_filename = "${source_filename.getSymbol()}"`,
+      `target datalayout = "${datalayout.getSymbol()}"`,
+      `target triple = "${triple.getSymbol()}"`
+    );
+  }
+  printFunctionHeader(func: Node) {
+    const name = func.children.name.getSymbol();
+    this.output.push(`define dso_local i32 @${name}() {`);
+  }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
-    if (node.type === "translation_unit") {
-      console.log(node.show());
-      visit(getPool().getModule());
-    } else if (node.type === "module") {
-      const { source_filename, datalayout, triple } = node.children;
-      this.output.push(
-        `source_filename = "${source_filename.getSymbol()}"`,
-        `target datalayout = "${datalayout.getSymbol()}"`,
-        `target triple = "${triple.getSymbol()}"`
-      );
+    if (node.type === "module") {
+      this.printModuleHeader(node);
     } else if (node.type === "function") {
-      const name = node.children.name.getSymbol();
-      this.output.push(`define dso_local i32 @${name}() {`);
+      this.printFunctionHeader(node);
       visit(true);
       this.output.push(`}`);
     } else if (
@@ -150,10 +155,7 @@ class EmitIR implements Transform {
     }
   }
 }
-const emitIR = (
-  source_filename: string,
-  output: string[]
-): new () => Transform =>
+const emitIR = (output: string[]): new () => Transform =>
   process.env.DEBUG === "1"
     ? class implements Transform {
         tag = "print module";
@@ -181,10 +183,10 @@ const main = (argv: string[]): number => {
           MakeSymbolTable,
           MakeFunction,
           BuildBlock,
-          emitIR(source, output),
         ].forEach((transform) =>
           applyTransform(translation_unit, new transform())
         );
+        applyTransform(getPool().getModule(), new (emitIR(output))());
         console.log(output.join("\n"));
       }
     });
