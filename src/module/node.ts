@@ -76,7 +76,8 @@ export const newBlock = (func: Node): Node => {
 };
 export const newInstruction = (block: Node, opcode: string): Node => {
   assert(block.type === "block");
-  const inst = newNode(`inst.${opcode}`);
+  const inst = newNode(`instruction`);
+  inst.children.opcode = newSymbol(opcode);
   block.children.instructions.getList().push(inst);
   return inst;
 };

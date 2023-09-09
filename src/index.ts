@@ -102,10 +102,12 @@ class EmitIR implements Transform {
       this.output.push(`define dso_local i32 @${name}() {`);
       visit();
       this.output.push(`}`);
-    } else if (node.type === "inst.ret") {
-      const ret = node.children.value.getSymbol();
-      this.output.push(`  ret i32 ${ret}`);
-      visit();
+    } else if (
+      node.type === "instruction" &&
+      node.children.opcode.getSymbol() === "ret"
+    ) {
+      const value = node.children.value.getSymbol();
+      this.output.push(`  ret i32 ${value}`);
     } else {
       visit();
     }
