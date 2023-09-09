@@ -1,8 +1,16 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
-import { applyTransform, convert, type Node, type Transform } from "./module";
-import { newFunction, newInstruction, newSymbol } from "./module/node";
-import { getNull, getPool } from "./module/pool";
+import {
+  applyTransform,
+  convert,
+  getNull,
+  getPool,
+  newFunction,
+  newInstruction,
+  newSymbol,
+  type Node,
+  type Transform,
+} from "./module";
 import { isDefined, unreachable } from "./util";
 
 const parse = (source: string): unknown => {
