@@ -173,12 +173,16 @@ const main = (argv: string[]): number => {
       } else {
         const translation_unit = convert(ast);
         const output: string[] = [];
-        applyTransform(translation_unit, makeModule(source));
-        applyTransform(translation_unit, MarkDeclarator);
-        applyTransform(translation_unit, MarkParameter);
-        applyTransform(translation_unit, MakeSymbolTable);
-        applyTransform(translation_unit, MakeFunction);
-        applyTransform(translation_unit, emitIR(source, output));
+        [
+          makeModule(source),
+          MarkDeclarator,
+          MarkParameter,
+          MakeSymbolTable,
+          MakeFunction,
+          emitIR(source, output),
+        ].forEach((transform) =>
+          applyTransform(translation_unit, new transform())
+        );
         console.log(output.join("\n"));
       }
     });

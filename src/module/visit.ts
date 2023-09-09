@@ -44,14 +44,13 @@ class TransformVisitor extends Done {
     }
   }
 }
-export const applyTransform = <T extends Transform>(
+export const applyTransform = (
   translation_unit: Node,
-  Class: new () => T
+  transform: Transform
 ): void => {
-  const instance = new Class();
-  new TransformVisitor(instance).visit(
+  new TransformVisitor(transform).visit(
     translation_unit,
-    !isDefined(instance.filter)
+    !isDefined(transform.filter)
   );
 };
 
