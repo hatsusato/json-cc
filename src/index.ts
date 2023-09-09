@@ -138,6 +138,12 @@ class BuildBlock implements Transform {
     if (node.type === "function_definition") {
       this.func = node.children.function;
       visit(true);
+    } else if (node.type === "assignment_expression") {
+      const { left, right } = node.children;
+      const name = left.children.identifier.getSymbol();
+      const inst = newInstruction(this.func.getBlock(), "store");
+      inst.children.src = right;
+      inst.children.dst = this.func.children.allocs.children[name];
     } else if (node.type === "jump_statement") {
       if ("return" in node.children) {
         const expr = node.children.expression;
@@ -166,7 +172,9 @@ class NumberingRegisters implements Transform {
       node.children.register = newSymbol(`${this.number++}`);
       visit(node.children.instructions);
     } else if (node.type === "instruction") {
-      node.children.register = newSymbol(`${this.number++}`);
+      if (node.children.opcode.getSymbol() !== "store") {
+        node.children.register = newSymbol(`${this.number++}`);
+      }
       visit(false);
     }
   }
@@ -201,11 +209,27 @@ class EmitIR implements Transform {
       const { value } = inst.children;
       this.output.push([" ", op, "i32", value.getSymbol()].join(" "));
     } else if (op === "alloca") {
-      const { name, register } = inst.children;
+      const { register } = inst.children;
       this.output.push(
         [" ", `%${register.getSymbol()}`, "=", op, "i32,", "align", "4"].join(
           " "
         )
+      );
+    } else if (op === "store") {
+      const { src, dst } = inst.children;
+      const { integer_constant } = src.children;
+      const { register } = dst.children;
+      this.output.push(
+        [
+          " ",
+          op,
+          "i32",
+          `${integer_constant.getSymbol()},`,
+          "i32*",
+          `%${register.getSymbol()},`,
+          "align",
+          "4",
+        ].join(" ")
       );
     }
   }
