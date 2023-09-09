@@ -1,5 +1,9 @@
 import assert from "assert";
 
+export const unreachable = (msg?: string): never => {
+  throw new Error(`unreachable: ${msg}`);
+};
+
 export const isDefined = <T>(x: T | null | undefined): x is T =>
   x !== undefined && x !== null;
 export const isString = (x: unknown): x is string => typeof x === "string";

@@ -28,8 +28,8 @@ class TransformVisitor extends Done {
     if (this.isDone(id)) return;
     else this.set(id);
     const recurse = () => {
-      if (node.list.ok) {
-        node.list.unwrap().forEach((v) => this.visit(v));
+      if (node.leaf.type === "list") {
+        node.leaf.list.forEach((v) => this.visit(v));
       }
       objMap(node.children, ([_, v]) => this.visit(v));
     };
@@ -50,12 +50,15 @@ class ExpandVisitor extends Done {
     const id = node.id;
     if (this.isDone(id)) return { ref: id };
     else this.set(id);
-    const { children, list, type, symbol } = node;
+    const { children, leaf, type } = node;
     return {
       id,
       type,
-      ...(symbol.ok ? { symbol: symbol.unwrap() } : {}),
-      ...(list.ok ? { list: list.unwrap().map((v) => this.visit(v)) } : {}),
+      ...(leaf.type === "symbol"
+        ? { symbol: leaf.symbol }
+        : leaf.type === "list"
+        ? { list: leaf.list.map((v) => this.visit(v)) }
+        : {}),
       children: objMap(children, ([, v]) => this.visit(v)),
     };
   }

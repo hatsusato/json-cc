@@ -1,5 +1,5 @@
 import assert from "assert";
-import { asString, isArray, isObject, objMap, option } from "../util";
+import { asString, isArray, isObject, objMap } from "../util";
 import { getPool } from "./pool";
 import type { Node } from "./types";
 
@@ -22,9 +22,9 @@ class AstVisitor {
     }
     const node = getPool().createNode(key);
     if (isArray(ast)) {
-      node.list = option(ast.map((x) => this.visit(key, x)));
+      node.setList(ast.map((x) => this.visit(key, x)));
     } else if ("symbol" in ast) {
-      node.symbol = option(asString(ast.symbol));
+      node.setSymbol(asString(ast.symbol));
     } else if ("type" in ast) {
       const { type: _, ...children } = ast;
       node.children = objMap(children, ([k, v]) => this.visit(k, v));
@@ -37,5 +37,5 @@ export const convert = (ast: unknown) => {
   const { translation_unit } = visitor.visit("top", ast).children;
   const top = getPool().getTop();
   top.type = translation_unit.type;
-  top.list = translation_unit.list;
+  top.setList(translation_unit.getList());
 };

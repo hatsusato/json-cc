@@ -1,14 +1,18 @@
-import { assert } from "console";
-import { Option, option } from "../util";
+import assert from "assert";
+import { unreachable } from "../util";
 import { getPool } from "./pool";
 import type { Id } from "./types";
 import { expandNode } from "./visit";
 
+type Leaf =
+  | { type: "symbol"; symbol: string }
+  | { type: "list"; list: Node[] }
+  | { type: "branch" };
+
 export class Node {
   id: Id;
   type: string;
-  symbol: Option<string> = option();
-  list: Option<Node[]> = option();
+  leaf: Leaf = { type: "branch" };
   children: Record<string, Node> = {};
   constructor(id: Id, type: string) {
     this.id = id;
@@ -21,12 +25,18 @@ export class Node {
     return expandNode(this);
   }
   getSymbol(): string {
-    assert(this.type === "symbol" && this.symbol.ok);
-    return this.symbol.unwrap();
+    return this.leaf.type === "symbol" ? this.leaf.symbol : unreachable();
+  }
+  setSymbol(symbol: string): Node {
+    this.leaf = { type: "symbol", symbol };
+    return this;
   }
   getList(): Node[] {
-    assert(this.type === "list" && this.list.ok);
-    return this.list.unwrap();
+    return this.leaf.type === "list" ? this.leaf.list : unreachable();
+  }
+  setList(list: Node[]): Node {
+    this.leaf = { type: "list", list };
+    return this;
   }
   getBlock(): Node {
     assert(this.type === "function");
@@ -35,17 +45,10 @@ export class Node {
   }
 }
 
-export const newNode = (type: string) => getPool().createNode(type);
-export const newSymbol = (symbol: string) => {
-  const node = newNode("symbol");
-  node.symbol = option(symbol);
-  return node;
-};
-export const newList = () => {
-  const node = newNode("list");
-  node.list = option([]);
-  return node;
-};
+export const newNode = (type: string): Node => getPool().createNode(type);
+export const newSymbol = (symbol: string): Node =>
+  newNode("symbol").setSymbol(symbol);
+export const newList = (): Node => newNode("list").setList([]);
 export const newModule = (source_filename: string): Node => {
   const module = newNode("module");
   const datalayout =

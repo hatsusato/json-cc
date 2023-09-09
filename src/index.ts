@@ -52,7 +52,7 @@ class MakeFunction implements Transform {
       ) {
         const inst = newInstruction(this.func.unwrap().getBlock(), "ret");
         inst.children.value = newSymbol(
-          expr.children.integer_constant.symbol.unwrap()
+          expr.children.integer_constant.getSymbol()
         );
       }
     } else {
