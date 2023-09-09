@@ -48,14 +48,8 @@ class TransformVisitor extends Done {
     }
   }
 }
-export const applyTransform = (
-  translation_unit: Node,
-  transform: Transform
-): void => {
-  new TransformVisitor(transform).visit(
-    translation_unit,
-    !isDefined(transform.filter)
-  );
+export const applyTransform = (top: Node, transform: Transform): void => {
+  new TransformVisitor(transform).visit(top, !isDefined(transform.filter));
 };
 
 class ExpandVisitor extends Done {

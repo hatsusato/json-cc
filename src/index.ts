@@ -135,6 +135,23 @@ class BuildBlock implements Transform {
   }
 }
 
+class NumberingRegisters implements Transform {
+  tag = "numbering Registers";
+  number: number = 0;
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
+    if (node.type === "function") {
+      this.number = 0;
+      visit(node.children.blocks);
+    } else if (node.type === "block") {
+      node.children.register = newSymbol(`${this.number++}`);
+      visit(node.children.instructions);
+    } else if (node.type === "instruction") {
+      node.children.register = newSymbol(`${this.number++}`);
+      visit(false);
+    }
+  }
+}
+
 class EmitIR implements Transform {
   tag = "emit IR";
   output: string[];
@@ -164,9 +181,11 @@ class EmitIR implements Transform {
       const { value } = inst.children;
       this.output.push([" ", op, "i32", value.getSymbol()].join(" "));
     } else if (op === "alloca") {
-      const { name } = inst.children;
+      const { name, register } = inst.children;
       this.output.push(
-        [" ", `%${name.getSymbol()}`, "=", op, "i32,", "align", "4"].join(" ")
+        [" ", `%${register.getSymbol()}`, "=", op, "i32,", "align", "4"].join(
+          " "
+        )
       );
     }
   }
@@ -218,7 +237,9 @@ const main = (argv: string[]): number => {
         ].forEach((transform) =>
           applyTransform(translation_unit, new transform())
         );
-        applyTransform(getPool().getModule(), new (emitIR(output))());
+        [NumberingRegisters, emitIR(output)].forEach((transform) =>
+          applyTransform(getPool().getModule(), new transform())
+        );
         console.log(output.join("\n"));
       }
     });
