@@ -8,7 +8,8 @@ import {
   newModule,
   newSymbol,
 } from "./module/node";
-import { Option, isDefined, option, unreachable } from "./util";
+import { getNull } from "./module/pool";
+import { isDefined, unreachable } from "./util";
 
 const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
@@ -92,10 +93,10 @@ class MakeSymbolTable implements Transform {
 class MakeFunction implements Transform {
   tag = "make Function";
   filter = "function_definition";
-  func: Option<Node> = option();
+  func: Node = getNull();
   apply(node: Node, visit: (cont: boolean) => void): void {
     if (node.type === "function_definition") {
-      this.func = option(node.children.function);
+      this.func = node.children.function;
       visit(true);
     } else if (node.type === "jump_statement" && "return" in node.children) {
       const expr = node.children.expression;
@@ -103,7 +104,7 @@ class MakeFunction implements Transform {
         expr.type === "primary_expression" &&
         "integer_constant" in expr.children
       ) {
-        const inst = newInstruction(this.func.unwrap().getBlock(), "ret");
+        const inst = newInstruction(this.func.getBlock(), "ret");
         inst.children.value = newSymbol(
           expr.children.integer_constant.getSymbol()
         );
@@ -111,7 +112,7 @@ class MakeFunction implements Transform {
       visit(false);
     } else if (node.type === "identifier") {
       if ("is_decl" in node.children && !("is_param" in node.children)) {
-        this.func.unwrap().children.name = node;
+        this.func.children.name = node;
       }
     }
   }

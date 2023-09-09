@@ -1,17 +1,15 @@
 import assert from "assert";
 import { asString, isArray, isObject, objMap } from "../util";
-import { getPool } from "./pool";
+import { getNull, getPool } from "./pool";
 import type { Node } from "./types";
 
 class AstVisitor {
-  null: Node;
   constructor() {
     const pool = getPool();
-    this.null = pool.createNode("null");
   }
   visit(key: string, ast: unknown): Node {
     if (ast === null) {
-      return this.null;
+      return getNull();
     } else {
       assert(
         isArray(ast) || (isObject(ast) && ("symbol" in ast || "type" in ast))
