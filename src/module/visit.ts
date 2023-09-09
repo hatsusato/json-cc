@@ -14,7 +14,7 @@ class Done {
 export interface Transform {
   readonly tag: string;
   filter?: string;
-  apply(node: Node, visit: (cont: boolean) => void): void;
+  apply(node: Node, visit: (cont: boolean | Node) => void): void;
 }
 
 class TransformVisitor extends Done {
@@ -34,8 +34,12 @@ class TransformVisitor extends Done {
       if (this.isDone(node.id)) return;
       else this.set(node.id);
       let called = false;
-      this.transform.apply(node, (cont: boolean) => {
-        if (cont) this.recurse(node, true);
+      this.transform.apply(node, (cont: boolean | Node) => {
+        if (typeof cont === "boolean") {
+          if (cont) this.recurse(node, true);
+        } else {
+          this.visit(cont, true);
+        }
         called = true;
       });
       if (!called) this.recurse(node, true);
