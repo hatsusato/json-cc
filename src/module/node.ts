@@ -7,6 +7,7 @@ import { expandNode } from "./visit";
 type Leaf =
   | { type: "symbol"; symbol: string }
   | { type: "list"; list: Node[] }
+  | { type: "flag"; flag: boolean }
   | { type: "ref"; ref: Id }
   | { type: "branch" };
 
@@ -39,6 +40,13 @@ export class Node {
     this.leaf = { type: "list", list };
     return this;
   }
+  getFlag(): boolean {
+    return this.leaf.type === "flag" ? this.leaf.flag : unreachable();
+  }
+  setFlag(flag: boolean): Node {
+    this.leaf = { type: "flag", flag };
+    return this;
+  }
   getRef(): Node {
     return this.leaf.type === "ref"
       ? getPool().at(this.leaf.ref)
@@ -59,6 +67,7 @@ const newNode = (type: string): Node => getPool().createNode(type);
 export const newSymbol = (symbol: string): Node =>
   newNode("symbol").setSymbol(symbol);
 export const newList = (): Node => newNode("list").setList([]);
+export const newFlag = (flag: boolean): Node => newNode("flag").setFlag(flag);
 export const newRef = (node: Node): Node => newNode("ref").setRef(node);
 export const newModule = (source_filename: string): Node => {
   const module = newNode("module");

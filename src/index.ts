@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransform, convert, type Node, type Transform } from "./module";
 import {
+  newFlag,
   newFunction,
   newInstruction,
   newModule,
@@ -36,10 +37,18 @@ const makeModule = (source_filename: string): new () => Transform =>
     }
   };
 
+class MarkDeclarator implements Transform {
+  tag = "mark Declarator";
+  filter = "declarator";
+  apply(node: Node, visit: (cont: boolean) => void): void {
+    visit(true);
+    node.children.is_decl = newFlag(true);
+  }
+}
+
 type SymbolTable = Record<string, Node>;
 class MakeSymbolTable implements Transform {
   tag = "make SymbolTable";
-  underDecl: boolean = false;
   table: SymbolTable[] = [{}];
   insertSymbol(symbol: Node) {
     const table = this.table.at(-1);
@@ -57,15 +66,13 @@ class MakeSymbolTable implements Transform {
   }
   apply(node: Node, visit: (cont: boolean) => void): void {
     if (node.type === "declarator") {
-      this.underDecl = true;
       visit(true);
-      this.underDecl = false;
     } else if (node.type === "compound_statement") {
       this.table.push({});
       visit(true);
       this.table.pop();
     } else if (node.type === "identifier") {
-      if (this.underDecl) {
+      if (node.children.is_decl.getFlag()) {
         this.insertSymbol(node);
       } else {
         console.log("TODO");
@@ -154,6 +161,7 @@ const main = (argv: string[]): number => {
         const translation_unit = convert(ast);
         const output: string[] = [];
         applyTransform(translation_unit, makeModule(source));
+        applyTransform(translation_unit, MarkDeclarator);
         applyTransform(translation_unit, MakeSymbolTable);
         applyTransform(translation_unit, MakeFunction);
         applyTransform(translation_unit, emitIR(source, output));
