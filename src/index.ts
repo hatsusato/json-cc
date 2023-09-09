@@ -94,6 +94,19 @@ class MakeFunction implements Transform {
   }
 }
 
+class CollectDeclarators implements Transform {
+  tag = "collect Declarators";
+  func: Node = getNull();
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
+    if (node.type === "function_definition") {
+      this.func = node.children.function;
+      visit(node.children.compound_statement);
+    } else if (node.type === "declarator") {
+      this.func.children.allocs.getList().push(node);
+    }
+  }
+}
+
 class BuildBlock implements Transform {
   tag = "build Block";
   filter = "function_definition";
@@ -135,8 +148,33 @@ class EmitIR implements Transform {
     );
   }
   printFunctionHeader(func: Node) {
-    const name = func.children.name.getSymbol();
-    this.output.push(`define dso_local i32 @${name}() {`);
+    const { name, allocs } = func.children;
+    this.output.push(
+      ["define", "dso_local", "i32", `@${name.getSymbol()}()`, "{"].join(" ")
+    );
+    allocs
+      .getList()
+      .forEach((node) =>
+        this.output.push(
+          [
+            " ",
+            `%${node.children.name.getSymbol()}`,
+            "=",
+            "alloca",
+            "i32,",
+            "align",
+            "4",
+          ].join(" ")
+        )
+      );
+  }
+  printInstruction(inst: Node) {
+    assert(inst.type === "instruction");
+    const opcode = inst.children.opcode.getSymbol();
+    if (opcode === "ret") {
+      const { value } = inst.children;
+      this.output.push([" ", opcode, "i32", value.getSymbol()].join(" "));
+    }
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "module") {
@@ -145,12 +183,8 @@ class EmitIR implements Transform {
       this.printFunctionHeader(node);
       visit(true);
       this.output.push(`}`);
-    } else if (
-      node.type === "instruction" &&
-      node.children.opcode.getSymbol() === "ret"
-    ) {
-      const value = node.children.value.getSymbol();
-      this.output.push(`  ret i32 ${value}`);
+    } else if (node.type === "instruction") {
+      this.printInstruction(node);
       visit(false);
     }
   }
@@ -182,6 +216,7 @@ const main = (argv: string[]): number => {
           SimplifyDeclarators,
           MakeSymbolTable,
           MakeFunction,
+          CollectDeclarators,
           BuildBlock,
         ].forEach((transform) =>
           applyTransform(translation_unit, new transform())
