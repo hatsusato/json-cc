@@ -4,15 +4,15 @@ import { Node } from "./node";
 import type { Id } from "./types";
 
 export class NodePool {
-  private list: Node[] = [];
+  private pool: Node[] = [];
   createNode(type: string): Node {
-    const id = this.list.length;
+    const id = this.pool.length;
     const node = new Node(id, type);
-    this.list.push(node);
+    this.pool.push(node);
     return node;
   }
   at(id: Id): Node {
-    const node = this.list[id];
+    const node = this.pool[id];
     assert(isDefined(node));
     return node;
   }
