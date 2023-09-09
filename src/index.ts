@@ -38,25 +38,28 @@ const makeModule = (source_filename: string): new () => Transform =>
     }
   };
 
+const setName = (src: Node, dst: Node) => {
+  if ("name" in src.children) {
+    dst.children.name = src.children.name;
+  }
+};
 class SimplifyDeclarators implements Transform {
   tag = "simplify Declarators";
   filter = "declarator";
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
-    const setName = (src: Node) => {
+    const visitAndSet = (src: Node) => {
       visit(src);
-      if ("name" in src.children) {
-        node.children.name = src.children.name;
-      }
+      setName(src, node);
     };
     if (node.type === "declarator") {
-      setName(node.children.direct_declarator);
+      visitAndSet(node.children.direct_declarator);
     } else if (node.type === "direct_declarator") {
       if ("identifier" in node.children) {
         node.children.name = node.children.identifier;
       } else if ("declarator" in node.children) {
-        setName(node.children.declarator);
+        visitAndSet(node.children.declarator);
       } else if ("direct_declarator" in node.children) {
-        setName(node.children.direct_declarator);
+        visitAndSet(node.children.direct_declarator);
       }
     }
   }
@@ -113,11 +116,8 @@ class MakeFunction implements Transform {
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
       this.func = node.children.function;
-      visit(node.children.declarator);
-    } else if (node.type === "identifier") {
-      if ("is_decl" in node.children) {
-        this.func.children.name = node;
-      }
+      setName(node.children.declarator, this.func);
+      visit(false);
     }
   }
 }
