@@ -1,28 +1,28 @@
 import assert from "assert";
 import { isDefined } from "../util";
+import { Node } from "./node";
 import type { Id } from "./types";
-import { Value } from "./value";
 
-export class ValuePool {
-  private list: Value[] = [];
-  private top: Value;
+export class NodePool {
+  private list: Node[] = [];
+  private top: Node;
   constructor() {
-    this.top = this.createValue("top");
+    this.top = this.createNode("top");
   }
-  createValue(type: string): Value {
+  createNode(type: string): Node {
     const id = this.list.length;
-    const value = new Value(id, type);
-    this.list.push(value);
-    return value;
+    const node = new Node(id, type);
+    this.list.push(node);
+    return node;
   }
-  getTop(): Value {
+  getTop(): Node {
     return this.top;
   }
-  at(id: Id): Value {
-    const value = this.list[id];
-    assert(isDefined(value));
-    return value;
+  at(id: Id): Node {
+    const node = this.list[id];
+    assert(isDefined(node));
+    return node;
   }
 }
-const globalPool = new ValuePool();
+const globalPool = new NodePool();
 export const getPool = () => globalPool;

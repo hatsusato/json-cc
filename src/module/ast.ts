@@ -1,15 +1,15 @@
 import assert from "assert";
 import { asString, isArray, isObject, objMap, option } from "../util";
 import { getPool } from "./pool";
-import type { Value } from "./types";
+import type { Node } from "./types";
 
 class AstVisitor {
-  null: Value;
+  null: Node;
   constructor() {
     const pool = getPool();
-    this.null = pool.createValue("null");
+    this.null = pool.createNode("null");
   }
-  visit(key: string, ast: unknown): Value {
+  visit(key: string, ast: unknown): Node {
     if (ast === null) {
       return this.null;
     } else {
@@ -20,16 +20,16 @@ class AstVisitor {
         key = asString(ast.type);
       }
     }
-    const value = getPool().createValue(key);
+    const node = getPool().createNode(key);
     if (isArray(ast)) {
-      value.list = option(ast.map((x) => this.visit(key, x)));
+      node.list = option(ast.map((x) => this.visit(key, x)));
     } else if ("symbol" in ast) {
-      value.symbol = option(asString(ast.symbol));
+      node.symbol = option(asString(ast.symbol));
     } else if ("type" in ast) {
       const { type: _, ...children } = ast;
-      value.children = objMap(children, ([k, v]) => this.visit(k, v));
+      node.children = objMap(children, ([k, v]) => this.visit(k, v));
     }
-    return value;
+    return node;
   }
 }
 export const convert = (ast: unknown) => {

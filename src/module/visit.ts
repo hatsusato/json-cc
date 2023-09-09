@@ -1,6 +1,6 @@
 import { objMap } from "../util";
 import { getPool } from "./pool";
-import type { Id, Value } from "./types";
+import type { Id, Node } from "./types";
 
 class Done {
   done: Record<Id, Id> = {};
@@ -14,7 +14,7 @@ class Done {
 
 export interface Transform {
   readonly tag: string;
-  apply(value: Value, visit: () => void): void;
+  apply(node: Node, visit: () => void): void;
 }
 
 class TransformVisitor extends Done {
@@ -23,17 +23,17 @@ class TransformVisitor extends Done {
     super();
     this.transform = transform;
   }
-  visit(value: Value): void {
-    const id = value.id;
+  visit(node: Node): void {
+    const id = node.id;
     if (this.isDone(id)) return;
     else this.set(id);
     const recurse = () => {
-      if (value.list.ok) {
-        value.list.unwrap().forEach((v) => this.visit(v));
+      if (node.list.ok) {
+        node.list.unwrap().forEach((v) => this.visit(v));
       }
-      objMap(value.children, ([_, v]) => this.visit(v));
+      objMap(node.children, ([_, v]) => this.visit(v));
     };
-    this.transform.apply(value, recurse);
+    this.transform.apply(node, recurse);
   }
 }
 export const applyTransforms = <T extends Transform>(
@@ -46,11 +46,11 @@ export const applyTransforms = <T extends Transform>(
 };
 
 class ExpandVisitor extends Done {
-  visit(value: Value): object {
-    const id = value.id;
+  visit(node: Node): object {
+    const id = node.id;
     if (this.isDone(id)) return { ref: id };
     else this.set(id);
-    const { children, list, type, symbol } = value;
+    const { children, list, type, symbol } = node;
     return {
       id,
       type,
@@ -60,6 +60,6 @@ class ExpandVisitor extends Done {
     };
   }
 }
-export const expandValue = (value: Value): object => {
-  return new ExpandVisitor().visit(value);
+export const expandNode = (node: Node): object => {
+  return new ExpandVisitor().visit(node);
 };

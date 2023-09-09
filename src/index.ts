@@ -1,12 +1,12 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
-import { applyTransforms, convert, type Transform, type Value } from "./module";
+import { applyTransforms, convert, type Node, type Transform } from "./module";
 import {
   newFunction,
   newInstruction,
   newModule,
   newSymbol,
-} from "./module/value";
+} from "./module/node";
 import { Option, option } from "./util";
 
 const parse = (source: string): unknown => {
@@ -15,16 +15,16 @@ const parse = (source: string): unknown => {
 };
 class MakeModule implements Transform {
   tag = "make Module";
-  module: Value;
+  module: Node;
   constructor(source_filename: string) {
     this.module = newModule(source_filename);
   }
-  apply(value: Value, visit: () => void): void {
-    if (value.type === "translation_unit") {
+  apply(node: Node, visit: () => void): void {
+    if (node.type === "translation_unit") {
       visit();
-      value.children.ir = this.module;
-    } else if (value.type === "function_definition") {
-      value.children.ir = newFunction(this.module);
+      node.children.ir = this.module;
+    } else if (node.type === "function_definition") {
+      node.children.ir = newFunction(this.module);
     } else {
       visit();
     }
@@ -39,13 +39,13 @@ const makeModule = (source_filename: string): new () => Transform =>
 
 class MakeFunction implements Transform {
   tag = "make Function";
-  func: Option<Value> = option();
-  apply(value: Value, visit: () => void): void {
-    if (value.type === "function_definition") {
-      this.func = option(value.children.ir);
+  func: Option<Node> = option();
+  apply(node: Node, visit: () => void): void {
+    if (node.type === "function_definition") {
+      this.func = option(node.children.ir);
       visit();
-    } else if (value.type === "jump_statement" && "return" in value.children) {
-      const expr = value.children.expression;
+    } else if (node.type === "jump_statement" && "return" in node.children) {
+      const expr = node.children.expression;
       if (
         expr.type === "primary_expression" &&
         "integer_constant" in expr.children
@@ -62,21 +62,21 @@ class MakeFunction implements Transform {
 }
 class ConvertIR implements Transform {
   tag = "convert IR";
-  apply(value: Value, visit: () => void): void {
+  apply(node: Node, visit: () => void): void {
     visit();
-    if (value.type === "top") {
+    if (node.type === "top") {
       // return value.children.translation_unit;
-    } else if (value.type === "translation_unit") {
-      value.type = "module";
-    } else if (value.type === "compound_statement") {
+    } else if (node.type === "translation_unit") {
+      node.type = "module";
+    } else if (node.type === "compound_statement") {
       // return value.children.statement_list;
-    } else if (value.type === "statement_list") {
+    } else if (node.type === "statement_list") {
       // return value.list?.[0];
-    } else if (value.type === "statement") {
+    } else if (node.type === "statement") {
       // return value.children.jump_statement;
-    } else if (value.type === "jump_statement") {
-      if ("return" in value.children) {
-        value.type = "return_statement";
+    } else if (node.type === "jump_statement") {
+      if ("return" in node.children) {
+        node.type = "return_statement";
       }
     }
   }
@@ -88,22 +88,22 @@ class EmitIR implements Transform {
   constructor(output: string[]) {
     this.output = output;
   }
-  apply(value: Value, visit: () => void): void {
-    if (value.type === "module") {
-      const { source_filename, datalayout, triple } = value.children;
+  apply(node: Node, visit: () => void): void {
+    if (node.type === "module") {
+      const { source_filename, datalayout, triple } = node.children;
       this.output.push(
         `source_filename = "${source_filename.getSymbol()}"`,
         `target datalayout = "${datalayout.getSymbol()}"`,
         `target triple = "${triple.getSymbol()}"`
       );
       visit();
-    } else if (value.type === "function") {
+    } else if (node.type === "function") {
       const name = "main";
       this.output.push(`define dso_local i32 @${name}() {`);
       visit();
       this.output.push(`}`);
-    } else if (value.type === "inst.ret") {
-      const ret = value.children.value.getSymbol();
+    } else if (node.type === "inst.ret") {
+      const ret = node.children.value.getSymbol();
       this.output.push(`  ret i32 ${ret}`);
       visit();
     } else {
@@ -118,8 +118,8 @@ const emitIR = (
   process.env.DEBUG === "1"
     ? class implements Transform {
         tag = "print module";
-        apply(value: Value): Value | void {
-          console.info(value.show());
+        apply(node: Node): Node | void {
+          console.info(node.show());
         }
       }
     : class extends EmitIR {

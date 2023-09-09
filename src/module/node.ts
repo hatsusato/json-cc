@@ -2,14 +2,14 @@ import { assert } from "console";
 import { Option, option } from "../util";
 import { getPool } from "./pool";
 import type { Id } from "./types";
-import { expandValue } from "./visit";
+import { expandNode } from "./visit";
 
-export class Value {
+export class Node {
   id: Id;
   type: string;
   symbol: Option<string> = option();
-  list: Option<Value[]> = option();
-  children: Record<string, Value> = {};
+  list: Option<Node[]> = option();
+  children: Record<string, Node> = {};
   constructor(id: Id, type: string) {
     this.id = id;
     this.type = type;
@@ -18,36 +18,36 @@ export class Value {
     return JSON.stringify(this.showObject(), undefined, 2);
   }
   showObject(): object {
-    return expandValue(this);
+    return expandNode(this);
   }
   getSymbol(): string {
     assert(this.type === "symbol" && this.symbol.ok);
     return this.symbol.unwrap();
   }
-  getList(): Value[] {
+  getList(): Node[] {
     assert(this.type === "list" && this.list.ok);
     return this.list.unwrap();
   }
-  getBlock(): Value {
+  getBlock(): Node {
     assert(this.type === "function");
     const block = this.children.blocks.getList().at(-1);
     return block ?? newBlock(this);
   }
 }
 
-export const newValue = (type: string) => getPool().createValue(type);
+export const newNode = (type: string) => getPool().createNode(type);
 export const newSymbol = (symbol: string) => {
-  const value = newValue("symbol");
-  value.symbol = option(symbol);
-  return value;
+  const node = newNode("symbol");
+  node.symbol = option(symbol);
+  return node;
 };
 export const newList = () => {
-  const value = newValue("list");
-  value.list = option([]);
-  return value;
+  const node = newNode("list");
+  node.list = option([]);
+  return node;
 };
-export const newModule = (source_filename: string): Value => {
-  const module = newValue("module");
+export const newModule = (source_filename: string): Node => {
+  const module = newNode("module");
   const datalayout =
     "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128";
   const triple = "x86_64-unknown-linux-gnu";
@@ -57,23 +57,23 @@ export const newModule = (source_filename: string): Value => {
   module.children.functions = newList();
   return module;
 };
-export const newFunction = (module: Value): Value => {
+export const newFunction = (module: Node): Node => {
   assert(module.type === "module");
-  const func = newValue("function");
+  const func = newNode("function");
   func.children.blocks = newList();
   module.children.functions.getList().push(func);
   return func;
 };
-export const newBlock = (func: Value): Value => {
+export const newBlock = (func: Node): Node => {
   assert(func.type === "function");
-  const block = newValue("block");
+  const block = newNode("block");
   block.children.instructions = newList();
   func.children.blocks.getList().push(block);
   return block;
 };
-export const newInstruction = (block: Value, opcode: string): Value => {
+export const newInstruction = (block: Node, opcode: string): Node => {
   assert(block.type === "block");
-  const inst = newValue(`inst.${opcode}`);
+  const inst = newNode(`inst.${opcode}`);
   block.children.instructions.getList().push(inst);
   return inst;
 };
