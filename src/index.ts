@@ -46,14 +46,6 @@ class MarkDeclarator implements Transform {
     node.children.is_decl = newFlag(true);
   }
 }
-class MarkParameter implements Transform {
-  tag = "mark Parameter";
-  filter = "parameter_type_list";
-  apply(node: Node, visit: (cont: boolean) => void): void {
-    visit(true);
-    node.children.is_param = newFlag(true);
-  }
-}
 
 type SymbolTable = Record<string, Node>;
 class MakeSymbolTable implements Transform {
@@ -94,12 +86,12 @@ class MakeFunction implements Transform {
   tag = "make Function";
   filter = "function_definition";
   func: Node = getNull();
-  apply(node: Node, visit: (cont: boolean) => void): void {
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
       this.func = node.children.function;
-      visit(true);
+      visit(node.children.declarator);
     } else if (node.type === "identifier") {
-      if ("is_decl" in node.children && !("is_param" in node.children)) {
+      if ("is_decl" in node.children) {
         this.func.children.name = node;
       }
     }
@@ -189,7 +181,6 @@ const main = (argv: string[]): number => {
         [
           makeModule(source),
           MarkDeclarator,
-          MarkParameter,
           MakeSymbolTable,
           MakeFunction,
           BuildBlock,
