@@ -19,12 +19,13 @@ class MakeModule implements Transform {
   constructor(source_filename: string) {
     this.module = newModule(source_filename);
   }
-  apply(node: Node, visit: () => void): void {
+  apply(node: Node, visit: (cont: boolean) => void): void {
     if (node.type === "translation_unit") {
-      visit();
-      node.children.ir = this.module;
+      visit(true);
+      node.children.module = this.module;
     } else if (node.type === "function_definition") {
-      node.children.ir = newFunction(this.module);
+      node.children.function = newFunction(this.module);
+      visit(false);
     }
   }
 }
@@ -39,10 +40,10 @@ class MakeFunction implements Transform {
   tag = "make Function";
   filter = "function_definition";
   func: Option<Node> = option();
-  apply(node: Node, visit: () => void): void {
+  apply(node: Node, visit: (cont: boolean) => void): void {
     if (node.type === "function_definition") {
-      this.func = option(node.children.ir);
-      visit();
+      this.func = option(node.children.function);
+      visit(true);
     } else if (node.type === "jump_statement" && "return" in node.children) {
       const expr = node.children.expression;
       if (
@@ -54,8 +55,7 @@ class MakeFunction implements Transform {
           expr.children.integer_constant.getSymbol()
         );
       }
-    } else {
-      visit();
+      visit(false);
     }
   }
 }
@@ -67,7 +67,7 @@ class EmitIR implements Transform {
   constructor(output: string[]) {
     this.output = output;
   }
-  apply(node: Node, visit: () => void): void {
+  apply(node: Node, visit: (cont: boolean) => void): void {
     if (node.type === "module") {
       const { source_filename, datalayout, triple } = node.children;
       this.output.push(
@@ -78,7 +78,7 @@ class EmitIR implements Transform {
     } else if (node.type === "function") {
       const name = "main";
       this.output.push(`define dso_local i32 @${name}() {`);
-      visit();
+      visit(true);
       this.output.push(`}`);
     } else if (
       node.type === "instruction" &&
@@ -86,6 +86,7 @@ class EmitIR implements Transform {
     ) {
       const value = node.children.value.getSymbol();
       this.output.push(`  ret i32 ${value}`);
+      visit(false);
     }
   }
 }
