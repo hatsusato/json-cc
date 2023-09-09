@@ -21,7 +21,7 @@ class MakeModule implements Transform {
   constructor(source_filename: string) {
     this.module = newModule(source_filename);
   }
-  apply(node: Node, visit: (cont: boolean) => void): void {
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "translation_unit") {
       visit(true);
       node.children.module = this.module;
@@ -41,7 +41,7 @@ const makeModule = (source_filename: string): new () => Transform =>
 class MarkDeclarator implements Transform {
   tag = "mark Declarator";
   filter = "declarator";
-  apply(node: Node, visit: (cont: boolean) => void): void {
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
     visit(true);
     node.children.is_decl = newFlag(true);
   }
@@ -65,7 +65,7 @@ class MakeSymbolTable implements Transform {
     }
     return unreachable();
   }
-  apply(node: Node, visit: (cont: boolean) => void): void {
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "declarator") {
       visit(true);
     } else if (node.type === "compound_statement") {
@@ -102,7 +102,7 @@ class BuildBlock implements Transform {
   tag = "build Block";
   filter = "function_definition";
   func: Node = getNull();
-  apply(node: Node, visit: (cont: boolean) => void): void {
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
       this.func = node.children.function;
       visit(true);
@@ -130,7 +130,7 @@ class EmitIR implements Transform {
   constructor(output: string[]) {
     this.output = output;
   }
-  apply(node: Node, visit: (cont: boolean) => void): void {
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "module") {
       const { source_filename, datalayout, triple } = node.children;
       this.output.push(
