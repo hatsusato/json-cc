@@ -7,7 +7,7 @@ import {
   newModule,
   newSymbol,
 } from "./module/node";
-import { Option, option } from "./util";
+import { Option, isDefined, option, unreachable } from "./util";
 
 const parse = (source: string): unknown => {
   const input = readFileSync(source, "utf8");
@@ -35,6 +35,44 @@ const makeModule = (source_filename: string): new () => Transform =>
       super(source_filename);
     }
   };
+
+type SymbolTable = Record<string, Node>;
+class MakeSymbolTable implements Transform {
+  tag = "make SymbolTable";
+  underDecl: boolean = false;
+  table: SymbolTable[] = [{}];
+  insertSymbol(symbol: Node) {
+    const table = this.table.at(-1);
+    if (isDefined(table)) {
+      table[symbol.getSymbol()] = symbol;
+    }
+  }
+  lookupSymbol(symbol: string): Node {
+    for (const table of [...this.table].reverse()) {
+      if (symbol in table) {
+        return table[symbol];
+      }
+    }
+    return unreachable();
+  }
+  apply(node: Node, visit: (cont: boolean) => void): void {
+    if (node.type === "declarator") {
+      this.underDecl = true;
+      visit(true);
+      this.underDecl = false;
+    } else if (node.type === "compound_statement") {
+      this.table.push({});
+      visit(true);
+      this.table.pop();
+    } else if (node.type === "identifier") {
+      if (this.underDecl) {
+        this.insertSymbol(node);
+      } else {
+        console.log("TODO");
+      }
+    }
+  }
+}
 
 class MakeFunction implements Transform {
   tag = "make Function";
@@ -116,6 +154,7 @@ const main = (argv: string[]): number => {
         const translation_unit = convert(ast);
         const output: string[] = [];
         applyTransform(translation_unit, makeModule(source));
+        applyTransform(translation_unit, MakeSymbolTable);
         applyTransform(translation_unit, MakeFunction);
         applyTransform(translation_unit, emitIR(source, output));
         console.log(output.join("\n"));
