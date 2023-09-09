@@ -1,4 +1,4 @@
-import { objMap } from "../util";
+import { isDefined, objMap } from "../util";
 import type { Id, Node } from "./types";
 
 class Done {
@@ -13,6 +13,7 @@ class Done {
 
 export interface Transform {
   readonly tag: string;
+  filter?: string;
   apply(node: Node, visit: () => void): void;
 }
 
@@ -22,24 +23,32 @@ class TransformVisitor extends Done {
     super();
     this.transform = transform;
   }
-  visit(node: Node): void {
+  recurse(node: Node, found: boolean) {
+    if (node.leaf.type === "list") {
+      node.leaf.list.forEach((v) => this.visit(v, found));
+    }
+    objMap(node.children, ([_, v]) => this.visit(v, found));
+  }
+  visit(node: Node, found: boolean): void {
     const id = node.id;
     if (this.isDone(id)) return;
     else this.set(id);
-    const recurse = () => {
-      if (node.leaf.type === "list") {
-        node.leaf.list.forEach((v) => this.visit(v));
-      }
-      objMap(node.children, ([_, v]) => this.visit(v));
-    };
-    this.transform.apply(node, recurse);
+    if (found || this.transform.filter === node.type) {
+      this.transform.apply(node, () => this.recurse(node, true));
+    } else {
+      this.recurse(node, false);
+    }
   }
 }
 export const applyTransform = <T extends Transform>(
   translation_unit: Node,
   Class: new () => T
 ): void => {
-  new TransformVisitor(new Class()).visit(translation_unit);
+  const instance = new Class();
+  new TransformVisitor(instance).visit(
+    translation_unit,
+    !isDefined(instance.filter)
+  );
 };
 
 class ExpandVisitor extends Done {

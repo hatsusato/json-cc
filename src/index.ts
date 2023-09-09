@@ -31,7 +31,7 @@ class MakeModule implements Transform {
   }
 }
 const makeModule = (source_filename: string): new () => Transform =>
-  class extends MakeModule {
+  class extends MakeModule implements Transform {
     constructor() {
       super(source_filename);
     }
@@ -39,6 +39,7 @@ const makeModule = (source_filename: string): new () => Transform =>
 
 class MakeFunction implements Transform {
   tag = "make Function";
+  filter = "function_definition";
   func: Option<Node> = option();
   apply(node: Node, visit: () => void): void {
     if (node.type === "function_definition") {
@@ -138,9 +139,9 @@ const main = (argv: string[]): number => {
       } else {
         const translation_unit = convert(ast);
         const output: string[] = [];
-        [makeModule(source), MakeFunction, emitIR(source, output)].forEach(
-          (Class) => applyTransform(translation_unit, Class)
-        );
+        applyTransform(translation_unit, makeModule(source));
+        applyTransform(translation_unit, MakeFunction);
+        applyTransform(translation_unit, emitIR(source, output));
         console.log(output.join("\n"));
       }
     });
