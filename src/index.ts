@@ -38,6 +38,30 @@ const makeModule = (source_filename: string): new () => Transform =>
     }
   };
 
+class SimplifyDeclarators implements Transform {
+  tag = "simplify Declarators";
+  filter = "declarator";
+  apply(node: Node, visit: (cont: boolean | Node) => void): void {
+    const setName = (src: Node) => {
+      visit(src);
+      if ("name" in src.children) {
+        node.children.name = src.children.name;
+      }
+    };
+    if (node.type === "declarator") {
+      setName(node.children.direct_declarator);
+    } else if (node.type === "direct_declarator") {
+      if ("identifier" in node.children) {
+        node.children.name = node.children.identifier;
+      } else if ("declarator" in node.children) {
+        setName(node.children.declarator);
+      } else if ("direct_declarator" in node.children) {
+        setName(node.children.direct_declarator);
+      }
+    }
+  }
+}
+
 class MarkDeclarator implements Transform {
   tag = "mark Declarator";
   filter = "declarator";
@@ -180,6 +204,7 @@ const main = (argv: string[]): number => {
         const output: string[] = [];
         [
           makeModule(source),
+          SimplifyDeclarators,
           MarkDeclarator,
           MakeSymbolTable,
           MakeFunction,
