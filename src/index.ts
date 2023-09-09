@@ -61,27 +61,6 @@ class MakeFunction implements Transform {
     }
   }
 }
-class ConvertIR implements Transform {
-  tag = "convert IR";
-  apply(node: Node, visit: () => void): void {
-    visit();
-    if (node.type === "top") {
-      // return value.children.translation_unit;
-    } else if (node.type === "translation_unit") {
-      node.type = "module";
-    } else if (node.type === "compound_statement") {
-      // return value.children.statement_list;
-    } else if (node.type === "statement_list") {
-      // return value.list?.[0];
-    } else if (node.type === "statement") {
-      // return value.children.jump_statement;
-    } else if (node.type === "jump_statement") {
-      if ("return" in node.children) {
-        node.type = "return_statement";
-      }
-    }
-  }
-}
 
 class EmitIR implements Transform {
   tag = "emit IR";
