@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
-import { applyTransforms, convert, type Node, type Transform } from "./module";
+import { applyTransform, convert, type Node, type Transform } from "./module";
 import {
   newFunction,
   newInstruction,
@@ -138,11 +138,9 @@ const main = (argv: string[]): number => {
       } else {
         const translation_unit = convert(ast);
         const output: string[] = [];
-        applyTransforms(translation_unit, [
-          makeModule(source),
-          MakeFunction,
-          emitIR(source, output),
-        ]);
+        [makeModule(source), MakeFunction, emitIR(source, output)].forEach(
+          (Class) => applyTransform(translation_unit, Class)
+        );
         console.log(output.join("\n"));
       }
     });

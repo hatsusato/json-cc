@@ -35,13 +35,11 @@ class TransformVisitor extends Done {
     this.transform.apply(node, recurse);
   }
 }
-export const applyTransforms = <T extends Transform>(
+export const applyTransform = <T extends Transform>(
   translation_unit: Node,
-  Classes: (new () => T)[]
+  Class: new () => T
 ): void => {
-  Classes.forEach((Class) => {
-    new TransformVisitor(new Class()).visit(translation_unit);
-  });
+  new TransformVisitor(new Class()).visit(translation_unit);
 };
 
 class ExpandVisitor extends Done {
