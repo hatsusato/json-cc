@@ -1,5 +1,4 @@
 import { objMap } from "../util";
-import { getPool } from "./pool";
 import type { Id, Node } from "./types";
 
 class Done {
@@ -37,11 +36,11 @@ class TransformVisitor extends Done {
   }
 }
 export const applyTransforms = <T extends Transform>(
+  translation_unit: Node,
   Classes: (new () => T)[]
 ): void => {
-  const top = getPool().getTop();
   Classes.forEach((Class) => {
-    new TransformVisitor(new Class()).visit(top);
+    new TransformVisitor(new Class()).visit(translation_unit);
   });
 };
 

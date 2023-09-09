@@ -32,10 +32,8 @@ class AstVisitor {
     return node;
   }
 }
-export const convert = (ast: unknown) => {
+export const convert = (ast: unknown): Node => {
   const visitor = new AstVisitor();
-  const { translation_unit } = visitor.visit("top", ast).children;
-  const top = getPool().getTop();
-  top.type = translation_unit.type;
-  top.setList(translation_unit.getList());
+  const top = visitor.visit("top", ast);
+  return top.children.translation_unit;
 };

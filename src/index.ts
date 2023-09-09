@@ -136,9 +136,9 @@ const main = (argv: string[]): number => {
       if (source === "all.c") {
         writeFileSync("all.json", JSON.stringify(ast, undefined, 2) + "\n");
       } else {
-        convert(ast);
+        const translation_unit = convert(ast);
         const output: string[] = [];
-        applyTransforms([
+        applyTransforms(translation_unit, [
           makeModule(source),
           MakeFunction,
           emitIR(source, output),
