@@ -30,11 +30,15 @@ class TransformVisitor extends Done {
     objMap(node.children, ([_, v]) => this.visit(v, found));
   }
   visit(node: Node, found: boolean): void {
-    const id = node.id;
-    if (this.isDone(id)) return;
-    else this.set(id);
     if (found || this.transform.filter === node.type) {
-      this.transform.apply(node, () => this.recurse(node, true));
+      if (this.isDone(node.id)) return;
+      else this.set(node.id);
+      let called = false;
+      this.transform.apply(node, () => {
+        this.recurse(node, true);
+        called = true;
+      });
+      if (!called) this.recurse(node, true);
     } else {
       this.recurse(node, false);
     }

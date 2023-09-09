@@ -25,8 +25,6 @@ class MakeModule implements Transform {
       node.children.ir = this.module;
     } else if (node.type === "function_definition") {
       node.children.ir = newFunction(this.module);
-    } else {
-      visit();
     }
   }
 }
@@ -64,6 +62,7 @@ class MakeFunction implements Transform {
 
 class EmitIR implements Transform {
   tag = "emit IR";
+  filter = "module";
   output: string[];
   constructor(output: string[]) {
     this.output = output;
@@ -76,7 +75,6 @@ class EmitIR implements Transform {
         `target datalayout = "${datalayout.getSymbol()}"`,
         `target triple = "${triple.getSymbol()}"`
       );
-      visit();
     } else if (node.type === "function") {
       const name = "main";
       this.output.push(`define dso_local i32 @${name}() {`);
@@ -88,8 +86,6 @@ class EmitIR implements Transform {
     ) {
       const value = node.children.value.getSymbol();
       this.output.push(`  ret i32 ${value}`);
-    } else {
-      visit();
     }
   }
 }
