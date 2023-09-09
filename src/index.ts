@@ -1,13 +1,8 @@
 import { readFileSync, writeFileSync } from "fs";
 import { CParser } from "../generated/scanner";
 import { applyTransform, convert, type Node, type Transform } from "./module";
-import {
-  newFunction,
-  newInstruction,
-  newModule,
-  newSymbol,
-} from "./module/node";
-import { getNull } from "./module/pool";
+import { newFunction, newInstruction, newSymbol } from "./module/node";
+import { getNull, getPool } from "./module/pool";
 import { isDefined, unreachable } from "./util";
 
 const parse = (source: string): unknown => {
@@ -18,7 +13,7 @@ class MakeModule implements Transform {
   tag = "make Module";
   module: Node;
   constructor(source_filename: string) {
-    this.module = newModule(source_filename);
+    this.module = getPool().getModule();
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "translation_unit") {
@@ -191,6 +186,7 @@ const main = (argv: string[]): number => {
       } else {
         const translation_unit = convert(ast);
         const output: string[] = [];
+        getPool().initModule(source);
         [
           makeModule(source),
           SimplifyDeclarators,
