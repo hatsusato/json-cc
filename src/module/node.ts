@@ -84,7 +84,6 @@ export const newFunction = (module: Node): Node => {
   assert(module.type === "module");
   const func = newNode("function");
   func.children.blocks = newList();
-  func.children.allocs = newList();
   module.children.functions.getList().push(func);
   return func;
 };

@@ -102,7 +102,10 @@ class CollectDeclarators implements Transform {
       this.func = node.children.function;
       visit(node.children.compound_statement);
     } else if (node.type === "declarator") {
-      this.func.children.allocs.getList().push(node);
+      const block = this.func.getBlock();
+      const inst = newInstruction(block, "alloca");
+      inst.children.name = node.children.name;
+      block.children.instructions.getList().push(inst);
     }
   }
 }
@@ -148,41 +151,35 @@ class EmitIR implements Transform {
     );
   }
   printFunctionHeader(func: Node) {
-    const { name, allocs } = func.children;
+    const { name } = func.children;
     this.output.push(
       ["define", "dso_local", "i32", `@${name.getSymbol()}()`, "{"].join(" ")
     );
-    allocs
-      .getList()
-      .forEach((node) =>
-        this.output.push(
-          [
-            " ",
-            `%${node.children.name.getSymbol()}`,
-            "=",
-            "alloca",
-            "i32,",
-            "align",
-            "4",
-          ].join(" ")
-        )
-      );
   }
   printInstruction(inst: Node) {
     assert(inst.type === "instruction");
-    const opcode = inst.children.opcode.getSymbol();
-    if (opcode === "ret") {
+    const { opcode } = inst.children;
+    const op = opcode.getSymbol();
+    if (op === "ret") {
       const { value } = inst.children;
-      this.output.push([" ", opcode, "i32", value.getSymbol()].join(" "));
+      this.output.push([" ", op, "i32", value.getSymbol()].join(" "));
+    } else if (op === "alloca") {
+      const { name } = inst.children;
+      this.output.push(
+        [" ", `%${name.getSymbol()}`, "=", op, "i32,", "align", "4"].join(" ")
+      );
     }
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "module") {
       this.printModuleHeader(node);
+      visit(node.children.functions);
     } else if (node.type === "function") {
       this.printFunctionHeader(node);
-      visit(true);
+      visit(node.children.blocks);
       this.output.push(`}`);
+    } else if (node.type === "block") {
+      visit(node.children.instructions);
     } else if (node.type === "instruction") {
       this.printInstruction(node);
       visit(false);
