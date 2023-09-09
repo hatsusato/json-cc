@@ -7,14 +7,15 @@ import { expandNode } from "./visit";
 type Leaf =
   | { type: "symbol"; symbol: string }
   | { type: "list"; list: Node[] }
+  | { type: "number"; number: number }
   | { type: "flag"; flag: boolean }
   | { type: "ref"; ref: Id }
-  | { type: "branch" };
+  | { type: "none" };
 
 export class Node {
   id: Id;
   type: string;
-  leaf: Leaf = { type: "branch" };
+  leaf: Leaf = { type: "none" };
   children: Record<string, Node> = {};
   constructor(id: Id, type: string) {
     this.id = id;
@@ -38,6 +39,13 @@ export class Node {
   }
   setList(list: Node[]): Node {
     this.leaf = { type: "list", list };
+    return this;
+  }
+  getNumber(): number {
+    return this.leaf.type === "number" ? this.leaf.number : unreachable();
+  }
+  setNumber(number: number): Node {
+    this.leaf = { type: "number", number };
     return this;
   }
   getFlag(): boolean {
@@ -67,6 +75,8 @@ const newNode = (type: string): Node => getPool().createNode(type);
 export const newSymbol = (symbol: string): Node =>
   newNode("symbol").setSymbol(symbol);
 export const newList = (): Node => newNode("list").setList([]);
+export const newNumber = (number: number): Node =>
+  newNode("number").setNumber(number);
 export const newFlag = (flag: boolean): Node => newNode("flag").setFlag(flag);
 export const newRef = (node: Node): Node => newNode("ref").setRef(node);
 export const newModule = (source_filename: string): Node => {
