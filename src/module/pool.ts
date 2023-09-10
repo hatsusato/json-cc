@@ -32,6 +32,11 @@ export class NodePool {
     return node;
   }
 }
-const globalPool = new NodePool();
-export const getPool = () => globalPool;
+let globalPool: NodePool | undefined = undefined;
+export const getPool = (): NodePool => {
+  if (!isDefined(globalPool)) {
+    globalPool = new NodePool();
+  }
+  return globalPool;
+};
 export const getNull = () => getPool().getNull();
