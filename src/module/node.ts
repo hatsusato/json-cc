@@ -74,7 +74,8 @@ export class Node {
 export const newNode = (type: string): Node => getPool().createNode(type);
 export const newSymbol = (symbol: string): Node =>
   newNode("symbol").setSymbol(symbol);
-export const newList = (): Node => newNode("list").setList([]);
+export const newList = (list: Node[] = []): Node =>
+  newNode("list").setList(list);
 export const newNumber = (number: number): Node =>
   newNode("number").setNumber(number);
 export const newFlag = (flag: boolean): Node => newNode("flag").setFlag(flag);
