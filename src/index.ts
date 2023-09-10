@@ -209,13 +209,23 @@ class EmitIR implements Transform {
       ["define", "dso_local", "i32", `@${name.getSymbol()}()`, "{"].join(" ")
     );
   }
+  showValue(node: Node): string {
+    if (node.type === "instruction") {
+      const { register } = node.children;
+      return `%${register.getSymbol()}`;
+    } else if (node.type === "symbol") {
+      return node.getSymbol();
+    } else {
+      return unreachable(`unknown value type to show: ${node.type}`);
+    }
+  }
   printInstruction(inst: Node) {
     assert(inst.type === "instruction");
     const { opcode } = inst.children;
     const op = opcode.getSymbol();
     if (op === "ret") {
       const { value } = inst.children;
-      this.output.push([" ", op, "i32", value.getSymbol()].join(" "));
+      this.output.push([" ", op, "i32", this.showValue(value)].join(" "));
     } else if (op === "alloca") {
       const { register } = inst.children;
       this.output.push(
@@ -234,7 +244,7 @@ class EmitIR implements Transform {
           "i32",
           `${integer_constant.children.symbol.getSymbol()},`,
           "i32*",
-          `%${register.getSymbol()},`,
+          `${this.showValue(dst)},`,
           "align",
           "4",
         ].join(" ")
