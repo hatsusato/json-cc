@@ -136,10 +136,17 @@ class BuildBlock implements Transform {
   tag = "build Block";
   filter = "function_definition";
   func: Node = getNull();
+  last: Node = getNull();
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
       this.func = node.children.function;
       visit(true);
+    } else if (node.type === "integer_constant") {
+      this.last = node.children.symbol;
+    } else if (node.type === "primary_expression") {
+      if ("integer_constant" in node.children) {
+        visit(node.children.integer_constant);
+      }
     } else if (node.type === "assignment_expression") {
       const { left, right } = node.children;
       const { identifier } = left.children;
@@ -147,19 +154,16 @@ class BuildBlock implements Transform {
       const inst = newInstruction(this.func.getBlock(), "store");
       inst.children.src = right;
       inst.children.dst = this.func.children.allocs.children[name];
+      visit(false);
     } else if (node.type === "jump_statement") {
       if ("return" in node.children) {
-        const expr = node.children.expression;
-        if (
-          expr.type === "primary_expression" &&
-          "integer_constant" in expr.children
-        ) {
-          const inst = newInstruction(this.func.getBlock(), "ret");
-          const { integer_constant } = expr.children;
-          inst.children.value = newSymbol(
-            integer_constant.children.symbol.getSymbol()
-          );
+        this.last = getNull();
+        visit(node.children.expression);
+        if (this.last.type === "null") {
+          unreachable();
         }
+        const inst = newInstruction(this.func.getBlock(), "ret");
+        inst.children.value = this.last;
       }
     }
   }
