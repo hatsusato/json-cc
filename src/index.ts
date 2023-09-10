@@ -140,11 +140,25 @@ class BuildBlock implements Transform {
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "function_definition") {
       this.func = node.children.function;
-      visit(true);
+      visit(node.children.compound_statement);
+    } else if (node.type === "identifier") {
+      const { allocs } = this.func.children;
+      const { symbol } = node.children;
+      const name = symbol.getSymbol();
+      if (name in allocs.children) {
+        const inst = newInstruction(this.func.getBlock(), "load");
+        inst.children.src = allocs.children[name];
+        this.last = inst;
+        visit(false);
+      } else {
+        unreachable(`no local variable: ${name}`);
+      }
     } else if (node.type === "integer_constant") {
       this.last = node.children.symbol;
     } else if (node.type === "primary_expression") {
-      if ("integer_constant" in node.children) {
+      if ("identifier" in node.children) {
+        visit(node.children.identifier);
+      } else if ("integer_constant" in node.children) {
         visit(node.children.integer_constant);
       }
     } else if (node.type === "assignment_expression") {
@@ -154,6 +168,8 @@ class BuildBlock implements Transform {
       const inst = newInstruction(this.func.getBlock(), "store");
       inst.children.src = right;
       inst.children.dst = this.func.children.allocs.children[name];
+      visit(false);
+    } else if (node.type === "declaration") {
       visit(false);
     } else if (node.type === "jump_statement") {
       if ("return" in node.children) {
@@ -249,6 +265,23 @@ class EmitIR implements Transform {
           "4",
         ].join(" ")
       );
+    } else if (op === "load") {
+      const { src } = inst.children;
+      this.output.push(
+        [
+          " ",
+          this.showValue(inst),
+          "=",
+          op,
+          "i32,",
+          "i32*",
+          `${this.showValue(src)},`,
+          "align",
+          "4",
+        ].join(" ")
+      );
+    } else {
+      unreachable(`unknown instruction to emit: ${op}`);
     }
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
