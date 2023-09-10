@@ -169,8 +169,8 @@ class BuildBlock implements Transform {
       inst.children.src = right;
       inst.children.dst = this.func.children.allocs.children[name];
       visit(false);
-    } else if (node.type === "declaration") {
-      visit(false);
+    } else if (node.type === "compound_statement") {
+      visit(node.children.statement_list);
     } else if (node.type === "jump_statement") {
       if ("return" in node.children) {
         this.last = getNull();
