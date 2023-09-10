@@ -65,7 +65,7 @@ class MakeSymbolTable implements Transform {
         return table[symbol];
       }
     }
-    return unreachable();
+    return unreachable(`not found in symbol table: ${symbol}`);
   }
   apply(node: Node, visit: (cont: boolean | Node) => void): void {
     if (node.type === "declarator") {
@@ -176,7 +176,7 @@ class BuildBlock implements Transform {
         this.last = getNull();
         visit(node.children.expression);
         if (this.last.type === "null") {
-          unreachable();
+          unreachable("unsupported expression");
         }
         const inst = newInstruction(this.func.getBlock(), "ret");
         inst.children.value = this.last;

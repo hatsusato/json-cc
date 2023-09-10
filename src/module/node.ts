@@ -28,28 +28,32 @@ export class Node {
     return expandNode(this);
   }
   getSymbol(): string {
-    return this.leaf.type === "symbol" ? this.leaf.symbol : unreachable();
+    return this.leaf.type === "symbol"
+      ? this.leaf.symbol
+      : unreachable("no symbol");
   }
   setSymbol(symbol: string): Node {
     this.leaf = { type: "symbol", symbol };
     return this;
   }
   getList(): Node[] {
-    return this.leaf.type === "list" ? this.leaf.list : unreachable();
+    return this.leaf.type === "list" ? this.leaf.list : unreachable("no list");
   }
   setList(list: Node[]): Node {
     this.leaf = { type: "list", list };
     return this;
   }
   getNumber(): number {
-    return this.leaf.type === "number" ? this.leaf.number : unreachable();
+    return this.leaf.type === "number"
+      ? this.leaf.number
+      : unreachable("no number");
   }
   setNumber(number: number): Node {
     this.leaf = { type: "number", number };
     return this;
   }
   getFlag(): boolean {
-    return this.leaf.type === "flag" ? this.leaf.flag : unreachable();
+    return this.leaf.type === "flag" ? this.leaf.flag : unreachable("no flag");
   }
   setFlag(flag: boolean): Node {
     this.leaf = { type: "flag", flag };
@@ -58,7 +62,7 @@ export class Node {
   getRef(): Node {
     return this.leaf.type === "ref"
       ? getPool().at(this.leaf.ref)
-      : unreachable();
+      : unreachable("no reference");
   }
   setRef(node: Node): Node {
     this.leaf = { type: "ref", ref: node.id };
