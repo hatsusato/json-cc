@@ -1,5 +1,6 @@
 import assert from "assert";
 import { asString, isArray, isObject, objMap } from "../util";
+import { newSymbol } from "./node";
 import { getNull, getPool } from "./pool";
 import type { Node } from "./types";
 
@@ -22,7 +23,7 @@ class AstVisitor {
     if (isArray(ast)) {
       node.setList(ast.map((x) => this.visit(key, x)));
     } else if ("symbol" in ast) {
-      node.setSymbol(asString(ast.symbol));
+      node.children.symbol = newSymbol(asString(ast.symbol));
     } else if ("type" in ast) {
       const { type: _, ...children } = ast;
       node.children = objMap(children, ([k, v]) => this.visit(k, v));

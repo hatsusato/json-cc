@@ -33,11 +33,13 @@ class SimplifyDeclarators implements Transform {
       visit(src);
       setName(src, node);
     };
-    if (node.type === "declarator") {
+    if (node.type === "identifier") {
+      node.children.name = node.children.symbol;
+    } else if (node.type === "declarator") {
       visitAndSet(node.children.direct_declarator);
     } else if (node.type === "direct_declarator") {
       if ("identifier" in node.children) {
-        node.children.name = node.children.identifier;
+        visitAndSet(node.children.identifier);
       } else if ("declarator" in node.children) {
         visitAndSet(node.children.declarator);
       } else if ("direct_declarator" in node.children) {
@@ -140,7 +142,8 @@ class BuildBlock implements Transform {
       visit(true);
     } else if (node.type === "assignment_expression") {
       const { left, right } = node.children;
-      const name = left.children.identifier.getSymbol();
+      const { identifier } = left.children;
+      const name = identifier.children.symbol.getSymbol();
       const inst = newInstruction(this.func.getBlock(), "store");
       inst.children.src = right;
       inst.children.dst = this.func.children.allocs.children[name];
@@ -152,8 +155,9 @@ class BuildBlock implements Transform {
           "integer_constant" in expr.children
         ) {
           const inst = newInstruction(this.func.getBlock(), "ret");
+          const { integer_constant } = expr.children;
           inst.children.value = newSymbol(
-            expr.children.integer_constant.getSymbol()
+            integer_constant.children.symbol.getSymbol()
           );
         }
       }
@@ -224,7 +228,7 @@ class EmitIR implements Transform {
           " ",
           op,
           "i32",
-          `${integer_constant.getSymbol()},`,
+          `${integer_constant.children.symbol.getSymbol()},`,
           "i32*",
           `%${register.getSymbol()},`,
           "align",
