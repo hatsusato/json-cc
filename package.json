@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "run": "yarn run -s build && yarn run -s main",
-    "main": "ts-node src/index.ts",
-    "build": "ts-jison -t typescript -n C -o generated/scanner.ts src/scanner.jison",
+    "main": "yarn run -s build && yarn run -s run",
+    "run": "ts-node src/index.ts",
+    "build": "ts-jison src/scanner.jison -t typescript -n C -o generated/scanner.ts",
     "fmt": "yarn run -s fmt:prettier && yarn run -s fmt:eslint",
     "fmt:eslint": "eslint --fix --ext .ts src",
     "fmt:prettier": "prettier --write src"
