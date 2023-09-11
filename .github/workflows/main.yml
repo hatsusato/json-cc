@@ -1,0 +1,27 @@
+name: Integration Test
+on:
+  push:
+    branches: [ main, actions-debug ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  test:
+    name: Test on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      id: yarn-cache
+      with:
+        key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+        path: node_modules
+    - name: Install dependencies
+      if: ${{ steps.yarn-cache.outputs.cache-hit != 'true' }}
+      run: yarn install
+    - name: Run tests
+      run: ./test.sh
